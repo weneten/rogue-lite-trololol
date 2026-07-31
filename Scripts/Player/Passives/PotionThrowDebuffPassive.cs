@@ -31,7 +31,7 @@ public partial class PotionThrowDebuffPassive : PassiveAbility
         HealthComponent health = target?.GetNodeOrNull<HealthComponent>("HealthComponent");
         if (health != null && !health.IsDead)
         {
-            health.TakeDamage(Mathf.RoundToInt(Data.PassiveValueA), Owner);
+            health.TakeDamage(Mathf.RoundToInt(Data.PassiveValueA), OwnerPlayer);
         }
     }
 
@@ -40,16 +40,16 @@ public partial class PotionThrowDebuffPassive : PassiveAbility
     /// <summary>Nearest live member of the "Enemy" group to the Player, or null if the arena is empty.</summary>
     private Node2D FindNearestEnemy()
     {
-        if (Owner == null)
+        if (OwnerPlayer == null)
         {
             return null;
         }
 
         Node2D nearest = null;
         float nearestDistSq = float.MaxValue;
-        Vector2 origin = Owner.GlobalPosition;
+        Vector2 origin = OwnerPlayer.GlobalPosition;
 
-        foreach (Node node in Owner.GetTree().GetNodesInGroup("Enemy"))
+        foreach (Node node in OwnerPlayer.GetTree().GetNodesInGroup("Enemy"))
         {
             if (node is not Node2D candidate)
             {

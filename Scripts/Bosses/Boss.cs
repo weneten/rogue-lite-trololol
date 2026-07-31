@@ -502,13 +502,18 @@ public partial class Boss : CharacterBody2D
         EventBus.Instance?.EmitSignal(EventBus.SignalName.OnBossEncounterEnd, Data?.BossName ?? Name, true);
 
         // Brief death hold then free — BossManager also listens to OnBossEncounterEnd.
-        GetTree()?.CreateTimer(0.6f).Timeout += () =>
+        // Cannot use ?. on CreateTimer().Timeout — C# events need a firm left-hand target.
+        SceneTree tree = GetTree();
+        if (tree != null)
         {
-            if (GodotObject.IsInstanceValid(this))
+            tree.CreateTimer(0.6f).Timeout += () =>
             {
-                QueueFree();
-            }
-        };
+                if (GodotObject.IsInstanceValid(this))
+                {
+                    QueueFree();
+                }
+            };
+        }
     }
 
     public override void _ExitTree()

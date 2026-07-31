@@ -8,4 +8,4 @@
 
 [resource]
 script = ExtResource("1_upd")
-Upgrades = Array[ExtResource("Resource")]([ExtResource("2_dmg"), ExtResource("3_spd"), ExtResource("4_hp"), ExtResource("5_relic")])
+Upgrades = Array[Resource]([ExtResource("2_dmg"), ExtResource("3_spd"), ExtResource("4_hp"), ExtResource("5_relic")])

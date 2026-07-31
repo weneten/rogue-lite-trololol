@@ -182,46 +182,89 @@ public partial class Weapon : Node2D
     }
 
     /// <summary>
-    /// Damages every live target currently overlapping the melee hitbox (an always-monitoring
-    /// Area2D shaped/positioned to represent the weapon's swing reach) — a real hitbox check
-    /// rather than a plain distance comparison, so it naturally supports cleaving multiple foes.
+    /// Brotato-style melee: damage every live TargetGroup member within WeaponData.Range.
+    /// Hitbox overlap alone was too small vs Range, so weapons "swung" without landing hits.
     /// </summary>
     private void PerformMeleeAttack()
     {
-        if (_meleeHitbox == null)
+        if (_ownerBody == null || Data == null)
         {
             return;
         }
 
-        foreach (Node2D body in _meleeHitbox.GetOverlappingBodies())
+        float range = Mathf.Max(8f, Data.Range);
+        float rangeSq = range * range;
+        Vector2 origin = _ownerBody.GlobalPosition;
+
+        // Prefer hitbox overlaps when present (multi-target cleave geometry), then fill gaps
+        // with a pure distance check so nothing inside Range is immune.
+        var hitIds = new System.Collections.Generic.HashSet<ulong>();
+
+        if (_meleeHitbox != null)
         {
-            if (!body.IsInGroup(TargetGroup))
+            foreach (Node2D body in _meleeHitbox.GetOverlappingBodies())
             {
-                continue;
-            }
+                if (!body.IsInGroup(TargetGroup))
+                {
+                    continue;
+                }
 
-            HealthComponent health = body.GetNodeOrNull<HealthComponent>("HealthComponent");
-            if (health == null || health.IsDead)
-            {
-                continue;
-            }
-
-            float critChance = Data.CritChance + (_ownerStats?.ExtraCritChance ?? 0f);
-            float critMultiplier = Data.CritMultiplier + (_ownerStats?.ExtraCritMultiplier ?? 0f);
-            bool isCrit = GD.Randf() < critChance;
-
-            float damageMultiplier = ComputeDamageMultiplier(body);
-            int finalDamage = Mathf.RoundToInt(Data.Damage * damageMultiplier * (isCrit ? critMultiplier : 1f));
-            health.TakeDamage(finalDamage, _ownerBody);
-            _ownerStats?.NotifyDamageDealt(finalDamage, body);
-            ApplyOnHitLifesteal(finalDamage);
-
-            if (body is TargetDummy dummy && Data.Knockback > 0f)
-            {
-                Vector2 pushDir = (dummy.GlobalPosition - _ownerBody.GlobalPosition).Normalized();
-                dummy.ApplyKnockback(pushDir * Data.Knockback);
+                if (TryDamageTarget(body))
+                {
+                    hitIds.Add(body.GetInstanceId());
+                }
             }
         }
+
+        foreach (Node node in GetTree().GetNodesInGroup(TargetGroup))
+        {
+            if (node is not Node2D body)
+            {
+                continue;
+            }
+
+            if (hitIds.Contains(body.GetInstanceId()))
+            {
+                continue;
+            }
+
+            if (origin.DistanceSquaredTo(body.GlobalPosition) > rangeSq)
+            {
+                continue;
+            }
+
+            TryDamageTarget(body);
+        }
+    }
+
+    /// <summary>Applies one weapon hit (crit, mults, lifesteal, knockback). Returns false if skipped.</summary>
+    private bool TryDamageTarget(Node2D body)
+    {
+        HealthComponent health = body.GetNodeOrNull<HealthComponent>("HealthComponent");
+        if (health == null || health.IsDead)
+        {
+            return false;
+        }
+
+        float critChance = Data.CritChance + (_ownerStats?.ExtraCritChance ?? 0f);
+        float critMultiplier = Data.CritMultiplier + (_ownerStats?.ExtraCritMultiplier ?? 0f);
+        bool isCrit = GD.Randf() < critChance;
+
+        float damageMultiplier = ComputeDamageMultiplier(body);
+        int finalDamage = Mathf.Max(1, Mathf.RoundToInt(
+            Data.Damage * damageMultiplier * (isCrit ? critMultiplier : 1f)));
+
+        health.TakeDamage(finalDamage, _ownerBody);
+        _ownerStats?.NotifyDamageDealt(finalDamage, body);
+        ApplyOnHitLifesteal(finalDamage);
+
+        if (body is TargetDummy dummy && Data.Knockback > 0f)
+        {
+            Vector2 pushDir = (dummy.GlobalPosition - _ownerBody.GlobalPosition).Normalized();
+            dummy.ApplyKnockback(pushDir * Data.Knockback);
+        }
+
+        return true;
     }
 
     /// <summary>Spawns Data.ProjectileCount pooled projectiles fanned across Data.Spread degrees, aimed at target.</summary>

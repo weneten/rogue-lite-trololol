@@ -63,7 +63,7 @@ public partial class FireDotPassive : PassiveAbility
             burn.TickTimer -= delta;
             if (burn.TickTimer <= 0)
             {
-                burn.Target.TakeDamage(burn.TickDamage, Owner);
+                burn.Target.TakeDamage(burn.TickDamage, OwnerPlayer);
                 burn.TickTimer += TickInterval;
             }
 

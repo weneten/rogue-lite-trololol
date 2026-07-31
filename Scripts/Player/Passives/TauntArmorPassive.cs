@@ -29,7 +29,7 @@ public partial class TauntArmorPassive : PassiveAbility
         HealthComponent sourceHealth = source.GetNodeOrNull<HealthComponent>("HealthComponent");
         if (sourceHealth != null && !sourceHealth.IsDead)
         {
-            sourceHealth.TakeDamage(Mathf.RoundToInt(amount * Data.PassiveValueB), Owner);
+            sourceHealth.TakeDamage(Mathf.RoundToInt(amount * Data.PassiveValueB), OwnerPlayer);
         }
     }
 }

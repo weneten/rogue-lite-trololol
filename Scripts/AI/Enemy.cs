@@ -202,8 +202,10 @@ public partial class Enemy : CharacterBody2D, IPoolable
             }
         }
 
-        float distanceToPlayer = hasLiveTarget ? GlobalPosition.DistanceTo(player.GlobalPosition) : float.MaxValue;
-        UpdateState(distanceToPlayer);
+        float distanceToPlayer = hasLiveTarget
+            ? GlobalPosition.DistanceTo(player.GlobalPosition)
+            : float.MaxValue;
+        UpdateState(hasLiveTarget, distanceToPlayer);
         Move(delta, player, distanceToPlayer);
 
         // Attacking is independent of movement state so kiting (Flee) archetypes can still
@@ -216,16 +218,21 @@ public partial class Enemy : CharacterBody2D, IPoolable
         }
     }
 
-    /// <summary>Decides Wander/Chase/Attack/Flee purely from distance-to-player + EnemyData tuning.</summary>
-    private void UpdateState(float distanceToPlayer)
+    /// <summary>
+    /// Wave-survival AI: while a live player exists, always engage (Chase/Attack/Flee).
+    /// Wander only when no target — AggroRange used to strand enemies that spawned just outside it.
+    /// </summary>
+    private void UpdateState(bool hasLiveTarget, float distanceToPlayer)
     {
-        if (distanceToPlayer > Data.AggroRange)
+        if (!hasLiveTarget)
         {
             _state = EnemyState.Wander;
             return;
         }
 
-        if (Data.BehaviorType == EnemyBehaviorType.Flee && distanceToPlayer < Data.PreferredDistance)
+        if (Data.BehaviorType == EnemyBehaviorType.Flee
+            && Data.PreferredDistance > 0f
+            && distanceToPlayer < Data.PreferredDistance)
         {
             _state = EnemyState.Flee;
         }
@@ -456,11 +463,17 @@ public partial class Enemy : CharacterBody2D, IPoolable
     public void OnSpawn()
     {
         Visible = true;
+        // Ensure both process modes are on — pooled nodes may have been fully frozen.
         SetPhysicsProcess(true);
+        SetProcess(true);
+        ProcessMode = ProcessModeEnum.Inherit;
 
+        // Re-enable body collision so weapons/projectiles can hit (layer 3 / bit value 4).
+        CollisionLayer = 4;
         if (_collisionShape != null)
         {
             _collisionShape.Disabled = false;
+            _collisionShape.SetDeferred(CollisionShape2D.PropertyName.Disabled, false);
         }
 
         if (_contactHitbox != null)
@@ -475,11 +488,13 @@ public partial class Enemy : CharacterBody2D, IPoolable
         Visible = false;
         Velocity = Vector2.Zero;
         SetPhysicsProcess(false);
+        SetProcess(false);
         _isElite = false;
         Modulate = Colors.White;
         Scale = Vector2.One;
         // Reset phasing so a recycled wraith doesn't leave a non-wraith phaseable.
         CollisionMask = WorldCollisionMask;
+        CollisionLayer = 4;
 
         if (_collisionShape != null)
         {

@@ -14,7 +14,8 @@ namespace Nightbane.PlayerCharacter.Passives;
 /// </summary>
 public abstract partial class PassiveAbility : Node
 {
-    protected Player Owner { get; private set; }
+    /// <summary>Owning hunter actor (renamed from Owner to avoid hiding Node.Owner).</summary>
+    protected Player OwnerPlayer { get; private set; }
     protected PlayerStats Stats { get; private set; }
     protected HealthComponent Health { get; private set; }
     protected CharacterData Data { get; private set; }
@@ -22,7 +23,7 @@ public abstract partial class PassiveAbility : Node
     /// <summary>Wires the shared references and runs one-time setup. Called by Player right after AddChild.</summary>
     public void Setup(Player owner, PlayerStats stats, HealthComponent health, CharacterData data)
     {
-        Owner = owner;
+        OwnerPlayer = owner;
         Stats = stats;
         Health = health;
         Data = data;

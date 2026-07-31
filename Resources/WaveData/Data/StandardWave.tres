@@ -9,7 +9,7 @@
 
 [resource]
 script = ExtResource("1_wd")
-EnemyPool = Array[ExtResource("Resource")]([ExtResource("2_ghoul"), ExtResource("3_archer"), ExtResource("4_corpse"), ExtResource("5_wraith"), ExtResource("6_rat")])
+EnemyPool = Array[Resource]([ExtResource("2_ghoul"), ExtResource("3_archer"), ExtResource("4_corpse"), ExtResource("5_wraith"), ExtResource("6_rat")])
 BaseDuration = 30.0
 DurationGrowthPerWave = 2.0
 SpawnInterval = 1.2

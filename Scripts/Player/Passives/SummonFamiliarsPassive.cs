@@ -21,7 +21,7 @@ public partial class SummonFamiliarsPassive : PassiveAbility
     {
         var weaponScene = GD.Load<PackedScene>(WeaponScenePath);
         var familiarData = GD.Load<WeaponData>(FamiliarDataPath);
-        if (weaponScene == null || familiarData == null || Owner == null)
+        if (weaponScene == null || familiarData == null || OwnerPlayer == null)
         {
             GD.PushWarning("[SummonFamiliarsPassive] Missing Weapon.tscn or FamiliarBolt.tres; no familiars spawned.");
             return;
@@ -35,7 +35,7 @@ public partial class SummonFamiliarsPassive : PassiveAbility
             familiar.Data = familiarData;
             familiar.OwnerBodyPath = new NodePath("..");
             familiar.Position = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * RingRadius;
-            Owner.AddChild(familiar);
+            OwnerPlayer.AddChild(familiar);
         }
     }
 }

@@ -12,10 +12,19 @@ public static class MetaSave
 {
     public const string SavePath = "user://nightbane_meta.json";
 
-    /// <summary>Default free starter hunters (by CharacterName).</summary>
+    /// <summary>Default free starter hunters (by CharacterName). All base roster playable at first launch.</summary>
     private static readonly string[] DefaultUnlockedCharacters =
     {
-        "Witch Hunter"
+        "Witch Hunter",
+        "The Reaper",
+        "Silver Priest",
+        "Bloodletter",
+        "Iron Widow",
+        "Pyromancer",
+        "Grave Warden",
+        "Moonlit Duelist",
+        "Alchemist",
+        "Cursed Noble",
     };
 
     public static int MetaCurrency { get; private set; }
