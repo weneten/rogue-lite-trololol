@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3 uid="uid://rv5z9b4e7h1j3l"]
+
+[ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.cs" id="1_wd"]
+
+[resource]
+script = ExtResource("1_wd")
+Name = "Cursed Chain Whip"
+CursedMissingHpScaling = 1.5
+Damage = 13.0
+AttackSpeed = 1.0
+Range = 90.0
+CritChance = 0.05
+CritMultiplier = 2.0
+ProjectileCount = 1
+Spread = 0.0
+Knockback = 60.0
+RarityTier = 1
+WeaponClass = 33
+ShopCost = 3

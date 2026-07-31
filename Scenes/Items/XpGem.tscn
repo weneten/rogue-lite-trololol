@@ -1,0 +1,22 @@
+[gd_scene load_steps=3 format=3 uid="uid://f1x9g3m7k2p5q"]
+
+[ext_resource type="Script" path="res://Scripts/Items/XpGem.cs" id="1_gem"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_gem"]
+radius = 8.0
+
+[node name="XpGem" type="Area2D"]
+collision_layer = 0
+collision_mask = 2
+monitoring = true
+monitorable = false
+script = ExtResource("1_gem")
+AttractRadius = 90.0
+AttractSpeed = 500.0
+
+[node name="Sprite" type="Polygon2D" parent="."]
+color = Color(0.55, 0.85, 0.95, 1)
+polygon = PackedVector2Array(0, -8, 8, 0, 0, 8, -8, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_gem")

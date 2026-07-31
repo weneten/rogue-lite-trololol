@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://cx3v9m2k7q1n8"]
+
+[ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.cs" id="1_wd"]
+[ext_resource type="Resource" uid="uid://sw6a1c5f8i2k4m" path="res://Resources/WeaponData/Data/WarCleaver.tres" id="2_upgrade"]
+
+[resource]
+script = ExtResource("1_wd")
+Name = "Rusty Scythe"
+UpgradesTo = ExtResource("2_upgrade")
+Damage = 14.0
+AttackSpeed = 0.8
+Range = 60.0
+CritChance = 0.05
+CritMultiplier = 2.0
+ProjectileCount = 1
+Spread = 0.0
+Knockback = 120.0
+RarityTier = 0
+WeaponClass = 1
+ShopCost = 5

@@ -1,0 +1,28 @@
+[gd_scene load_steps=3 format=3 uid="uid://d0y5t9r2m1x3n"]
+
+[ext_resource type="Script" path="res://Scripts/Combat/TargetDummy.cs" id="1_dummy"]
+[ext_resource type="Script" path="res://Scripts/Combat/HealthComponent.cs" id="2_health"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_dummy"]
+radius = 18.0
+
+[node name="TargetDummy" type="CharacterBody2D"]
+collision_layer = 4
+collision_mask = 1
+script = ExtResource("1_dummy")
+HealthComponentPath = NodePath("HealthComponent")
+
+[node name="Sprite" type="Polygon2D" parent="."]
+color = Color(0.55, 0.42, 0.28, 1)
+polygon = PackedVector2Array(-14, -22, 14, -22, 14, 22, -14, 22)
+
+[node name="StitchAccent" type="Polygon2D" parent="."]
+color = Color(0.2, 0.15, 0.1, 1)
+polygon = PackedVector2Array(-14, 0, 14, 0, 14, 4, -14, 4)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_dummy")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2_health")
+MaxHealth = 60

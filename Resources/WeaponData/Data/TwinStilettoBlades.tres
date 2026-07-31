@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3 uid="uid://tx7b2d6g9j3l5n"]
+
+[ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.cs" id="1_wd"]
+
+[resource]
+script = ExtResource("1_wd")
+Name = "Twin Stiletto Blades"
+Damage = 11.0
+AttackSpeed = 2.4
+Range = 55.0
+CritChance = 0.15
+CritMultiplier = 2.0
+ProjectileCount = 1
+Spread = 0.0
+Knockback = 15.0
+RarityTier = 1
+WeaponClass = 1
+ShopCost = 4

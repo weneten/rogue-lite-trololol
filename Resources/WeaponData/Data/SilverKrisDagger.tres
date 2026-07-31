@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://gk3n7q2t5w8y1a"]
+
+[ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.cs" id="1_wd"]
+[ext_resource type="Resource" uid="uid://tx7b2d6g9j3l5n" path="res://Resources/WeaponData/Data/TwinStilettoBlades.tres" id="2_upgrade"]
+
+[resource]
+script = ExtResource("1_wd")
+Name = "Silver Kris Dagger"
+UpgradesTo = ExtResource("2_upgrade")
+Damage = 9.0
+AttackSpeed = 1.8
+Range = 55.0
+CritChance = 0.12
+CritMultiplier = 2.0
+ProjectileCount = 1
+Spread = 0.0
+Knockback = 20.0
+RarityTier = 0
+WeaponClass = 17
+ShopCost = 3

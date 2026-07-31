@@ -1,0 +1,26 @@
+[gd_scene load_steps=3 format=3 uid="uid://bqf7r2n8x1k0y"]
+
+[ext_resource type="Script" path="res://Scripts/Combat/Weapon.cs" id="1_weapon"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_hitbox"]
+radius = 14.0
+height = 44.0
+
+[node name="Weapon" type="Node2D"]
+script = ExtResource("1_weapon")
+MeleeHitboxPath = NodePath("MeleeHitbox")
+ProjectileSpawnPointPath = NodePath("ProjectileSpawnPoint")
+
+[node name="MeleeHitbox" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 4
+monitoring = true
+monitorable = false
+position = Vector2(28, 0)
+rotation = 1.5708
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="MeleeHitbox"]
+shape = SubResource("CapsuleShape2D_hitbox")
+
+[node name="ProjectileSpawnPoint" type="Marker2D" parent="."]
+position = Vector2(20, 0)

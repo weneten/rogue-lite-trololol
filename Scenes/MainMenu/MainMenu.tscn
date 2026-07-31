@@ -1,0 +1,73 @@
+[gd_scene load_steps=3 format=3 uid="uid://b7wj0lqxsyvpq"]
+
+[ext_resource type="Script" path="res://Scenes/MainMenu/MainMenu.cs" id="1_menu"]
+[ext_resource type="PackedScene" uid="uid://c8settingsmenu01" path="res://Scenes/UI/SettingsMenu.tscn" id="2_settings"]
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_menu")
+StartButtonPath = NodePath("CenterContainer/VBoxContainer/StartButton")
+QuitButtonPath = NodePath("CenterContainer/VBoxContainer/QuitButton")
+SettingsButtonPath = NodePath("CenterContainer/VBoxContainer/SettingsButton")
+MetaCurrencyLabelPath = NodePath("CenterContainer/VBoxContainer/MetaCurrencyLabel")
+SettingsMenuPath = NodePath("SettingsMenu")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.05, 0.03, 0.05, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
+layout_mode = 2
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="Title" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 48
+theme_override_colors/font_color = Color(0.72, 0.05, 0.09, 1)
+text = "NIGHTBANE"
+
+[node name="Subtitle" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.6, 0.55, 0.58, 1)
+text = "A Hunt Beneath the Blood Moon"
+
+[node name="MetaCurrencyLabel" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.85, 0.7, 0.25, 1)
+text = "Blood Marks: 0"
+
+[node name="StartButton" type="Button" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+text = "Begin the Hunt"
+
+[node name="SettingsButton" type="Button" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+text = "Settings"
+
+[node name="QuitButton" type="Button" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+text = "Quit"
+
+[node name="SettingsMenu" parent="." instance=ExtResource("2_settings")]

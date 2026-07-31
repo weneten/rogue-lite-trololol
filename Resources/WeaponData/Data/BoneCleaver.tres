@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3 uid="uid://c9m4p7q2u5x8z"]
+
+[ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.cs" id="1_wd"]
+
+[resource]
+script = ExtResource("1_wd")
+Name = "Bone Cleaver"
+Damage = 26.0
+AttackSpeed = 0.6
+Range = 70.0
+CritChance = 0.08
+CritMultiplier = 2.5
+ProjectileCount = 1
+Spread = 0.0
+Knockback = 220.0
+RarityTier = 2
+WeaponClass = 1
+ShopCost = 4

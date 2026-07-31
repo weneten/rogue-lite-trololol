@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://uy8c3e7h1k4m6o"]
+
+[ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.cs" id="1_wd"]
+[ext_resource type="PackedScene" uid="uid://dv1p8k0m3x2wq" path="res://Scenes/Weapons/Projectile.tscn" id="2_proj"]
+
+[resource]
+script = ExtResource("1_wd")
+Name = "Silver Stake Launcher"
+ProjectileScene = ExtResource("2_proj")
+Damage = 24.0
+AttackSpeed = 0.7
+Range = 380.0
+CritChance = 0.12
+CritMultiplier = 2.6
+ProjectileCount = 1
+Spread = 0.0
+Knockback = 140.0
+RarityTier = 2
+WeaponClass = 22
+ShopCost = 4

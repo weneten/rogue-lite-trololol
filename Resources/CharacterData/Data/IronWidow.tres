@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="CharacterData" load_steps=3 format=3 uid="uid://c1r34ap3r0005"]
+
+[ext_resource type="Script" path="res://Resources/CharacterData/CharacterData.cs" id="1_cd"]
+[ext_resource type="Resource" uid="uid://c9m4p7q2u5x8z" path="res://Resources/WeaponData/Data/BoneCleaver.tres" id="2_cleaver"]
+
+[resource]
+script = ExtResource("1_cd")
+CharacterName = "Iron Widow"
+LoreBlurb = "She buried three husbands and every soldier who ever underestimated her plating. Nothing that hits her walks away without regretting it."
+MaxHealth = 140
+MoveSpeed = 260.0
+StartingArmor = 3
+StartingDodgeChance = 0.0
+StartingCritChance = 0.03
+StartingMagicPower = 1.0
+StartingWeapons = Array[ExtResource("Resource")]([ExtResource("2_cleaver")])
+PassiveId = "taunt_armor"
+PassiveName = "Iron Thorns"
+PassiveDescription = "+5 flat Armor. Reflects 25% of damage taken back at the attacker."
+PassiveValueA = 5.0
+PassiveValueB = 0.25
+DifficultyRating = 2

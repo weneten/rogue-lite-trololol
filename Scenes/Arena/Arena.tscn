@@ -1,0 +1,104 @@
+[gd_scene load_steps=14 format=3 uid="uid://cqk8n2x5f8h3a"]
+
+[ext_resource type="PackedScene" uid="uid://c3g8t6qk1n0wp" path="res://Scenes/Player/Player.tscn" id="1_player"]
+[ext_resource type="PackedScene" uid="uid://d0y5t9r2m1x3n" path="res://Scenes/Enemies/TargetDummy.tscn" id="2_dummy"]
+[ext_resource type="Script" path="res://Scripts/Waves/XpGemSpawner.cs" id="3_gemspawner"]
+[ext_resource type="PackedScene" uid="uid://g2h4u6d8n1r3s" path="res://Scenes/UI/HUD.tscn" id="4_hud"]
+[ext_resource type="PackedScene" uid="uid://h5l7u9p3v6x8k" path="res://Scenes/UI/LevelUpUI.tscn" id="5_levelup"]
+[ext_resource type="PackedScene" uid="uid://k4x8u1r5t2n6q" path="res://Scenes/UI/ShopUI.tscn" id="6_shop"]
+[ext_resource type="PackedScene" uid="uid://c8pausemenu0001" path="res://Scenes/UI/PauseMenu.tscn" id="7_pause"]
+[ext_resource type="PackedScene" uid="uid://c8deathscreen01" path="res://Scenes/UI/DeathScreen.tscn" id="8_death"]
+[ext_resource type="Script" path="res://Scripts/Meta/RunStats.cs" id="9_runstats"]
+[ext_resource type="Script" path="res://Scripts/Juice/JuiceController.cs" id="10_juice"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_north"]
+size = Vector2(1664, 64)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_east"]
+size = Vector2(64, 1064)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_west"]
+size = Vector2(64, 1064)
+
+[node name="Arena" type="Node2D"]
+
+[node name="CanvasModulate" type="CanvasModulate" parent="."]
+color = Color(0.56, 0.52, 0.62, 1)
+
+[node name="World" type="Node2D" parent="."]
+
+[node name="Ground" type="Polygon2D" parent="World"]
+color = Color(0.07, 0.08, 0.06, 1)
+polygon = PackedVector2Array(-800, -500, 800, -500, 800, 500, -800, 500)
+
+[node name="Walls" type="Node2D" parent="World"]
+
+[node name="NorthWall" type="StaticBody2D" parent="World/Walls"]
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/Walls/NorthWall"]
+position = Vector2(0, -532)
+shape = SubResource("RectangleShape2D_north")
+
+[node name="SouthWall" type="StaticBody2D" parent="World/Walls"]
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/Walls/SouthWall"]
+position = Vector2(0, 532)
+shape = SubResource("RectangleShape2D_north")
+
+[node name="EastWall" type="StaticBody2D" parent="World/Walls"]
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/Walls/EastWall"]
+position = Vector2(832, 0)
+shape = SubResource("RectangleShape2D_east")
+
+[node name="WestWall" type="StaticBody2D" parent="World/Walls"]
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/Walls/WestWall"]
+position = Vector2(-832, 0)
+shape = SubResource("RectangleShape2D_west")
+
+[node name="Player" parent="World" instance=ExtResource("1_player")]
+
+[node name="Spawns" type="Node2D" parent="."]
+
+[node name="TargetDummy" parent="Spawns" instance=ExtResource("2_dummy")]
+position = Vector2(150, 0)
+
+[node name="XpGemSpawner" type="Node" parent="."]
+script = ExtResource("3_gemspawner")
+
+[node name="RunStats" type="Node" parent="."]
+script = ExtResource("9_runstats")
+
+[node name="JuiceController" type="Node" parent="."]
+script = ExtResource("10_juice")
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="VignetteOverlay_TODO_ReplaceWithRadialShader" type="ColorRect" parent="UI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.02, 0.0, 0.03, 0.28)
+
+[node name="HUD" parent="." instance=ExtResource("4_hud")]
+
+[node name="LevelUpUI" parent="." instance=ExtResource("5_levelup")]
+
+[node name="ShopUI" parent="." instance=ExtResource("6_shop")]
+
+[node name="PauseMenu" parent="." instance=ExtResource("7_pause")]
+
+[node name="DeathScreen" parent="." instance=ExtResource("8_death")]

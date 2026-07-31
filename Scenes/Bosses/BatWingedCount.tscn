@@ -1,0 +1,49 @@
+[gd_scene load_steps=4 format=3 uid="uid://c8boss1batcnt"]
+
+[ext_resource type="Script" path="res://Scripts/Bosses/BatWingedCount.cs" id="1_boss"]
+[ext_resource type="Script" path="res://Scripts/Combat/HealthComponent.cs" id="2_health"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_body"]
+radius = 26.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_contact"]
+radius = 34.0
+
+[node name="BatWingedCount" type="CharacterBody2D"]
+collision_layer = 4
+collision_mask = 1
+script = ExtResource("1_boss")
+HealthComponentPath = NodePath("HealthComponent")
+SpriteNodePath = NodePath("Sprite")
+CollisionShapePath = NodePath("CollisionShape2D")
+ContactHitboxPath = NodePath("ContactHitbox")
+
+[node name="Sprite" type="Polygon2D" parent="."]
+color = Color(0.55, 0.08, 0.18, 1)
+polygon = PackedVector2Array(0, -28, 16, -18, 30, -6, 18, 8, 10, 26, -10, 26, -18, 8, -30, -6, -16, -18)
+
+[node name="WingL" type="Polygon2D" parent="."]
+color = Color(0.28, 0.05, 0.12, 0.9)
+position = Vector2(-22, -4)
+polygon = PackedVector2Array(0, 0, -28, -18, -36, 4, -20, 14)
+
+[node name="WingR" type="Polygon2D" parent="."]
+color = Color(0.28, 0.05, 0.12, 0.9)
+position = Vector2(22, -4)
+polygon = PackedVector2Array(0, 0, 28, -18, 36, 4, 20, 14)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_body")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2_health")
+MaxHealth = 800
+
+[node name="ContactHitbox" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+monitoring = true
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ContactHitbox"]
+shape = SubResource("CircleShape2D_contact")

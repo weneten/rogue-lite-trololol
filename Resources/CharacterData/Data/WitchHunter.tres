@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="CharacterData" load_steps=3 format=3 uid="uid://c1r34ap3r0003"]
+
+[ext_resource type="Script" path="res://Resources/CharacterData/CharacterData.cs" id="1_cd"]
+[ext_resource type="Resource" uid="uid://b8k3n6r1t4w7y" path="res://Resources/WeaponData/Data/SilverRevolver.tres" id="2_revolver"]
+
+[resource]
+script = ExtResource("1_cd")
+CharacterName = "Witch Hunter"
+LoreBlurb = "Trained to find the one moment a hex-caster's guard drops, and never miss it. She doesn't chase kills — she waits for the killing blow to present itself."
+MaxHealth = 95
+MoveSpeed = 305.0
+StartingArmor = 1
+StartingDodgeChance = 0.05
+StartingCritChance = 0.1
+StartingMagicPower = 1.0
+StartingWeapons = Array[ExtResource("Resource")]([ExtResource("2_revolver")])
+PassiveId = "crit_bonus"
+PassiveName = "Marked for Burning"
+PassiveDescription = "+15% critical chance and +50% critical damage."
+PassiveValueA = 0.15
+PassiveValueB = 0.5
+DifficultyRating = 2

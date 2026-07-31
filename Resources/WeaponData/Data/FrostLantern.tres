@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3 uid="uid://xb2f6h1k4n7p9r"]
+
+[ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.cs" id="1_wd"]
+
+[resource]
+script = ExtResource("1_wd")
+Name = "Frost Lantern"
+AoERadius = 100.0
+AoECenteredOnSelf = false
+SlowMultiplier = 0.5
+SlowDurationSeconds = 2.5
+Damage = 8.0
+AttackSpeed = 0.9
+Range = 280.0
+CritChance = 0.05
+CritMultiplier = 2.0
+ProjectileCount = 1
+Spread = 0.0
+Knockback = 0.0
+RarityTier = 1
+WeaponClass = 66
+ShopCost = 3

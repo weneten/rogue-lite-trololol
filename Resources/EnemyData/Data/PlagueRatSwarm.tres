@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=3 format=3 uid="uid://g6p9l2a5g8u1e"]
+
+[ext_resource type="Script" path="res://Resources/EnemyData/EnemyData.cs" id="1_ed"]
+[ext_resource type="PackedScene" uid="uid://b8h1w4k2t9c7r" path="res://Scenes/Enemies/Enemy.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_ed")
+EnemyName = "Plague Rat"
+EnemyScene = ExtResource("2_scene")
+SpriteColor = Color(0.32, 0.26, 0.2, 1)
+MaxHealth = 5
+IsUndead = false
+MoveSpeed = 190.0
+AttackDamage = 3.0
+AttackPattern = 0
+BehaviorType = 0
+ProjectileScene = null
+AggroRange = 550.0
+AttackRange = 28.0
+PreferredDistance = 0.0
+AttackCooldown = 0.55
+ExplodeOnDeath = false
+ExplosionRadius = 90.0
+ExplosionDamage = 18.0
+PhasesThroughObstacles = false
+ErraticMovement = false
+CurrencyReward = 1
+ExperienceReward = 1
+SpawnWeight = 5.5
+MinWaveToAppear = 2

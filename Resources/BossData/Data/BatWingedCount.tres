@@ -1,0 +1,121 @@
+[gd_resource type="Resource" script_class="BossData" load_steps=12 format=3 uid="uid://bossdata_batcount"]
+
+[ext_resource type="Script" path="res://Resources/BossData/BossData.cs" id="1_bossdata"]
+[ext_resource type="Script" path="res://Resources/BossData/BossPhaseData.cs" id="2_phase"]
+[ext_resource type="Script" path="res://Resources/BossData/BossAttackPatternData.cs" id="3_atk"]
+[ext_resource type="PackedScene" uid="uid://c8boss1batcnt" path="res://Scenes/Bosses/BatWingedCount.tscn" id="4_scene"]
+
+[sub_resource type="Resource" id="atk_blink"]
+script = ExtResource("3_atk")
+AttackId = "blink"
+WindupSeconds = 0.45
+RecoverySeconds = 0.15
+CooldownSeconds = 2.8
+Damage = 18.0
+Radius = 55.0
+Range = 140.0
+Speed = 0.0
+Count = 1
+Duration = 0.0
+HealFraction = 0.0
+
+[sub_resource type="Resource" id="atk_bats"]
+script = ExtResource("3_atk")
+AttackId = "bat_swarm"
+WindupSeconds = 0.9
+RecoverySeconds = 0.35
+CooldownSeconds = 5.5
+Damage = 8.0
+Radius = 70.0
+Range = 90.0
+Speed = 0.0
+Count = 4
+Duration = 0.0
+HealFraction = 0.0
+
+[sub_resource type="Resource" id="atk_slash"]
+script = ExtResource("3_atk")
+AttackId = "blood_slash"
+WindupSeconds = 0.65
+RecoverySeconds = 0.2
+CooldownSeconds = 2.2
+Damage = 22.0
+Radius = 72.0
+Range = 80.0
+Speed = 0.0
+Count = 1
+Duration = 0.0
+HealFraction = 0.15
+
+[sub_resource type="Resource" id="atk_slash_frenzy"]
+script = ExtResource("3_atk")
+AttackId = "blood_slash"
+WindupSeconds = 0.4
+RecoverySeconds = 0.12
+CooldownSeconds = 1.2
+Damage = 26.0
+Radius = 80.0
+Range = 80.0
+Speed = 0.0
+Count = 1
+Duration = 0.0
+HealFraction = 0.4
+
+[sub_resource type="Resource" id="atk_blink_frenzy"]
+script = ExtResource("3_atk")
+AttackId = "blink"
+WindupSeconds = 0.3
+RecoverySeconds = 0.1
+CooldownSeconds = 1.6
+Damage = 20.0
+Radius = 60.0
+Range = 110.0
+Speed = 0.0
+Count = 1
+Duration = 0.0
+HealFraction = 0.35
+
+[sub_resource type="Resource" id="atk_bats_frenzy"]
+script = ExtResource("3_atk")
+AttackId = "bat_swarm"
+WindupSeconds = 0.7
+RecoverySeconds = 0.25
+CooldownSeconds = 4.0
+Damage = 8.0
+Radius = 70.0
+Range = 90.0
+Speed = 0.0
+Count = 6
+Duration = 0.0
+HealFraction = 0.0
+
+[sub_resource type="Resource" id="phase_open"]
+script = ExtResource("2_phase")
+PhaseName = "Nocturne"
+EnterHpFraction = 1.0
+MoveSpeedMultiplier = 1.0
+AttackCooldownMultiplier = 1.0
+Attacks = [SubResource("atk_blink"), SubResource("atk_bats"), SubResource("atk_slash")]
+
+[sub_resource type="Resource" id="phase_frenzy"]
+script = ExtResource("2_phase")
+PhaseName = "Blood Frenzy"
+EnterHpFraction = 0.5
+MoveSpeedMultiplier = 1.35
+AttackCooldownMultiplier = 0.7
+Attacks = [SubResource("atk_blink_frenzy"), SubResource("atk_bats_frenzy"), SubResource("atk_slash_frenzy")]
+
+[resource]
+script = ExtResource("1_bossdata")
+BossName = "The Bat-Winged Count"
+BossScene = ExtResource("4_scene")
+SpriteColor = Color(0.55, 0.08, 0.18, 1)
+MaxHealth = 800
+MoveSpeed = 95.0
+ContactDamage = 12.0
+ContactDamageCooldown = 0.9
+Phases = [SubResource("phase_open"), SubResource("phase_frenzy")]
+WaveTrigger = 10
+CurrencyReward = 120
+ExperienceReward = 60
+AbilityIds = PackedStringArray("blink", "bat_swarm", "blood_slash")

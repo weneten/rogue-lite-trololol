@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="WaveData" load_steps=7 format=3 uid="uid://e3n7p1q5r9s2t"]
+
+[ext_resource type="Script" path="res://Resources/WaveData/WaveData.cs" id="1_wd"]
+[ext_resource type="Resource" uid="uid://c1k5m8n2p4q6r" path="res://Resources/EnemyData/Data/Ghoul.tres" id="2_ghoul"]
+[ext_resource type="Resource" uid="uid://d2m6n9p3q5r7s" path="res://Resources/EnemyData/Data/SkeletalArcher.tres" id="3_archer"]
+[ext_resource type="Resource" uid="uid://e4b7c0r9p2s5t" path="res://Resources/EnemyData/Data/BloatedCorpse.tres" id="4_corpse"]
+[ext_resource type="Resource" uid="uid://f5w8r1a4i7t0h" path="res://Resources/EnemyData/Data/Wraith.tres" id="5_wraith"]
+[ext_resource type="Resource" uid="uid://g6p9l2a5g8u1e" path="res://Resources/EnemyData/Data/PlagueRatSwarm.tres" id="6_rat"]
+
+[resource]
+script = ExtResource("1_wd")
+EnemyPool = Array[ExtResource("Resource")]([ExtResource("2_ghoul"), ExtResource("3_archer"), ExtResource("4_corpse"), ExtResource("5_wraith"), ExtResource("6_rat")])
+BaseDuration = 30.0
+DurationGrowthPerWave = 2.0
+SpawnInterval = 1.2
+BaseEnemyCount = 5
+EnemyCountGrowthPerWave = 1.5

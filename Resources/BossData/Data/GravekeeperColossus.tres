@@ -1,0 +1,121 @@
+[gd_resource type="Resource" script_class="BossData" load_steps=12 format=3 uid="uid://bossdata_gravecol"]
+
+[ext_resource type="Script" path="res://Resources/BossData/BossData.cs" id="1_bossdata"]
+[ext_resource type="Script" path="res://Resources/BossData/BossPhaseData.cs" id="2_phase"]
+[ext_resource type="Script" path="res://Resources/BossData/BossAttackPatternData.cs" id="3_atk"]
+[ext_resource type="PackedScene" uid="uid://c8boss2gravec" path="res://Scenes/Bosses/GravekeeperColossus.tscn" id="4_scene"]
+
+[sub_resource type="Resource" id="atk_melee"]
+script = ExtResource("3_atk")
+AttackId = "heavy_melee"
+WindupSeconds = 1.0
+RecoverySeconds = 0.4
+CooldownSeconds = 3.0
+Damage = 30.0
+Radius = 90.0
+Range = 70.0
+Speed = 0.0
+Count = 1
+Duration = 0.0
+HealFraction = 0.0
+
+[sub_resource type="Resource" id="atk_smash"]
+script = ExtResource("3_atk")
+AttackId = "ground_smash"
+WindupSeconds = 1.25
+RecoverySeconds = 0.5
+CooldownSeconds = 4.5
+Damage = 28.0
+Radius = 100.0
+Range = 160.0
+Speed = 0.0
+Count = 3
+Duration = 0.0
+HealFraction = 0.0
+
+[sub_resource type="Resource" id="atk_ghouls"]
+script = ExtResource("3_atk")
+AttackId = "summon_ghouls"
+WindupSeconds = 1.1
+RecoverySeconds = 0.4
+CooldownSeconds = 7.0
+Damage = 6.0
+Radius = 80.0
+Range = 130.0
+Speed = 0.0
+Count = 3
+Duration = 0.0
+HealFraction = 0.0
+
+[sub_resource type="Resource" id="atk_melee_p2"]
+script = ExtResource("3_atk")
+AttackId = "heavy_melee"
+WindupSeconds = 0.85
+RecoverySeconds = 0.35
+CooldownSeconds = 2.4
+Damage = 34.0
+Radius = 100.0
+Range = 70.0
+Speed = 0.0
+Count = 1
+Duration = 0.0
+HealFraction = 0.0
+
+[sub_resource type="Resource" id="atk_smash_p2"]
+script = ExtResource("3_atk")
+AttackId = "ground_smash"
+WindupSeconds = 1.1
+RecoverySeconds = 0.45
+CooldownSeconds = 3.8
+Damage = 32.0
+Radius = 110.0
+Range = 180.0
+Speed = 0.0
+Count = 4
+Duration = 0.0
+HealFraction = 0.0
+
+[sub_resource type="Resource" id="atk_ghouls_p2"]
+script = ExtResource("3_atk")
+AttackId = "summon_ghouls"
+WindupSeconds = 0.95
+RecoverySeconds = 0.35
+CooldownSeconds = 5.5
+Damage = 6.0
+Radius = 80.0
+Range = 140.0
+Speed = 0.0
+Count = 5
+Duration = 0.0
+HealFraction = 0.0
+
+[sub_resource type="Resource" id="phase_open"]
+script = ExtResource("2_phase")
+PhaseName = "Grave Toll"
+EnterHpFraction = 1.0
+MoveSpeedMultiplier = 1.0
+AttackCooldownMultiplier = 1.0
+Attacks = [SubResource("atk_melee"), SubResource("atk_smash"), SubResource("atk_ghouls")]
+
+[sub_resource type="Resource" id="phase_unearth"]
+script = ExtResource("2_phase")
+PhaseName = "Unearth"
+EnterHpFraction = 0.55
+MoveSpeedMultiplier = 1.15
+AttackCooldownMultiplier = 0.85
+Attacks = [SubResource("atk_melee_p2"), SubResource("atk_smash_p2"), SubResource("atk_ghouls_p2")]
+
+[resource]
+script = ExtResource("1_bossdata")
+BossName = "The Gravekeeper Colossus"
+BossScene = ExtResource("4_scene")
+SpriteColor = Color(0.35, 0.38, 0.32, 1)
+MaxHealth = 1200
+MoveSpeed = 45.0
+ContactDamage = 20.0
+ContactDamageCooldown = 1.1
+Phases = [SubResource("phase_open"), SubResource("phase_unearth")]
+WaveTrigger = 15
+CurrencyReward = 180
+ExperienceReward = 90
+AbilityIds = PackedStringArray("heavy_melee", "ground_smash", "summon_ghouls")

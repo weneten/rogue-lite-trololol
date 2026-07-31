@@ -1,0 +1,107 @@
+[gd_scene load_steps=2 format=3 uid="uid://h5l7u9p3v6x8k"]
+
+[ext_resource type="Script" path="res://Scripts/UI/LevelUpUI.cs" id="1_lvlup"]
+
+[node name="LevelUpUI" type="CanvasLayer"]
+script = ExtResource("1_lvlup")
+RootPanelPath = NodePath("RootPanel")
+ChoiceButtonPaths = Array[NodePath]([NodePath("RootPanel/Choices/Choice0/VBox/Button"), NodePath("RootPanel/Choices/Choice1/VBox/Button"), NodePath("RootPanel/Choices/Choice2/VBox/Button")])
+ChoiceNamePaths = Array[NodePath]([NodePath("RootPanel/Choices/Choice0/VBox/NameLabel"), NodePath("RootPanel/Choices/Choice1/VBox/NameLabel"), NodePath("RootPanel/Choices/Choice2/VBox/NameLabel")])
+ChoiceDescriptionPaths = Array[NodePath]([NodePath("RootPanel/Choices/Choice0/VBox/DescLabel"), NodePath("RootPanel/Choices/Choice1/VBox/DescLabel"), NodePath("RootPanel/Choices/Choice2/VBox/DescLabel")])
+
+[node name="RootPanel" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.0, 0.03, 0.75)
+visible = false
+
+[node name="Title" type="Label" parent="RootPanel"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -150.0
+offset_top = 80.0
+offset_right = 150.0
+offset_bottom = 120.0
+horizontal_alignment = 1
+text = "Choose an Upgrade"
+
+[node name="Choices" type="HBoxContainer" parent="RootPanel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -420.0
+offset_top = -140.0
+offset_right = 420.0
+offset_bottom = 140.0
+theme_override_constants/separation = 24
+
+[node name="Choice0" type="PanelContainer" parent="RootPanel/Choices"]
+layout_mode = 2
+custom_minimum_size = Vector2(260, 280)
+
+[node name="VBox" type="VBoxContainer" parent="RootPanel/Choices/Choice0"]
+layout_mode = 2
+
+[node name="NameLabel" type="Label" parent="RootPanel/Choices/Choice0/VBox"]
+layout_mode = 2
+horizontal_alignment = 1
+text = "Upgrade Name"
+
+[node name="DescLabel" type="Label" parent="RootPanel/Choices/Choice0/VBox"]
+layout_mode = 2
+autowrap_mode = 3
+text = "Description"
+
+[node name="Button" type="Button" parent="RootPanel/Choices/Choice0/VBox"]
+layout_mode = 2
+text = "Choose"
+
+[node name="Choice1" type="PanelContainer" parent="RootPanel/Choices"]
+layout_mode = 2
+custom_minimum_size = Vector2(260, 280)
+
+[node name="VBox" type="VBoxContainer" parent="RootPanel/Choices/Choice1"]
+layout_mode = 2
+
+[node name="NameLabel" type="Label" parent="RootPanel/Choices/Choice1/VBox"]
+layout_mode = 2
+horizontal_alignment = 1
+text = "Upgrade Name"
+
+[node name="DescLabel" type="Label" parent="RootPanel/Choices/Choice1/VBox"]
+layout_mode = 2
+autowrap_mode = 3
+text = "Description"
+
+[node name="Button" type="Button" parent="RootPanel/Choices/Choice1/VBox"]
+layout_mode = 2
+text = "Choose"
+
+[node name="Choice2" type="PanelContainer" parent="RootPanel/Choices"]
+layout_mode = 2
+custom_minimum_size = Vector2(260, 280)
+
+[node name="VBox" type="VBoxContainer" parent="RootPanel/Choices/Choice2"]
+layout_mode = 2
+
+[node name="NameLabel" type="Label" parent="RootPanel/Choices/Choice2/VBox"]
+layout_mode = 2
+horizontal_alignment = 1
+text = "Upgrade Name"
+
+[node name="DescLabel" type="Label" parent="RootPanel/Choices/Choice2/VBox"]
+layout_mode = 2
+autowrap_mode = 3
+text = "Description"
+
+[node name="Button" type="Button" parent="RootPanel/Choices/Choice2/VBox"]
+layout_mode = 2
+text = "Choose"

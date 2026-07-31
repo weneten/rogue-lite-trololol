@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="CharacterData" load_steps=3 format=3 uid="uid://c1r34ap3r0004"]
+
+[ext_resource type="Script" path="res://Resources/CharacterData/CharacterData.cs" id="1_cd"]
+[ext_resource type="Resource" uid="uid://c9m4p7q2u5x8z" path="res://Resources/WeaponData/Data/BoneCleaver.tres" id="2_cleaver"]
+
+[resource]
+script = ExtResource("1_cd")
+CharacterName = "Bloodletter"
+LoreBlurb = "A battlefield surgeon who learned the wrong lesson from too many open wounds: that spilled blood, taken back quickly enough, need never be lost at all."
+MaxHealth = 100
+MoveSpeed = 300.0
+StartingArmor = 0
+StartingDodgeChance = 0.04
+StartingCritChance = 0.06
+StartingMagicPower = 1.0
+StartingWeapons = Array[ExtResource("Resource")]([ExtResource("2_cleaver")])
+PassiveId = "lifesteal"
+PassiveName = "Transfusion"
+PassiveDescription = "Heals for 15% of all damage dealt."
+PassiveValueA = 0.15
+PassiveValueB = 0.0
+DifficultyRating = 3

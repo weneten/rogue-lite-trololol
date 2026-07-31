@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://b8k3n6r1t4w7y"]
+
+[ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.cs" id="1_wd"]
+[ext_resource type="PackedScene" uid="uid://dv1p8k0m3x2wq" path="res://Scenes/Weapons/Projectile.tscn" id="2_proj"]
+
+[resource]
+script = ExtResource("1_wd")
+Name = "Silver Revolver"
+ProjectileScene = ExtResource("2_proj")
+Damage = 9.0
+AttackSpeed = 1.6
+Range = 380.0
+CritChance = 0.1
+CritMultiplier = 2.2
+ProjectileCount = 1
+Spread = 0.0
+Knockback = 40.0
+RarityTier = 1
+WeaponClass = 6
+ShopCost = 3

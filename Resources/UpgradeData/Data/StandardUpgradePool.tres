@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="UpgradePoolData" load_steps=6 format=3 uid="uid://p6u8g1r3d5s7b"]
+
+[ext_resource type="Script" path="res://Resources/UpgradeData/UpgradePoolData.cs" id="1_upd"]
+[ext_resource type="Resource" uid="uid://j2d4m6g8u1p3x" path="res://Resources/UpgradeData/Data/DamageUp.tres" id="2_dmg"]
+[ext_resource type="Resource" uid="uid://k3s5p7e9d2u4y" path="res://Resources/UpgradeData/Data/SpeedUp.tres" id="3_spd"]
+[ext_resource type="Resource" uid="uid://m4h6p8u1l3t5z" path="res://Resources/UpgradeData/Data/MaxHealthUp.tres" id="4_hp"]
+[ext_resource type="Resource" uid="uid://n5r7l9c2p4h6a" path="res://Resources/UpgradeData/Data/RelicPlaceholder.tres" id="5_relic"]
+
+[resource]
+script = ExtResource("1_upd")
+Upgrades = Array[ExtResource("Resource")]([ExtResource("2_dmg"), ExtResource("3_spd"), ExtResource("4_hp"), ExtResource("5_relic")])

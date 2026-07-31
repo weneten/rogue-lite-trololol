@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://im5q9s4v7y1a3c"]
+
+[ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.cs" id="1_wd"]
+[ext_resource type="PackedScene" uid="uid://dv1p8k0m3x2wq" path="res://Scenes/Weapons/Projectile.tscn" id="2_proj"]
+
+[resource]
+script = ExtResource("1_wd")
+Name = "Bone Bow"
+ProjectileScene = ExtResource("2_proj")
+Damage = 12.0
+AttackSpeed = 1.4
+Range = 300.0
+CritChance = 0.1
+CritMultiplier = 2.2
+ProjectileCount = 2
+Spread = 8.0
+Knockback = 30.0
+RarityTier = 1
+WeaponClass = 2
+ShopCost = 3

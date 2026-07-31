@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=3 format=3 uid="uid://c1k5m8n2p4q6r"]
+
+[ext_resource type="Script" path="res://Resources/EnemyData/EnemyData.cs" id="1_ed"]
+[ext_resource type="PackedScene" uid="uid://b8h1w4k2t9c7r" path="res://Scenes/Enemies/Enemy.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_ed")
+EnemyName = "Ghoul"
+EnemyScene = ExtResource("2_scene")
+SpriteColor = Color(0.36, 0.5, 0.3, 1)
+MaxHealth = 18
+MoveSpeed = 150.0
+AttackDamage = 6.0
+AttackPattern = 0
+BehaviorType = 0
+ProjectileScene = null
+AggroRange = 600.0
+AttackRange = 34.0
+PreferredDistance = 0.0
+AttackCooldown = 0.8
+CurrencyReward = 2
+ExperienceReward = 3
+SpawnWeight = 2.0
+MinWaveToAppear = 1

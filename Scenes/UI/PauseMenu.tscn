@@ -1,0 +1,82 @@
+[gd_scene load_steps=3 format=3 uid="uid://c8pausemenu0001"]
+
+[ext_resource type="Script" path="res://Scripts/UI/PauseMenu.cs" id="1_pause"]
+[ext_resource type="PackedScene" uid="uid://c8settingsmenu01" path="res://Scenes/UI/SettingsMenu.tscn" id="2_settings"]
+
+[node name="PauseMenu" type="CanvasLayer"]
+layer = 80
+process_mode = 3
+script = ExtResource("1_pause")
+RootPanelPath = NodePath("Root")
+ResumeButtonPath = NodePath("Root/Panel/VBox/ResumeButton")
+SettingsButtonPath = NodePath("Root/Panel/VBox/SettingsButton")
+QuitButtonPath = NodePath("Root/Panel/VBox/QuitButton")
+SettingsMenuPath = NodePath("SettingsMenu")
+
+[node name="Root" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+visible = false
+
+[node name="Dim" type="ColorRect" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0, 0.03, 0.65)
+
+[node name="Panel" type="ColorRect" parent="Root"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -160.0
+offset_top = -140.0
+offset_right = 160.0
+offset_bottom = 140.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.1, 0.06, 0.1, 0.96)
+
+[node name="VBox" type="VBoxContainer" parent="Root/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = 20.0
+offset_right = -24.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="Title" type="Label" parent="Root/Panel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(0.72, 0.05, 0.09, 1)
+text = "Paused"
+horizontal_alignment = 1
+
+[node name="ResumeButton" type="Button" parent="Root/Panel/VBox"]
+layout_mode = 2
+text = "Resume"
+
+[node name="SettingsButton" type="Button" parent="Root/Panel/VBox"]
+layout_mode = 2
+text = "Settings"
+
+[node name="QuitButton" type="Button" parent="Root/Panel/VBox"]
+layout_mode = 2
+text = "Quit to Menu"
+
+[node name="SettingsMenu" parent="." instance=ExtResource("2_settings")]

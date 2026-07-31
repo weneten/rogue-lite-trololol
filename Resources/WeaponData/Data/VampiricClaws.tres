@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3 uid="uid://vz9d4f8i2l5n7p"]
+
+[ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.cs" id="1_wd"]
+
+[resource]
+script = ExtResource("1_wd")
+Name = "Vampiric Claws"
+OnHitLifestealFraction = 0.3
+Damage = 15.0
+AttackSpeed = 1.5
+Range = 60.0
+CritChance = 0.1
+CritMultiplier = 2.0
+ProjectileCount = 1
+Spread = 0.0
+Knockback = 30.0
+RarityTier = 1
+WeaponClass = 1
+ShopCost = 4

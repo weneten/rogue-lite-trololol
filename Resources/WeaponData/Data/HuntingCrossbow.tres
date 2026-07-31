@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://hl4p8r3u6x9z2b"]
+
+[ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.cs" id="1_wd"]
+[ext_resource type="PackedScene" uid="uid://dv1p8k0m3x2wq" path="res://Scenes/Weapons/Projectile.tscn" id="2_proj"]
+
+[resource]
+script = ExtResource("1_wd")
+Name = "Hunting Crossbow"
+ProjectileScene = ExtResource("2_proj")
+Damage = 16.0
+AttackSpeed = 0.9
+Range = 320.0
+CritChance = 0.1
+CritMultiplier = 2.3
+ProjectileCount = 1
+Spread = 0.0
+Knockback = 60.0
+RarityTier = 0
+WeaponClass = 2
+ShopCost = 3

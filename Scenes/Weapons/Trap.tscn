@@ -1,0 +1,20 @@
+[gd_scene load_steps=3 format=3 uid="uid://cq8n2m5p9r1t3"]
+
+[ext_resource type="Script" path="res://Scripts/Combat/Trap.cs" id="1_trap"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_trap"]
+radius = 20.0
+
+[node name="Trap" type="Area2D"]
+collision_layer = 0
+collision_mask = 4
+monitoring = true
+monitorable = false
+script = ExtResource("1_trap")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_trap")
+
+[node name="Sprite" type="Polygon2D" parent="."]
+color = Color(0.35, 0.32, 0.28, 1)
+polygon = PackedVector2Array(-16, 0, 0, -14, 16, 0, 0, 14)

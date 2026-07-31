@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=3 format=3 uid="uid://e4b7c0r9p2s5t"]
+
+[ext_resource type="Script" path="res://Resources/EnemyData/EnemyData.cs" id="1_ed"]
+[ext_resource type="PackedScene" uid="uid://b8h1w4k2t9c7r" path="res://Scenes/Enemies/Enemy.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_ed")
+EnemyName = "Bloated Corpse"
+EnemyScene = ExtResource("2_scene")
+SpriteColor = Color(0.42, 0.28, 0.38, 1)
+MaxHealth = 70
+IsUndead = true
+MoveSpeed = 48.0
+AttackDamage = 10.0
+AttackPattern = 0
+BehaviorType = 0
+ProjectileScene = null
+AggroRange = 520.0
+AttackRange = 38.0
+PreferredDistance = 0.0
+AttackCooldown = 1.4
+ExplodeOnDeath = true
+ExplosionRadius = 110.0
+ExplosionDamage = 22.0
+PhasesThroughObstacles = false
+ErraticMovement = false
+CurrencyReward = 5
+ExperienceReward = 8
+SpawnWeight = 0.7
+MinWaveToAppear = 3
