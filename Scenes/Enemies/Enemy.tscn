@@ -22,12 +22,14 @@ ContactHitboxPath = NodePath("ContactHitbox")
 ProjectileSpawnPointPath = NodePath("ProjectileSpawnPoint")
 
 [node name="Sprite" type="AnimatedSprite2D" parent="."]
-texture_filter = 0
+z_index = 2
+texture_filter = 1
 centered = true
 offset = Vector2(2, -26)
 
 [node name="FallbackPolygon" type="Polygon2D" parent="."]
-visible = false
+visible = true
+z_index = 1
 color = Color(0.4, 0.55, 0.35, 1)
 polygon = PackedVector2Array(0, -16, 14, 0, 0, 16, -14, 0)
 

@@ -1,16 +1,18 @@
-[gd_resource type="Resource" script_class="EnemyData" load_steps=3 format=3 uid="uid://g6p9l2a5g8u1e"]
+[gd_resource type="Resource" script_class="EnemyData" load_steps=4 format=3 uid="uid://g6p9l2a5g8u1e"]
 
 [ext_resource type="Script" path="res://Resources/EnemyData/EnemyData.cs" id="1_ed"]
 [ext_resource type="PackedScene" uid="uid://b8h1w4k2t9c7r" path="res://Scenes/Enemies/Enemy.tscn" id="2_scene"]
+[ext_resource type="Texture2D" uid="uid://q4s10rifnalm" path="res://Assets/sprites/blutwolf/blutwolf.png" id="3_sheet"]
 
 [resource]
 script = ExtResource("1_ed")
 EnemyName = "Plague Rat"
 EnemyScene = ExtResource("2_scene")
-SpriteColor = Color(0.55, 0.48, 0.35, 1)
+SpriteColor = Color(0.75, 0.7, 0.55, 1)
+SpriteSheet = ExtResource("3_sheet")
 SpriteSheetPath = "res://Assets/sprites/blutwolf/blutwolf.png"
 SpriteJsonPath = "res://Assets/sprites/blutwolf/blutwolf.json"
-SpriteScale = 0.55
+SpriteScale = 0.65
 AttackAnimName = "attack_slash"
 MaxHealth = 5
 IsUndead = false

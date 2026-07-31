@@ -21,6 +21,11 @@ public partial class WaveData : Resource
     [Export] public float SpawnInterval { get; set; } = 1.2f;
 
     [ExportGroup("Count Scaling")]
-    [Export] public int BaseEnemyCount { get; set; } = 5;
+    /// <summary>
+    /// Starting concurrent-alive pressure (not a total spawn quota). WaveManager keeps
+    /// spawning on SpawnInterval for the whole wave duration until this cap (scaled by wave).
+    /// </summary>
+    [Export] public int BaseEnemyCount { get; set; } = 8;
     [Export] public float EnemyCountGrowthPerWave { get; set; } = 1.5f;
 }
+

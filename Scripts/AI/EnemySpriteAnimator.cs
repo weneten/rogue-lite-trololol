@@ -19,16 +19,13 @@ public partial class EnemySpriteAnimator : Node
     private float _baseScale = 1f;
 
     public bool IsDeathPlaying => _dead && _oneShotPlaying;
+    public bool HasFrames => _sprite != null && _sprite.SpriteFrames != null &&
+                             _sprite.SpriteFrames.GetAnimationNames().Length > 0;
     public AnimatedSprite2D Sprite => _sprite;
 
     public override void _Ready()
     {
-        _sprite = GetNodeOrNull<AnimatedSprite2D>(SpritePath);
-        if (_sprite == null && GetParent() != null)
-        {
-            _sprite = GetParent().GetNodeOrNull<AnimatedSprite2D>("Sprite");
-        }
-
+        ResolveSprite();
         if (_sprite != null)
         {
             _sprite.TextureFilter = CanvasItem.TextureFilterEnum.Nearest;
@@ -45,9 +42,15 @@ public partial class EnemySpriteAnimator : Node
         }
     }
 
-    /// <summary>Swap sheet / attack anim / scale / tint for a pooled enemy re-arm.</summary>
-    public void Configure(string sheetPath, string attackAnimName, float scale, Color modulate)
+    /// <summary>
+    /// Swap sheet / attack anim / scale / tint for a pooled enemy re-arm.
+    /// Returns true when frames were applied successfully.
+    /// </summary>
+    public bool Configure(string sheetPath, string jsonPath, string attackAnimName, float scale, Color modulate,
+        Texture2D preloadedTexture = null)
     {
+        ResolveSprite();
+
         _dead = false;
         _oneShotPlaying = false;
         _baseScale = scale <= 0f ? 1f : scale;
@@ -56,28 +59,46 @@ public partial class EnemySpriteAnimator : Node
 
         if (_sprite == null)
         {
-            return;
+            GD.PushError("[EnemySpriteAnimator] No AnimatedSprite2D found (Sprite child missing).");
+            return false;
         }
 
-        if (!string.IsNullOrEmpty(sheetPath))
+        _sprite.TextureFilter = CanvasItem.TextureFilterEnum.Nearest;
+        _sprite.Centered = true;
+        _sprite.ZIndex = 2;
+
+        bool loaded = false;
+        if (!string.IsNullOrEmpty(sheetPath) || preloadedTexture != null)
         {
-            SpriteFrames frames = SpriteSheetCache.GetFrames(sheetPath);
+            SpriteFrames frames = SpriteSheetCache.GetFrames(sheetPath, jsonPath, preloadedTexture);
             if (frames != null)
             {
                 _sprite.SpriteFrames = frames;
                 _sprite.Offset = SpriteSheetCache.GetSpriteOffset(sheetPath);
+                loaded = true;
             }
         }
 
-        _sprite.Modulate = modulate.A <= 0.001f ? Colors.White : modulate;
+        // Avoid harsh full-tint washes that can hide pixel art; keep mild color keys.
+        Color tint = modulate.A <= 0.001f ? Colors.White : modulate;
+        // Soften extreme multiplies so sprites stay readable under CanvasModulate.
+        tint = new Color(
+            Mathf.Clamp(tint.R, 0.55f, 1.35f),
+            Mathf.Clamp(tint.G, 0.55f, 1.35f),
+            Mathf.Clamp(tint.B, 0.55f, 1.35f),
+            Mathf.Clamp(tint.A, 0.7f, 1f));
+        _sprite.Modulate = tint;
         _sprite.Scale = Vector2.One * _baseScale;
         _sprite.FlipH = false;
-        _sprite.Visible = true;
+        _sprite.Visible = loaded;
 
-        // Resolve attack alias if this sheet uses a different name (hunter/witch/guardian).
-        _attackAnim = ResolveAttackAnim(_attackAnim);
+        if (loaded)
+        {
+            _attackAnim = ResolveAttackAnim(_attackAnim);
+            PlayLocomotion("idle", force: true);
+        }
 
-        PlayLocomotion("idle", force: true);
+        return loaded;
     }
 
     public void ResetVisual()
@@ -86,13 +107,16 @@ public partial class EnemySpriteAnimator : Node
         _oneShotPlaying = false;
         if (_sprite != null)
         {
-            _sprite.Visible = true;
+            _sprite.Visible = HasFrames;
             _sprite.Modulate = Colors.White;
             _sprite.Scale = Vector2.One * _baseScale;
             _sprite.FlipH = false;
         }
 
-        PlayLocomotion("idle", force: true);
+        if (HasFrames)
+        {
+            PlayLocomotion("idle", force: true);
+        }
     }
 
     /// <summary>Face movement / target. Positive dirX → face right (sheet default).</summary>
@@ -149,7 +173,6 @@ public partial class EnemySpriteAnimator : Node
         _oneShotPlaying = true;
         _sprite.Play("death");
 
-        // Wait for AnimationFinished or a hard timeout so pool never soft-locks.
         float timeout = 1.2f;
         if (_sprite.SpriteFrames.HasAnimation("death"))
         {
@@ -164,6 +187,30 @@ public partial class EnemySpriteAnimator : Node
         SceneTreeTimer timer = GetTree().CreateTimer(timeout);
         await ToSignal(timer, SceneTreeTimer.SignalName.Timeout);
         _oneShotPlaying = false;
+    }
+
+    private void ResolveSprite()
+    {
+        if (_sprite != null && GodotObject.IsInstanceValid(_sprite))
+        {
+            return;
+        }
+
+        if (SpritePath != null && !SpritePath.IsEmpty)
+        {
+            _sprite = GetNodeOrNull<AnimatedSprite2D>(SpritePath);
+        }
+
+        // Sibling under Enemy root — most reliable.
+        if (_sprite == null && GetParent() != null)
+        {
+            _sprite = GetParent().GetNodeOrNull<AnimatedSprite2D>("Sprite");
+        }
+
+        if (_sprite == null)
+        {
+            _sprite = GetParent()?.FindChild("Sprite", recursive: true, owned: false) as AnimatedSprite2D;
+        }
     }
 
     private void PlayLocomotion(string name, bool force = false)
@@ -183,6 +230,11 @@ public partial class EnemySpriteAnimator : Node
             name = "idle";
         }
 
+        if (!_sprite.SpriteFrames.HasAnimation(name))
+        {
+            return;
+        }
+
         _currentLocomotion = name;
         if (!_oneShotPlaying && !_dead)
         {
@@ -192,14 +244,13 @@ public partial class EnemySpriteAnimator : Node
 
     private void PlayOneShot(string name)
     {
-        if (_sprite.SpriteFrames == null)
+        if (_sprite?.SpriteFrames == null)
         {
             return;
         }
 
         if (!_sprite.SpriteFrames.HasAnimation(name) || _sprite.SpriteFrames.GetFrameCount(name) == 0)
         {
-            // Try common aliases.
             name = ResolveAttackAnim(name);
             if (!_sprite.SpriteFrames.HasAnimation(name))
             {
@@ -222,7 +273,6 @@ public partial class EnemySpriteAnimator : Node
         if (_oneShotPlaying)
         {
             _oneShotPlaying = false;
-            // Resume locomotion after hurt/attack.
             if (_sprite != null && _sprite.SpriteFrames != null &&
                 _sprite.SpriteFrames.HasAnimation(_currentLocomotion))
             {
@@ -244,7 +294,6 @@ public partial class EnemySpriteAnimator : Node
             return preferred;
         }
 
-        // Sheet-specific attack names across hunter / wolf / witch / guardian kits.
         string[] fallbacks =
         {
             preferred,

@@ -158,14 +158,26 @@ public partial class WaveManager : Node
     {
         _waveTimeRemaining -= delta;
 
-        if (!SpawnsPaused && _enemiesSpawnedThisWave < _enemiesToSpawnThisWave)
+        // Keep spawning for the whole wave timer (Brotato-style). No "quota then idle" gap.
+        if (!SpawnsPaused && _waveTimeRemaining > 0)
         {
             _spawnTimeRemaining -= delta;
             if (_spawnTimeRemaining <= 0)
             {
-                SpawnRandomEnemy();
-                _enemiesSpawnedThisWave++;
-                _spawnTimeRemaining = WaveDefinition.SpawnInterval;
+                int alive = CountAliveEnemies();
+                int maxAlive = GetMaxAliveForWave(CurrentWave);
+                if (alive < maxAlive)
+                {
+                    // Catch up a bit if the field is empty so the player never stands around.
+                    int batch = alive <= 1 ? Mathf.Min(3, maxAlive - alive) : 1;
+                    for (int i = 0; i < batch; i++)
+                    {
+                        SpawnRandomEnemy();
+                        _enemiesSpawnedThisWave++;
+                    }
+                }
+
+                _spawnTimeRemaining = GetSpawnIntervalForWave(CurrentWave);
             }
         }
 
@@ -184,13 +196,61 @@ public partial class WaveManager : Node
         _waveTimeRemaining = Mathf.Clamp(
             WaveDefinition.BaseDuration + WaveDefinition.DurationGrowthPerWave * (CurrentWave - 1),
             20f, 90f);
-        _enemiesToSpawnThisWave = Mathf.Max(1, Mathf.RoundToInt(
-            WaveDefinition.BaseEnemyCount + WaveDefinition.EnemyCountGrowthPerWave * (CurrentWave - 1)));
+        // Cap is concurrent alive, not a fixed total — spawns continue until the timer ends.
+        _enemiesToSpawnThisWave = GetMaxAliveForWave(CurrentWave);
         _enemiesSpawnedThisWave = 0;
         _spawnTimeRemaining = 0;
 
         EventBus.Instance?.EmitSignal(EventBus.SignalName.OnWaveStart, CurrentWave);
-        GD.Print($"[WaveManager] Wave {CurrentWave} start — spawning {_enemiesToSpawnThisWave} enemies.");
+        GD.Print(
+            $"[WaveManager] Wave {CurrentWave} start — continuous spawn for {_waveTimeRemaining:0}s " +
+            $"(interval {GetSpawnIntervalForWave(CurrentWave):0.00}s, max alive {_enemiesToSpawnThisWave}).");
+    }
+
+    /// <summary>How many enemies may be alive at once this wave (prevents infinite pile-up).</summary>
+    private int GetMaxAliveForWave(int wave)
+    {
+        if (WaveDefinition == null)
+        {
+            return 12;
+        }
+
+        float growth = WaveDefinition.EnemyCountGrowthPerWave * Mathf.Max(0, wave - 1);
+        // BaseEnemyCount now means "starting concurrent pressure", not total quota.
+        int cap = Mathf.RoundToInt(WaveDefinition.BaseEnemyCount + 3f + growth * 2f);
+        return Mathf.Clamp(cap, 6, 45);
+    }
+
+    private float GetSpawnIntervalForWave(int wave)
+    {
+        if (WaveDefinition == null)
+        {
+            return 1.0f;
+        }
+
+        // Slightly faster each wave; floor so it never becomes a spawn-storm.
+        float interval = WaveDefinition.SpawnInterval - 0.06f * Mathf.Max(0, wave - 1);
+        return Mathf.Clamp(interval, 0.4f, 3f);
+    }
+
+    private int CountAliveEnemies()
+    {
+        var tree = GetTree();
+        if (tree == null)
+        {
+            return 0;
+        }
+
+        int count = 0;
+        foreach (Node node in tree.GetNodesInGroup("Enemy"))
+        {
+            if (node is Enemy enemy && GodotObject.IsInstanceValid(enemy) && enemy.Visible && enemy.IsInsideTree())
+            {
+                count++;
+            }
+        }
+
+        return count;
     }
 
     public void EndWave()

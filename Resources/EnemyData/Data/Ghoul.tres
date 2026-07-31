@@ -1,16 +1,18 @@
-[gd_resource type="Resource" script_class="EnemyData" load_steps=3 format=3 uid="uid://c1k5m8n2p4q6r"]
+[gd_resource type="Resource" script_class="EnemyData" load_steps=4 format=3 uid="uid://c1k5m8n2p4q6r"]
 
 [ext_resource type="Script" path="res://Resources/EnemyData/EnemyData.cs" id="1_ed"]
 [ext_resource type="PackedScene" uid="uid://b8h1w4k2t9c7r" path="res://Scenes/Enemies/Enemy.tscn" id="2_scene"]
+[ext_resource type="Texture2D" uid="uid://q4s10rifnalm" path="res://Assets/sprites/blutwolf/blutwolf.png" id="3_sheet"]
 
 [resource]
 script = ExtResource("1_ed")
 EnemyName = "Ghoul"
 EnemyScene = ExtResource("2_scene")
-SpriteColor = Color(0.72, 0.95, 0.7, 1)
+SpriteColor = Color(0.85, 1, 0.85, 1)
+SpriteSheet = ExtResource("3_sheet")
 SpriteSheetPath = "res://Assets/sprites/blutwolf/blutwolf.png"
 SpriteJsonPath = "res://Assets/sprites/blutwolf/blutwolf.json"
-SpriteScale = 1.0
+SpriteScale = 1.15
 AttackAnimName = "attack_slash"
 MaxHealth = 18
 IsUndead = true

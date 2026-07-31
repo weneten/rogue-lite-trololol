@@ -510,29 +510,45 @@ public partial class Enemy : CharacterBody2D, IPoolable
         Modulate = Colors.White;
         Scale = Vector2.One;
 
-        bool hasSheet = !string.IsNullOrEmpty(data.SpriteSheetPath);
-        if (_animatedSprite != null)
+        string sheetPath = data.SpriteSheetPath;
+        if (string.IsNullOrEmpty(sheetPath) && data.SpriteSheet != null)
         {
-            _animatedSprite.Visible = hasSheet;
+            sheetPath = data.SpriteSheet.ResourcePath;
         }
 
-        if (_fallbackPolygon != null)
-        {
-            _fallbackPolygon.Visible = !hasSheet;
-            _fallbackPolygon.Color = data.SpriteColor;
-        }
+        bool wantsSheet = data.SpriteSheet != null || !string.IsNullOrEmpty(sheetPath);
+        bool sheetOk = false;
 
-        if (hasSheet && _spriteAnimator != null)
+        if (wantsSheet && _spriteAnimator != null)
         {
-            _spriteAnimator.Configure(
-                data.SpriteSheetPath,
+            sheetOk = _spriteAnimator.Configure(
+                sheetPath,
+                data.SpriteJsonPath,
                 data.AttackAnimName,
                 data.SpriteScale <= 0f ? 1f : data.SpriteScale,
-                data.SpriteColor);
+                data.SpriteColor,
+                data.SpriteSheet);
         }
         else
         {
             _spriteAnimator?.ResetVisual();
+        }
+
+        if (_animatedSprite != null)
+        {
+            _animatedSprite.Visible = sheetOk;
+        }
+
+        // Keep the diamond only if sheet failed so enemies never go fully invisible.
+        if (_fallbackPolygon != null)
+        {
+            _fallbackPolygon.Visible = !sheetOk;
+            _fallbackPolygon.Color = data.SpriteColor;
+        }
+
+        if (wantsSheet && !sheetOk)
+        {
+            GD.PushWarning($"[Enemy] Sheet failed for '{data.EnemyName}' path='{sheetPath}' — using fallback polygon.");
         }
     }
 
@@ -559,20 +575,42 @@ public partial class Enemy : CharacterBody2D, IPoolable
             eliteTint.B * 0.85f,
             eliteTint.A);
 
-        bool hasSheet = !string.IsNullOrEmpty(Data.SpriteSheetPath);
-        if (hasSheet && _spriteAnimator != null)
+        string sheetPath = Data.SpriteSheetPath;
+        if (string.IsNullOrEmpty(sheetPath) && Data.SpriteSheet != null)
+        {
+            sheetPath = Data.SpriteSheet.ResourcePath;
+        }
+
+        bool wantsSheet = Data.SpriteSheet != null || !string.IsNullOrEmpty(sheetPath);
+        bool sheetOk = false;
+        if (wantsSheet && _spriteAnimator != null)
         {
             float scale = (Data.SpriteScale <= 0f ? 1f : Data.SpriteScale) * 1.08f;
-            _spriteAnimator.Configure(Data.SpriteSheetPath, Data.AttackAnimName, scale, eliteTint);
+            sheetOk = _spriteAnimator.Configure(
+                sheetPath,
+                Data.SpriteJsonPath,
+                Data.AttackAnimName,
+                scale,
+                eliteTint,
+                Data.SpriteSheet);
         }
-        else if (_fallbackPolygon != null)
+
+        if (_fallbackPolygon != null)
         {
-            _fallbackPolygon.Color = eliteTint;
+            _fallbackPolygon.Visible = !sheetOk;
+            if (!sheetOk)
+            {
+                _fallbackPolygon.Color = eliteTint;
+            }
         }
 
         if (_animatedSprite != null)
         {
-            _animatedSprite.Modulate = eliteTint;
+            _animatedSprite.Visible = sheetOk;
+            if (sheetOk)
+            {
+                _animatedSprite.Modulate = eliteTint;
+            }
         }
     }
 

@@ -34,7 +34,12 @@ public partial class EnemyData : Resource
     [Export] public Color SpriteColor { get; set; } = new Color(1f, 1f, 1f, 1f);
 
     [ExportGroup("Sprite Sheet")]
-    /// <summary>Path to sheet PNG under Assets/sprites (e.g. res://Assets/sprites/blutwolf/blutwolf.png).</summary>
+    /// <summary>
+    /// Imported sheet texture (preferred). Wiring this as ExtResource in .tres makes Godot
+    /// keep a hard resource reference so GD.Load never hits "No loader found".
+    /// </summary>
+    [Export] public Texture2D SpriteSheet { get; set; }
+    /// <summary>Path to sheet PNG under Assets/sprites (fallback if SpriteSheet is null).</summary>
     [Export] public string SpriteSheetPath { get; set; } = "";
     /// <summary>Optional JSON path; if empty, uses same path with .json extension.</summary>
     [Export] public string SpriteJsonPath { get; set; } = "";
