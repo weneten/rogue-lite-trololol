@@ -35,6 +35,7 @@ public partial class Enemy : CharacterBody2D, IPoolable
     [ExportGroup("Wiring")]
     [Export] public NodePath HealthComponentPath { get; set; }
     [Export] public NodePath SpriteNodePath { get; set; }
+    [Export] public NodePath SpriteAnimatorPath { get; set; }
     [Export] public NodePath CollisionShapePath { get; set; }
     /// <summary>Area2D whose overlap defines melee attack reach. Required for AttackPattern.Melee.</summary>
     [Export] public NodePath ContactHitboxPath { get; set; }
@@ -47,7 +48,9 @@ public partial class Enemy : CharacterBody2D, IPoolable
     [Export] public float WanderRepickSeconds { get; set; } = 3f;
 
     private HealthComponent _health;
-    private Polygon2D _sprite;
+    private AnimatedSprite2D _animatedSprite;
+    private Polygon2D _fallbackPolygon;
+    private EnemySpriteAnimator _spriteAnimator;
     private CollisionShape2D _collisionShape;
     private Area2D _contactHitbox;
     private Node2D _projectileSpawnPoint;
@@ -59,6 +62,7 @@ public partial class Enemy : CharacterBody2D, IPoolable
     private Vector2 _wanderTarget;
     private double _wanderRepickRemaining;
     private double _attackCooldownRemaining;
+    private bool _deathSequenceRunning;
 
     /// <summary>Movement-speed multiplier from an active slow/root effect (Frost Lantern, Iron Bear
     /// Trap); 1 = unaffected, 0 = fully rooted. Decays back to 1 in _PhysicsProcess.</summary>
@@ -80,14 +84,23 @@ public partial class Enemy : CharacterBody2D, IPoolable
         AddToGroup("Enemy");
 
         _health = GetNodeOrNull<HealthComponent>(HealthComponentPath);
-        _sprite = GetNodeOrNull<Polygon2D>(SpriteNodePath);
+        _animatedSprite = GetNodeOrNull<AnimatedSprite2D>(SpriteNodePath);
+        _fallbackPolygon = GetNodeOrNull<Polygon2D>("FallbackPolygon");
+        _spriteAnimator = GetNodeOrNull<EnemySpriteAnimator>(SpriteAnimatorPath)
+            ?? GetNodeOrNull<EnemySpriteAnimator>("SpriteAnimator");
         _collisionShape = GetNodeOrNull<CollisionShape2D>(CollisionShapePath);
         _contactHitbox = GetNodeOrNull<Area2D>(ContactHitboxPath);
         _projectileSpawnPoint = GetNodeOrNull<Node2D>(ProjectileSpawnPointPath) ?? this;
 
+        if (_spriteAnimator != null && string.IsNullOrEmpty(_spriteAnimator.SpritePath) && SpriteNodePath != null)
+        {
+            _spriteAnimator.SpritePath = SpriteNodePath;
+        }
+
         if (_health != null)
         {
             _health.Died += OnDied;
+            _health.Damaged += OnDamaged;
         }
         else
         {
@@ -102,6 +115,7 @@ public partial class Enemy : CharacterBody2D, IPoolable
         _pool = pool;
         _spawnOrigin = GlobalPosition;
         _isElite = false;
+        _deathSequenceRunning = false;
 
         _runtimeMoveSpeed = data.MoveSpeed;
         _runtimeAttackDamage = data.AttackDamage;
@@ -181,7 +195,7 @@ public partial class Enemy : CharacterBody2D, IPoolable
 
     public override void _PhysicsProcess(double delta)
     {
-        if (Data == null || _health == null || _health.IsDead)
+        if (Data == null || _health == null || _health.IsDead || _deathSequenceRunning)
         {
             Velocity = Vector2.Zero;
             MoveAndSlide();
@@ -207,6 +221,7 @@ public partial class Enemy : CharacterBody2D, IPoolable
             : float.MaxValue;
         UpdateState(hasLiveTarget, distanceToPlayer);
         Move(delta, player, distanceToPlayer);
+        UpdateSpriteFacingAndAnim(player, hasLiveTarget);
 
         // Attacking is independent of movement state so kiting (Flee) archetypes can still
         // shoot while backing away — only the in-range check gates it.
@@ -216,6 +231,25 @@ public partial class Enemy : CharacterBody2D, IPoolable
             PerformAttack(player);
             _attackCooldownRemaining = Data.AttackCooldown;
         }
+    }
+
+    private void UpdateSpriteFacingAndAnim(Node2D player, bool hasLiveTarget)
+    {
+        if (_spriteAnimator == null)
+        {
+            return;
+        }
+
+        // Face movement direction when moving; otherwise face the player.
+        float faceX = Velocity.X;
+        if (Mathf.Abs(faceX) < 8f && hasLiveTarget && player != null)
+        {
+            faceX = player.GlobalPosition.X - GlobalPosition.X;
+        }
+
+        _spriteAnimator.SetFacing(faceX);
+        bool moving = Velocity.LengthSquared() > 20f * 20f;
+        _spriteAnimator.UpdateLocomotion(moving);
     }
 
     /// <summary>
@@ -311,6 +345,13 @@ public partial class Enemy : CharacterBody2D, IPoolable
 
     private void PerformAttack(Node2D player)
     {
+        if (player != null)
+        {
+            _spriteAnimator?.SetFacing(player.GlobalPosition.X - GlobalPosition.X);
+        }
+
+        _spriteAnimator?.PlayAttack();
+
         if (Data.AttackPattern == EnemyAttackPattern.Melee)
         {
             PerformMeleeAttack();
@@ -364,15 +405,55 @@ public partial class Enemy : CharacterBody2D, IPoolable
         projectile.Launch(spawnPos, direction, _projectilePool, this, _runtimeAttackDamage, 0f, 1f, 0f, "Player");
     }
 
-    private void OnDied(Node source)
+    private void OnDamaged(int amount, Node source)
     {
+        if (_deathSequenceRunning || _health == null || _health.IsDead)
+        {
+            return;
+        }
+
+        _spriteAnimator?.PlayHurt();
+    }
+
+    private async void OnDied(Node source)
+    {
+        if (_deathSequenceRunning)
+        {
+            return;
+        }
+
+        _deathSequenceRunning = true;
+        Velocity = Vector2.Zero;
+        SetPhysicsProcess(false);
+
+        if (_collisionShape != null)
+        {
+            _collisionShape.Disabled = true;
+        }
+
+        if (_contactHitbox != null)
+        {
+            _contactHitbox.Monitoring = false;
+        }
+
         if (Data != null && Data.ExplodeOnDeath)
         {
             DetonateDeathExplosion();
         }
 
-        EventBus.Instance?.EmitSignal(EventBus.SignalName.OnEnemyKilled, this, Data?.CurrencyReward ?? 0, Data?.ExperienceReward ?? 0);
+        EventBus.Instance?.EmitSignal(
+            EventBus.SignalName.OnEnemyKilled,
+            this,
+            Data?.CurrencyReward ?? 0,
+            Data?.ExperienceReward ?? 0);
+
+        if (_spriteAnimator != null)
+        {
+            await _spriteAnimator.PlayDeathAsync();
+        }
+
         _pool?.Return(this);
+        _deathSequenceRunning = false;
     }
 
     /// <summary>
@@ -421,33 +502,77 @@ public partial class Enemy : CharacterBody2D, IPoolable
 
     private void ApplyVisualDefaults(EnemyData data)
     {
+        if (data == null)
+        {
+            return;
+        }
+
         Modulate = Colors.White;
         Scale = Vector2.One;
 
-        if (_sprite != null)
+        bool hasSheet = !string.IsNullOrEmpty(data.SpriteSheetPath);
+        if (_animatedSprite != null)
         {
-            _sprite.Color = data.SpriteColor;
+            _animatedSprite.Visible = hasSheet;
+        }
+
+        if (_fallbackPolygon != null)
+        {
+            _fallbackPolygon.Visible = !hasSheet;
+            _fallbackPolygon.Color = data.SpriteColor;
+        }
+
+        if (hasSheet && _spriteAnimator != null)
+        {
+            _spriteAnimator.Configure(
+                data.SpriteSheetPath,
+                data.AttackAnimName,
+                data.SpriteScale <= 0f ? 1f : data.SpriteScale,
+                data.SpriteColor);
+        }
+        else
+        {
+            _spriteAnimator?.ResetVisual();
         }
     }
 
     /// <summary>Elite recolor: red-leaning tint + slight scale + bright modulate for "red eye glow".</summary>
     private void ApplyEliteVisual(bool isElite)
     {
-        if (!isElite || Data == null)
+        if (Data == null)
+        {
+            return;
+        }
+
+        if (!isElite)
         {
             ApplyVisualDefaults(Data);
             return;
         }
 
-        Scale = Vector2.One * 1.18f;
-        // Warm/reddish overall glow so elites read at a glance in a pack.
-        Modulate = new Color(1.45f, 0.75f, 0.7f, 1f);
+        // Body scale bump for elites; sprite scale stays on the AnimatedSprite2D.
+        Scale = Vector2.One * 1.12f;
+        Color eliteTint = Data.SpriteColor.Lerp(new Color(1f, 0.35f, 0.3f, Data.SpriteColor.A), 0.55f);
+        eliteTint = new Color(
+            Mathf.Min(1.5f, eliteTint.R * 1.25f),
+            eliteTint.G * 0.85f,
+            eliteTint.B * 0.85f,
+            eliteTint.A);
 
-        if (_sprite != null)
+        bool hasSheet = !string.IsNullOrEmpty(Data.SpriteSheetPath);
+        if (hasSheet && _spriteAnimator != null)
         {
-            Color baseColor = Data.SpriteColor;
-            // Pull hue toward blood-red while preserving some archetype identity.
-            _sprite.Color = baseColor.Lerp(new Color(0.95f, 0.12f, 0.08f, baseColor.A), 0.55f);
+            float scale = (Data.SpriteScale <= 0f ? 1f : Data.SpriteScale) * 1.08f;
+            _spriteAnimator.Configure(Data.SpriteSheetPath, Data.AttackAnimName, scale, eliteTint);
+        }
+        else if (_fallbackPolygon != null)
+        {
+            _fallbackPolygon.Color = eliteTint;
+        }
+
+        if (_animatedSprite != null)
+        {
+            _animatedSprite.Modulate = eliteTint;
         }
     }
 
@@ -490,11 +615,13 @@ public partial class Enemy : CharacterBody2D, IPoolable
         SetPhysicsProcess(false);
         SetProcess(false);
         _isElite = false;
+        _deathSequenceRunning = false;
         Modulate = Colors.White;
         Scale = Vector2.One;
         // Reset phasing so a recycled wraith doesn't leave a non-wraith phaseable.
         CollisionMask = WorldCollisionMask;
         CollisionLayer = 4;
+        _spriteAnimator?.ResetVisual();
 
         if (_collisionShape != null)
         {

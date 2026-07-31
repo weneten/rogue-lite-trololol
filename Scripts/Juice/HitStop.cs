@@ -9,8 +9,9 @@ namespace Nightbane.Juice;
 /// </summary>
 public partial class HitStop : Node
 {
-    [Export] public float DefaultTimeScale { get; set; } = 0.08f;
-    [Export] public float DefaultDurationSeconds { get; set; } = 0.05f;
+    /// <summary>Softer default — 0.08 felt like full freeze and stacked into permanent slowmo.</summary>
+    [Export] public float DefaultTimeScale { get; set; } = 0.35f;
+    [Export] public float DefaultDurationSeconds { get; set; } = 0.03f;
 
     private bool _active;
     private float _restoreScale = 1f;

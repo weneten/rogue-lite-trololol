@@ -30,8 +30,18 @@ public partial class EnemyData : Resource
     [Export] public string EnemyName { get; set; } = "Ghoul";
     /// <summary>Always the generic Enemy.tscn — one scene driven entirely by this Resource.</summary>
     [Export] public PackedScene EnemyScene { get; set; }
-    /// <summary>Placeholder tint applied to the enemy's Sprite so archetypes read as visually distinct.</summary>
-    [Export] public Color SpriteColor { get; set; } = new Color(0.4f, 0.55f, 0.35f, 1f);
+    /// <summary>Modulate tint on the sprite (also used for elite recolor lerp).</summary>
+    [Export] public Color SpriteColor { get; set; } = new Color(1f, 1f, 1f, 1f);
+
+    [ExportGroup("Sprite Sheet")]
+    /// <summary>Path to sheet PNG under Assets/sprites (e.g. res://Assets/sprites/blutwolf/blutwolf.png).</summary>
+    [Export] public string SpriteSheetPath { get; set; } = "";
+    /// <summary>Optional JSON path; if empty, uses same path with .json extension.</summary>
+    [Export] public string SpriteJsonPath { get; set; } = "";
+    /// <summary>Visual scale of the 64×64 sheet (rats smaller, tanks larger).</summary>
+    [Export] public float SpriteScale { get; set; } = 1f;
+    /// <summary>One-shot attack anim name on the sheet (aliases resolved if missing).</summary>
+    [Export] public string AttackAnimName { get; set; } = "attack_slash";
 
     [ExportGroup("Combat Stats")]
     [Export] public int MaxHealth { get; set; } = 20;

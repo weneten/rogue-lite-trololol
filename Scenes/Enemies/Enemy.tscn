@@ -2,12 +2,13 @@
 
 [ext_resource type="Script" path="res://Scripts/AI/Enemy.cs" id="1_enemy"]
 [ext_resource type="Script" path="res://Scripts/Combat/HealthComponent.cs" id="2_health"]
+[ext_resource type="Script" path="res://Scripts/AI/EnemySpriteAnimator.cs" id="3_anim"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_body"]
-radius = 15.0
+radius = 14.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_contact"]
-radius = 24.0
+radius = 22.0
 
 [node name="Enemy" type="CharacterBody2D"]
 collision_layer = 4
@@ -15,15 +16,27 @@ collision_mask = 1
 script = ExtResource("1_enemy")
 HealthComponentPath = NodePath("HealthComponent")
 SpriteNodePath = NodePath("Sprite")
+SpriteAnimatorPath = NodePath("SpriteAnimator")
 CollisionShapePath = NodePath("CollisionShape2D")
 ContactHitboxPath = NodePath("ContactHitbox")
 ProjectileSpawnPointPath = NodePath("ProjectileSpawnPoint")
 
-[node name="Sprite" type="Polygon2D" parent="."]
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
+texture_filter = 0
+centered = true
+offset = Vector2(2, -26)
+
+[node name="FallbackPolygon" type="Polygon2D" parent="."]
+visible = false
 color = Color(0.4, 0.55, 0.35, 1)
 polygon = PackedVector2Array(0, -16, 14, 0, 0, 16, -14, 0)
 
+[node name="SpriteAnimator" type="Node" parent="."]
+script = ExtResource("3_anim")
+SpritePath = NodePath("../Sprite")
+
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -6)
 shape = SubResource("CircleShape2D_body")
 
 [node name="HealthComponent" type="Node" parent="."]
@@ -37,7 +50,8 @@ monitoring = true
 monitorable = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="ContactHitbox"]
+position = Vector2(0, -6)
 shape = SubResource("CircleShape2D_contact")
 
 [node name="ProjectileSpawnPoint" type="Marker2D" parent="."]
-position = Vector2(18, 0)
+position = Vector2(18, -18)

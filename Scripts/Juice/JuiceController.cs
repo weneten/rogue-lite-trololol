@@ -21,23 +21,34 @@ public partial class JuiceController : Node
     [Export] public float PlayerHitTraumaMax { get; set; } = 0.65f;
 
     [ExportGroup("Outgoing Hits")]
-    /// <summary>Damage &gt;= this triggers hitstop + stronger flash/number color.</summary>
-    [Export] public int BigHitThreshold { get; set; } = 22;
-    [Export] public float BigHitTrauma { get; set; } = 0.22f;
-    [Export] public float BigHitStopSeconds { get; set; } = 0.045f;
-    [Export] public float HitFlashSeconds { get; set; } = 0.07f;
+    /// <summary>Damage &gt;= this uses stronger flash/number color (NOT hitstop by default).</summary>
+    [Export] public int BigHitThreshold { get; set; } = 35;
+    [Export] public float BigHitTrauma { get; set; } = 0.12f;
+    /// <summary>Hitstop only when damage reaches this AND cooldown elapsed. Keep high — per-hit freeze feels awful.</summary>
+    [Export] public int HitStopDamageThreshold { get; set; } = 80;
+    [Export] public float HitStopSeconds { get; set; } = 0.03f;
+    [Export] public float HitStopCooldownSeconds { get; set; } = 0.45f;
+    [Export] public bool EnableHitStop { get; set; } = false;
+    [Export] public float HitFlashSeconds { get; set; } = 0.06f;
     [Export] public Color NormalDamageColor { get; set; } = new(1f, 0.92f, 0.85f, 1f);
     [Export] public Color BigDamageColor { get; set; } = new(1f, 0.78f, 0.25f, 1f);
-    [Export] public Color FlashModulate { get; set; } = new(2.2f, 2.2f, 2.2f, 1f);
+    [Export] public Color FlashModulate { get; set; } = new(1.8f, 1.8f, 1.8f, 1f);
 
     private ScreenShake _shake;
     private HitStop _hitStop;
     private ObjectPool<DamageNumber> _damageNumberPool;
     private Node2D _player;
     private bool _boundCamera;
+    private double _hitStopCooldownRemaining;
 
     public override void _Ready()
     {
+        // Recover if a previous session left TimeScale stuck low after hitstop spam.
+        if (Engine.TimeScale < 0.99)
+        {
+            Engine.TimeScale = 1.0;
+        }
+
         _shake = new ScreenShake { Name = "ScreenShake" };
         AddChild(_shake);
 
@@ -72,6 +83,11 @@ public partial class JuiceController : Node
 
     public override void _Process(double delta)
     {
+        if (_hitStopCooldownRemaining > 0)
+        {
+            _hitStopCooldownRemaining -= delta;
+        }
+
         // Lazy camera bind: Player may spawn after this node in Arena.tscn.
         if (!_boundCamera)
         {
@@ -131,8 +147,18 @@ public partial class JuiceController : Node
                 TryBindCamera();
             }
 
-            _shake?.AddTrauma(BigHitTrauma);
-            _hitStop?.Freeze(BigHitStopSeconds);
+            // Light shake only — no TimeScale freeze on normal combat hits.
+            _shake?.AddTrauma(BigHitTrauma * 0.55f);
+        }
+
+        // Hitstop OFF by default. When enabled, rare + cooldown so multi-cleave doesn't stutter.
+        if (EnableHitStop
+            && amount >= HitStopDamageThreshold
+            && _hitStopCooldownRemaining <= 0
+            && HitStopSeconds > 0f)
+        {
+            _hitStop?.Freeze(HitStopSeconds, 0.35f);
+            _hitStopCooldownRemaining = HitStopCooldownSeconds;
         }
     }
 
@@ -174,7 +200,7 @@ public partial class JuiceController : Node
 
     private static CanvasItem FindFlashableSprite(Node target)
     {
-        // Prefer an explicit "Sprite" child (Enemy/Player/TargetDummy convention), else first Polygon2D.
+        // Prefer an explicit "Sprite" child (AnimatedSprite2D / Polygon2D / Sprite2D).
         CanvasItem sprite = target.GetNodeOrNull<CanvasItem>("Sprite");
         if (sprite != null)
         {
@@ -183,7 +209,7 @@ public partial class JuiceController : Node
 
         foreach (Node child in target.GetChildren())
         {
-            if (child is Polygon2D or Sprite2D)
+            if (child is AnimatedSprite2D or Polygon2D or Sprite2D)
             {
                 return (CanvasItem)child;
             }
