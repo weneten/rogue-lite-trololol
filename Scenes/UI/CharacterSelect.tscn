@@ -21,6 +21,9 @@ BackButtonPath = NodePath("Margin/HBox/Detail/ButtonRow/BackButton")
 MetaCurrencyLabelPath = NodePath("MetaCurrencyLabel")
 UnlockButtonPath = NodePath("Margin/HBox/Detail/ButtonRow/UnlockButton")
 UnlockStatusLabelPath = NodePath("Margin/HBox/Detail/UnlockStatusLabel")
+PortraitPanelPath = NodePath("Margin/HBox/PortraitPanel")
+PortraitSpritePath = NodePath("Margin/HBox/PortraitPanel/PortraitSprite")
+PortraitPlaceholderPath = NodePath("Margin/HBox/PortraitPanel/PortraitPlaceholder")
 
 [node name="Background" type="ColorRect" parent="."]
 layout_mode = 1
@@ -83,6 +86,32 @@ size_flags_vertical = 0
 theme_override_constants/separation = 6
 size_flags_horizontal = 3
 theme_override_constants/separation = 6
+
+[node name="PortraitPanel" type="Panel" parent="Margin/HBox"]
+custom_minimum_size = Vector2(240, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 3
+
+[node name="PortraitSprite" type="AnimatedSprite2D" parent="Margin/HBox/PortraitPanel"]
+visible = false
+texture_filter = 1
+centered = true
+position = Vector2(120, 300)
+scale = Vector2(3, 3)
+
+[node name="PortraitPlaceholder" type="Label" parent="Margin/HBox/PortraitPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+theme_override_colors/font_color = Color(0.45, 0.42, 0.45, 1)
+text = "No portrait art yet"
 
 [node name="Detail" type="VBoxContainer" parent="Margin/HBox"]
 layout_mode = 2

@@ -1,12 +1,18 @@
-[gd_resource type="Resource" script_class="CharacterData" load_steps=3 format=3 uid="uid://c1r34ap3r0005"]
+[gd_resource type="Resource" script_class="CharacterData" format=3 uid="uid://c1r34ap3r0005"]
 
 [ext_resource type="Script" path="res://Resources/CharacterData/CharacterData.cs" id="1_cd"]
 [ext_resource type="Resource" uid="uid://c9m4p7q2u5x8z" path="res://Resources/WeaponData/Data/BoneCleaver.tres" id="2_cleaver"]
+[ext_resource type="Texture2D" uid="uid://bmdp6l4gtyevd" path="res://Assets/sprites/blutwaechter/blutwaechter.png" id="3_sheet"]
 
 [resource]
 script = ExtResource("1_cd")
-CharacterName = "Iron Widow"
-LoreBlurb = "She buried three husbands and every soldier who ever underestimated her plating. Nothing that hits her walks away without regretting it."
+CharacterName = "Bloodstained Crusader"
+LoreBlurb = "He buried his order and every soldier who ever underestimated his plating. Nothing that hits him walks away without regretting it."
+SpriteSheet = ExtResource("3_sheet")
+SpriteSheetPath = "res://Assets/sprites/blutwaechter/blutwaechter.png"
+SpriteJsonPath = "res://Assets/sprites/blutwaechter/blutwaechter.json"
+SpriteScale = 1.2
+AttackAnimName = "shield_bash"
 MaxHealth = 140
 MoveSpeed = 260.0
 StartingArmor = 3

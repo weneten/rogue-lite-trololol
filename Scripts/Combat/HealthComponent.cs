@@ -14,7 +14,7 @@ public partial class HealthComponent : Node
 
     /// <summary>Flat damage reduction applied after IncomingDamageMultiplier, before the hit lands
     /// (minimum 1 damage always gets through). Driven by CharacterData.StartingArmor / passives
-    /// like Iron Widow's Taunt Armor. Defaults to 0 so enemies/bosses are unaffected.</summary>
+    /// like the Bloodstained Crusader's Taunt Armor. Defaults to 0 so enemies/bosses are unaffected.</summary>
     [Export] public int Armor { get; set; } = 0;
     /// <summary>Chance [0,1] to negate an incoming hit entirely before any reduction. Driven by
     /// CharacterData.StartingDodgeChance. Defaults to 0 so enemies/bosses are unaffected.</summary>

@@ -18,6 +18,21 @@ public partial class CharacterData : Resource
     /// scene/art swap) — reserved so this Resource shape doesn't need to change when that lands.</summary>
     [Export] public PackedScene CharacterScene { get; set; }
 
+    [ExportGroup("Sprite")]
+    /// <summary>Nightbane sprite sheet (PNG under Assets/sprites) driving both the in-game Player
+    /// visual and the CharacterSelect preview. Prefer assigning the Texture2D as well as the path —
+    /// path-only GD.Load can fail when import state is flaky (see SpriteSheetCache).
+    /// Hunters without a sheet keep Player.tscn's fallback polygon.</summary>
+    [Export] public Texture2D SpriteSheet { get; set; }
+    [Export] public string SpriteSheetPath { get; set; } = "";
+    /// <summary>Atlas JSON next to the sheet (frame size, per-animation frame indices, fps, origin).
+    /// Empty falls back to the sheet path with a .json extension.</summary>
+    [Export] public string SpriteJsonPath { get; set; } = "";
+    [Export] public float SpriteScale { get; set; } = 1f;
+    /// <summary>Animation played on attacks; falls back through SpriteSheetCache's known attack
+    /// names when this sheet doesn't have it.</summary>
+    [Export] public string AttackAnimName { get; set; } = "";
+
     [ExportGroup("Base Stats")]
     [Export] public int MaxHealth { get; set; } = 100;
     [Export] public float MoveSpeed { get; set; } = 300f;

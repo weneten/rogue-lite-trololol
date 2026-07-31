@@ -1,4 +1,5 @@
 using Godot;
+using Nightbane.AI;
 using Nightbane.Autoloads;
 using Nightbane.Combat;
 using Nightbane.PlayerCharacter.Passives;
@@ -26,6 +27,11 @@ public partial class Player : CharacterBody2D
     [Export] public NodePath HealthComponentPath { get; set; }
     [Export] public NodePath CameraPath { get; set; }
     [Export] public NodePath PlayerStatsPath { get; set; }
+    [Export] public NodePath SpriteNodePath { get; set; }
+    [Export] public NodePath SpriteAnimatorPath { get; set; }
+    /// <summary>Placeholder diamond shown for Hunters whose CharacterData has no sprite sheet
+    /// (or when the sheet fails to load) so the player is never invisible.</summary>
+    [Export] public NodePath FallbackPolygonPath { get; set; }
 
     [ExportGroup("Debug")]
     // Stage-2 verification hook: press the "debug_damage_test" action (T) to self-damage
@@ -37,6 +43,9 @@ public partial class Player : CharacterBody2D
     private HealthComponent _health;
     private Camera2D _camera;
     private PlayerStats _stats;
+    private AnimatedSprite2D _animatedSprite;
+    private EnemySpriteAnimator _spriteAnimator;
+    private Node2D _fallbackPolygon;
 
     public override void _Ready()
     {
@@ -47,6 +56,9 @@ public partial class Player : CharacterBody2D
         _health = GetNodeOrNull<HealthComponent>(HealthComponentPath);
         _camera = GetNodeOrNull<Camera2D>(CameraPath);
         _stats = GetNodeOrNull<PlayerStats>(PlayerStatsPath);
+        _animatedSprite = GetNodeOrNull<AnimatedSprite2D>(SpriteNodePath);
+        _spriteAnimator = GetNodeOrNull<EnemySpriteAnimator>(SpriteAnimatorPath);
+        _fallbackPolygon = GetNodeOrNull<Node2D>(FallbackPolygonPath);
 
         if (_health != null)
         {
@@ -83,6 +95,7 @@ public partial class Player : CharacterBody2D
         }
 
         MoveSpeed = data.MoveSpeed;
+        ApplyCharacterVisual(data);
 
         if (_health != null)
         {
@@ -128,6 +141,49 @@ public partial class Player : CharacterBody2D
         }
     }
 
+    /// <summary>
+    /// Swaps in this Hunter's sprite sheet (same Assets/sprites JSON+PNG pipeline the enemies use,
+    /// hence the shared EnemySpriteAnimator). Hunters without a sheet — or a sheet that fails to
+    /// load — keep the placeholder polygon instead of turning invisible.
+    /// </summary>
+    private void ApplyCharacterVisual(CharacterData data)
+    {
+        string sheetPath = data.SpriteSheetPath;
+        if (string.IsNullOrEmpty(sheetPath) && data.SpriteSheet != null)
+        {
+            sheetPath = data.SpriteSheet.ResourcePath;
+        }
+
+        bool wantsSheet = data.SpriteSheet != null || !string.IsNullOrEmpty(sheetPath);
+        bool sheetOk = false;
+
+        if (wantsSheet && _spriteAnimator != null)
+        {
+            sheetOk = _spriteAnimator.Configure(
+                sheetPath,
+                data.SpriteJsonPath,
+                data.AttackAnimName,
+                data.SpriteScale <= 0f ? 1f : data.SpriteScale,
+                Colors.White,
+                data.SpriteSheet);
+        }
+
+        if (_animatedSprite != null)
+        {
+            _animatedSprite.Visible = sheetOk;
+        }
+
+        if (_fallbackPolygon != null)
+        {
+            _fallbackPolygon.Visible = !sheetOk;
+        }
+
+        if (wantsSheet && !sheetOk)
+        {
+            GD.PushWarning($"[Player] Sheet failed for '{data.CharacterName}' path='{sheetPath}' — using fallback polygon.");
+        }
+    }
+
     public override void _PhysicsProcess(double delta)
     {
         if (_health != null && _health.IsDead)
@@ -141,6 +197,12 @@ public partial class Player : CharacterBody2D
         Vector2 inputDirection = Input.GetVector("move_left", "move_right", "move_up", "move_down");
         Velocity = inputDirection * effectiveSpeed;
         MoveAndSlide();
+
+        if (_spriteAnimator != null)
+        {
+            _spriteAnimator.SetFacing(inputDirection.X);
+            _spriteAnimator.UpdateLocomotion(inputDirection.LengthSquared() > 0.01f);
+        }
     }
 
     public override void _UnhandledInput(InputEvent @event)
@@ -153,6 +215,7 @@ public partial class Player : CharacterBody2D
 
     private void OnHealthDamaged(int amount, Node source)
     {
+        _spriteAnimator?.PlayHurt();
         EventBus.Instance?.EmitSignal(
             EventBus.SignalName.OnPlayerDamaged,
             (float)amount,
@@ -168,8 +231,9 @@ public partial class Player : CharacterBody2D
 
     private void OnHealthDied(Node source)
     {
+        // Fire-and-forget: the death anim just needs to run out, nothing waits on it (physics is
+        // already frozen above, and the game-over UI is driven by EventBus).
+        _ = _spriteAnimator?.PlayDeathAsync();
         EventBus.Instance?.EmitSignal(EventBus.SignalName.OnPlayerDied);
-        // TODO: play death animation / disable input map once Player has real art & the
-        // UI/game-over stage exists. For now just freeze physics processing above.
     }
 }

@@ -4,9 +4,9 @@ using Nightbane.Combat;
 namespace Nightbane.PlayerCharacter.Passives;
 
 /// <summary>
-/// Iron Widow — an unmovable wall who punishes whoever dares strike her: PassiveValueA is flat
-/// bonus Armor applied once at run start; PassiveValueB is the fraction of every hit she takes
-/// reflected straight back at its source's HealthComponent (her "iron thorns"), standing in for a
+/// Bloodstained Crusader — an unmovable wall that punishes whoever dares strike it: PassiveValueA is flat
+/// bonus Armor applied once at run start; PassiveValueB is the fraction of every hit it takes
+/// reflected straight back at its source's HealthComponent (its "iron thorns"), standing in for a
 /// taunt since every enemy in this single-player arena already always targets the Player.
 /// </summary>
 public partial class TauntArmorPassive : PassiveAbility

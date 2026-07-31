@@ -19,7 +19,7 @@ public static class MetaSave
         "The Reaper",
         "Silver Priest",
         "Bloodletter",
-        "Iron Widow",
+        "Bloodstained Crusader",
         "Pyromancer",
         "Grave Warden",
         "Moonlit Duelist",

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Godot;
+using Nightbane.AI;
 using Nightbane.Autoloads;
 using Nightbane.Meta;
 using Nightbane.Resources;
@@ -34,6 +35,15 @@ public partial class CharacterSelect : Control
     [Export] public NodePath UnlockButtonPath { get; set; }
     [Export] public NodePath UnlockStatusLabelPath { get; set; }
 
+    [ExportGroup("Portrait")]
+    /// <summary>Box the selected Hunter's sprite is drawn in (also used to centre it on resize).</summary>
+    [Export] public NodePath PortraitPanelPath { get; set; }
+    [Export] public NodePath PortraitSpritePath { get; set; }
+    /// <summary>Shown instead of the sprite for Hunters whose CharacterData has no sheet yet.</summary>
+    [Export] public NodePath PortraitPlaceholderPath { get; set; }
+    /// <summary>Sprites are 64px; 3x keeps them chunky-but-crisp with Nearest filtering.</summary>
+    [Export] public float PortraitZoom { get; set; } = 3f;
+
     /// <summary>Hardcoded paths so roster never depends solely on DirAccess listing.</summary>
     private static readonly string[] BuiltInCharacterPaths =
     {
@@ -41,7 +51,7 @@ public partial class CharacterSelect : Control
         "res://Resources/CharacterData/Data/TheReaper.tres",
         "res://Resources/CharacterData/Data/SilverPriest.tres",
         "res://Resources/CharacterData/Data/Bloodletter.tres",
-        "res://Resources/CharacterData/Data/IronWidow.tres",
+        "res://Resources/CharacterData/Data/BloodstainedCrusader.tres",
         "res://Resources/CharacterData/Data/Pyromancer.tres",
         "res://Resources/CharacterData/Data/GraveWarden.tres",
         "res://Resources/CharacterData/Data/MoonlitDuelist.tres",
@@ -61,6 +71,9 @@ public partial class CharacterSelect : Control
     private Button _unlockButton;
     private Label _unlockStatusLabel;
     private Label _emptyRosterLabel;
+    private Control _portraitPanel;
+    private AnimatedSprite2D _portraitSprite;
+    private Label _portraitPlaceholder;
 
     private readonly List<CharacterData> _roster = new();
     private readonly Dictionary<string, Button> _rosterButtons = new();
@@ -82,6 +95,22 @@ public partial class CharacterSelect : Control
         _metaCurrencyLabel = GetNodeOrNull<Label>(MetaCurrencyLabelPath);
         _unlockButton = GetNodeOrNull<Button>(UnlockButtonPath);
         _unlockStatusLabel = GetNodeOrNull<Label>(UnlockStatusLabelPath);
+        _portraitPanel = GetNodeOrNull<Control>(PortraitPanelPath);
+        _portraitSprite = GetNodeOrNull<AnimatedSprite2D>(PortraitSpritePath);
+        _portraitPlaceholder = GetNodeOrNull<Label>(PortraitPlaceholderPath);
+
+        if (_portraitSprite != null)
+        {
+            _portraitSprite.TextureFilter = CanvasItem.TextureFilterEnum.Nearest;
+            _portraitSprite.Centered = true;
+            _portraitSprite.Scale = Vector2.One * (PortraitZoom <= 0f ? 1f : PortraitZoom);
+        }
+
+        if (_portraitPanel != null)
+        {
+            _portraitPanel.Resized += CenterPortrait;
+            CenterPortrait();
+        }
 
         // Code-built labels if scene wiring omitted (placeholder-friendly).
         EnsureMetaUi();
@@ -401,6 +430,8 @@ public partial class CharacterSelect : Control
             }
         }
 
+        UpdatePortrait(data, unlocked);
+
         if (_beginButton != null)
         {
             _beginButton.Disabled = !unlocked;
@@ -428,6 +459,69 @@ public partial class CharacterSelect : Control
                 _unlockStatusLabel.Text = $"Unlock for {cost} Blood Marks.";
             }
         }
+    }
+
+    /// <summary>
+    /// Shows the selected Hunter's in-game sprite (same sheet Player.cs loads) looping its idle
+    /// animation, so the roster preview matches what you actually control. Locked Hunters are
+    /// drawn as a dark silhouette; Hunters without a sheet fall back to the placeholder label.
+    /// </summary>
+    private void UpdatePortrait(CharacterData data, bool unlocked)
+    {
+        if (_portraitSprite == null)
+        {
+            return;
+        }
+
+        SpriteFrames frames = LoadPortraitFrames(data, out string sheetPath);
+        bool hasArt = frames != null && frames.GetAnimationNames().Length > 0;
+
+        if (hasArt)
+        {
+            _portraitSprite.SpriteFrames = frames;
+            _portraitSprite.Offset = SpriteSheetCache.GetSpriteOffset(sheetPath);
+            _portraitSprite.Scale = Vector2.One * (PortraitZoom <= 0f ? 1f : PortraitZoom);
+            // Silhouette while locked — same "???" treatment the roster button gets.
+            _portraitSprite.Modulate = unlocked ? Colors.White : new Color(0.12f, 0.1f, 0.13f, 1f);
+            _portraitSprite.Play(frames.HasAnimation("idle") ? "idle" : frames.GetAnimationNames()[0]);
+            CenterPortrait();
+        }
+
+        _portraitSprite.Visible = hasArt;
+
+        if (_portraitPlaceholder != null)
+        {
+            _portraitPlaceholder.Visible = !hasArt;
+            _portraitPlaceholder.Text = unlocked ? "No portrait art yet" : "???";
+        }
+    }
+
+    private static SpriteFrames LoadPortraitFrames(CharacterData data, out string sheetPath)
+    {
+        sheetPath = data.SpriteSheetPath;
+        if (string.IsNullOrEmpty(sheetPath) && data.SpriteSheet != null)
+        {
+            sheetPath = data.SpriteSheet.ResourcePath;
+        }
+
+        if (data.SpriteSheet == null && string.IsNullOrEmpty(sheetPath))
+        {
+            return null;
+        }
+
+        return SpriteSheetCache.GetFrames(sheetPath, data.SpriteJsonPath, data.SpriteSheet);
+    }
+
+    /// <summary>Feet-on-origin sheets: park the pivot slightly below centre so the body reads centred.</summary>
+    private void CenterPortrait()
+    {
+        if (_portraitSprite == null || _portraitPanel == null)
+        {
+            return;
+        }
+
+        Vector2 size = _portraitPanel.Size;
+        _portraitSprite.Position = new Vector2(size.X * 0.5f, size.Y * 0.62f);
     }
 
     private void OnUnlockPressed()
