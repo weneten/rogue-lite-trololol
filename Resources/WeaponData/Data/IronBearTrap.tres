@@ -1,10 +1,12 @@
-[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://yc3g7i2l5o8q1s"]
+[gd_resource type="Resource" script_class="WeaponData" load_steps=4 format=3 uid="uid://yc3g7i2l5o8q1s"]
 
 [ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.gd" id="1_wd"]
+[ext_resource type="Texture2D" path="res://Assets/sprites/weapons/iron_bear_trap.png" id="icon_tex"]
 [ext_resource type="PackedScene" uid="uid://cq8n2m5p9r1t3" path="res://Scenes/Weapons/Trap.tscn" id="2_trap"]
 
 [resource]
 script = ExtResource("1_wd")
+icon = ExtResource("icon_tex")
 name = "Iron Bear Trap"
 trap_scene = ExtResource("2_trap")
 trap_root_duration_seconds = 2.0

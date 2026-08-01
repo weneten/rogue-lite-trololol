@@ -1,20 +1,18 @@
-[gd_resource type="Resource" script_class="EnemyData" load_steps=5 format=3 uid="uid://d2m6n9p3q5r7s"]
+[gd_resource type="Resource" script_class="EnemyData" load_steps=4 format=3 uid="uid://d2m6n9p3q5r7s"]
 
 [ext_resource type="Script" path="res://Resources/EnemyData/EnemyData.gd" id="1_ed"]
 [ext_resource type="PackedScene" uid="uid://b8h1w4k2t9c7r" path="res://Scenes/Enemies/Enemy.tscn" id="2_scene"]
 [ext_resource type="PackedScene" uid="uid://dk3n7q1w9m2xf" path="res://Scenes/Weapons/EnemyArrow.tscn" id="3_arrow"]
-[ext_resource type="Texture2D" uid="uid://bei7no55x0opc" path="res://Assets/sprites/nightbane_hunter.png" id="4_sheet"]
 
 [resource]
 script = ExtResource("1_ed")
 enemy_name = "Skeletal Archer"
 enemy_scene = ExtResource("2_scene")
 sprite_color = Color(0.95, 0.95, 0.9, 1)
-sprite_sheet = ExtResource("4_sheet")
-sprite_sheet_path = "res://Assets/sprites/nightbane_hunter.png"
-sprite_json_path = "res://Assets/sprites/nightbane_hunter.json"
-sprite_scale = 1.15
-attack_anim_name = "attack_whip"
+sprite_sheet_path = "res://Assets/sprites/enemies/skeletal_archer/skeletal_archer.png"
+sprite_json_path = "res://Assets/sprites/enemies/skeletal_archer/skeletal_archer.json"
+sprite_scale = 0.7
+attack_anim_name = "attack"
 max_health = 14
 is_undead = true
 move_speed = 95.0

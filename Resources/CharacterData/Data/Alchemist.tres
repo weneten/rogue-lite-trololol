@@ -5,6 +5,10 @@
 
 [resource]
 script = ExtResource("1_cd")
+sprite_scale = 0.65
+attack_anim_name = "attack"
+sprite_json_path = "res://Assets/sprites/characters/alchemist/alchemist.json"
+sprite_sheet_path = "res://Assets/sprites/characters/alchemist/alchemist.png"
 character_name = "Alchemist"
 lore_blurb = "Her satchel rattles with vials no apothecary would sell. Whatever she throws, it was never meant to heal anyone but herself."
 max_health = 90

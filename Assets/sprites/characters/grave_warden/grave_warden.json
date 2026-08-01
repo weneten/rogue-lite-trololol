@@ -1,0 +1,181 @@
+{
+  "image": "grave_warden.png",
+  "frameWidth": 128,
+  "frameHeight": 128,
+  "columns": 6,
+  "rows": 11,
+  "facing": "right",
+  "origin": {
+    "x": 64,
+    "y": 122
+  },
+  "animations": {
+    "idle": {
+      "row": 0,
+      "from": 0,
+      "to": 3,
+      "frames": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "frameCount": 4,
+      "fps": 6,
+      "loop": true
+    },
+    "run": {
+      "row": 1,
+      "from": 6,
+      "to": 11,
+      "frames": [
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "frameCount": 6,
+      "fps": 12,
+      "loop": true
+    },
+    "attack": {
+      "row": 2,
+      "from": 12,
+      "to": 17,
+      "frames": [
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "frameCount": 6,
+      "fps": 12,
+      "loop": false
+    },
+    "hurt": {
+      "row": 3,
+      "from": 18,
+      "to": 19,
+      "frames": [
+        18,
+        19
+      ],
+      "frameCount": 2,
+      "fps": 10,
+      "loop": false
+    },
+    "death": {
+      "row": 4,
+      "from": 24,
+      "to": 27,
+      "frames": [
+        24,
+        25,
+        26,
+        27
+      ],
+      "frameCount": 4,
+      "fps": 8,
+      "loop": false
+    },
+    "attack_slash": {
+      "row": 5,
+      "from": 30,
+      "to": 35,
+      "frames": [
+        30,
+        31,
+        32,
+        33,
+        34,
+        35
+      ],
+      "frameCount": 6,
+      "fps": 12,
+      "loop": false
+    },
+    "shield_bash": {
+      "row": 6,
+      "from": 36,
+      "to": 41,
+      "frames": [
+        36,
+        37,
+        38,
+        39,
+        40,
+        41
+      ],
+      "frameCount": 6,
+      "fps": 12,
+      "loop": false
+    },
+    "attack_whip": {
+      "row": 7,
+      "from": 42,
+      "to": 47,
+      "frames": [
+        42,
+        43,
+        44,
+        45,
+        46,
+        47
+      ],
+      "frameCount": 6,
+      "fps": 12,
+      "loop": false
+    },
+    "attack_orbs": {
+      "row": 8,
+      "from": 48,
+      "to": 53,
+      "frames": [
+        48,
+        49,
+        50,
+        51,
+        52,
+        53
+      ],
+      "frameCount": 6,
+      "fps": 12,
+      "loop": false
+    },
+    "attack_nova": {
+      "row": 9,
+      "from": 54,
+      "to": 59,
+      "frames": [
+        54,
+        55,
+        56,
+        57,
+        58,
+        59
+      ],
+      "frameCount": 6,
+      "fps": 12,
+      "loop": false
+    },
+    "dash": {
+      "row": 10,
+      "from": 60,
+      "to": 64,
+      "frames": [
+        60,
+        61,
+        62,
+        63,
+        64
+      ],
+      "frameCount": 5,
+      "fps": 12,
+      "loop": false
+    }
+  }
+}

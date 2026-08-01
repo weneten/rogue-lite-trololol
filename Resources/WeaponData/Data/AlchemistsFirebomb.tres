@@ -1,9 +1,11 @@
-[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3 uid="uid://wa1e5g9j3m6o8q"]
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://wa1e5g9j3m6o8q"]
 
 [ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.gd" id="1_wd"]
+[ext_resource type="Texture2D" path="res://Assets/sprites/weapons/alchemists_firebomb.png" id="icon_tex"]
 
 [resource]
 script = ExtResource("1_wd")
+icon = ExtResource("icon_tex")
 name = "Alchemist's Firebomb"
 aoe_radius = 110.0
 aoe_centered_on_self = false

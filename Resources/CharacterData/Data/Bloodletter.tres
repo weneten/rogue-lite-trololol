@@ -5,6 +5,10 @@
 
 [resource]
 script = ExtResource("1_cd")
+sprite_scale = 0.65
+attack_anim_name = "attack"
+sprite_json_path = "res://Assets/sprites/characters/bloodletter/bloodletter.json"
+sprite_sheet_path = "res://Assets/sprites/characters/bloodletter/bloodletter.png"
 character_name = "Bloodletter"
 lore_blurb = "A battlefield surgeon who learned the wrong lesson from too many open wounds: that spilled blood, taken back quickly enough, need never be lost at all."
 max_health = 100

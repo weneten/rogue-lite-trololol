@@ -1,9 +1,11 @@
-[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3 uid="uid://sw6a1c5f8i2k4m"]
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://sw6a1c5f8i2k4m"]
 
 [ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.gd" id="1_wd"]
+[ext_resource type="Texture2D" path="res://Assets/sprites/weapons/war_cleaver.png" id="icon_tex"]
 
 [resource]
 script = ExtResource("1_wd")
+icon = ExtResource("icon_tex")
 name = "War Cleaver"
 damage = 32.0
 attack_speed = 0.5

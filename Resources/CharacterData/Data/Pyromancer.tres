@@ -5,6 +5,10 @@
 
 [resource]
 script = ExtResource("1_cd")
+sprite_scale = 0.65
+attack_anim_name = "attack"
+sprite_json_path = "res://Assets/sprites/characters/pyromancer/pyromancer.json"
+sprite_sheet_path = "res://Assets/sprites/characters/pyromancer/pyromancer.png"
 character_name = "Pyromancer"
 lore_blurb = "Excommunicated for burning down the wrong shrine — or the right one, depending who's asking. Every round she fires still carries a whisper of that fire."
 max_health = 90

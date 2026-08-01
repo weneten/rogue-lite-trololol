@@ -1,9 +1,11 @@
-[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3 uid="uid://ae5i9k4n7q1s3u"]
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://ae5i9k4n7q1s3u"]
 
 [ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.gd" id="1_wd"]
+[ext_resource type="Texture2D" path="res://Assets/sprites/weapons/bell_of_judgement.png" id="icon_tex"]
 
 [resource]
 script = ExtResource("1_wd")
+icon = ExtResource("icon_tex")
 name = "Bell of Judgement"
 aoe_radius = 2000.0
 aoe_centered_on_self = true

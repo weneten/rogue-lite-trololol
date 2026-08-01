@@ -5,6 +5,10 @@
 
 [resource]
 script = ExtResource("1_cd")
+sprite_scale = 0.65
+attack_anim_name = "attack"
+sprite_json_path = "res://Assets/sprites/characters/the_reaper/the_reaper.json"
+sprite_sheet_path = "res://Assets/sprites/characters/the_reaper/the_reaper.png"
 character_name = "The Reaper"
 lore_blurb = "She stopped counting the graves she'd dug for others long before she started digging her own. Every swing of her scythe is a wager: more blood spilled, hers included."
 max_health = 90

@@ -88,7 +88,7 @@ func _ready() -> void:
 	_portrait_placeholder = get_node_or_null(portrait_placeholder_path)
 
 	if _portrait_sprite != null:
-		_portrait_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		_portrait_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 		_portrait_sprite.centered = true
 		_portrait_sprite.scale = Vector2.ONE * (portrait_zoom if portrait_zoom > 0.0 else 1.0)
 

@@ -1,11 +1,13 @@
-[gd_resource type="Resource" script_class="WeaponData" load_steps=4 format=3 uid="uid://os2w6y1b4e7g9i"]
+[gd_resource type="Resource" script_class="WeaponData" load_steps=5 format=3 uid="uid://os2w6y1b4e7g9i"]
 
 [ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.gd" id="1_wd"]
+[ext_resource type="Texture2D" path="res://Assets/sprites/weapons/wraith_staff.png" id="icon_tex"]
 [ext_resource type="PackedScene" uid="uid://dv1p8k0m3x2wq" path="res://Scenes/Weapons/Projectile.tscn" id="2_proj"]
 [ext_resource type="Resource" uid="uid://pt3x7z2c5f8h1j" path="res://Resources/WeaponData/Data/GrimoireOfBones.tres" id="3_upgrade"]
 
 [resource]
 script = ExtResource("1_wd")
+icon = ExtResource("icon_tex")
 name = "Wraith Staff"
 projectile_scene = ExtResource("2_proj")
 upgrades_to = ExtResource("3_upgrade")

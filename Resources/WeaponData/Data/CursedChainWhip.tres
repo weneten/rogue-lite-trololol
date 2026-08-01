@@ -1,9 +1,11 @@
-[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3 uid="uid://rv5z9b4e7h1j3l"]
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://rv5z9b4e7h1j3l"]
 
 [ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.gd" id="1_wd"]
+[ext_resource type="Texture2D" path="res://Assets/sprites/weapons/cursed_chain_whip.png" id="icon_tex"]
 
 [resource]
 script = ExtResource("1_wd")
+icon = ExtResource("icon_tex")
 name = "Cursed Chain Whip"
 cursed_missing_hp_scaling = 1.5
 damage = 13.0

@@ -1,9 +1,11 @@
-[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3 uid="uid://vz9d4f8i2l5n7p"]
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://vz9d4f8i2l5n7p"]
 
 [ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.gd" id="1_wd"]
+[ext_resource type="Texture2D" path="res://Assets/sprites/weapons/vampiric_claws.png" id="icon_tex"]
 
 [resource]
 script = ExtResource("1_wd")
+icon = ExtResource("icon_tex")
 name = "Vampiric Claws"
 on_hit_lifesteal_fraction = 0.3
 damage = 15.0

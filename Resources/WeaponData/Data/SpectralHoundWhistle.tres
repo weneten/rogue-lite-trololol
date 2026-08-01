@@ -1,11 +1,13 @@
-[gd_resource type="Resource" script_class="WeaponData" load_steps=4 format=3 uid="uid://zd4h8j3m6p9r2t"]
+[gd_resource type="Resource" script_class="WeaponData" load_steps=5 format=3 uid="uid://zd4h8j3m6p9r2t"]
 
 [ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.gd" id="1_wd"]
+[ext_resource type="Texture2D" path="res://Assets/sprites/weapons/spectral_hound_whistle.png" id="icon_tex"]
 [ext_resource type="PackedScene" uid="uid://dv1p8k0m3x2wq" path="res://Scenes/Weapons/Projectile.tscn" id="2_proj"]
 [ext_resource type="PackedScene" uid="uid://dr4t8n1q5w2y6" path="res://Scenes/Weapons/Familiar.tscn" id="3_familiar"]
 
 [resource]
 script = ExtResource("1_wd")
+icon = ExtResource("icon_tex")
 name = "Spectral Hound Whistle"
 projectile_scene = ExtResource("2_proj")
 summon_scene = ExtResource("3_familiar")

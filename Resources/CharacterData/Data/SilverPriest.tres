@@ -5,6 +5,10 @@
 
 [resource]
 script = ExtResource("1_cd")
+sprite_scale = 0.65
+attack_anim_name = "attack"
+sprite_json_path = "res://Assets/sprites/characters/silver_priest/silver_priest.json"
+sprite_sheet_path = "res://Assets/sprites/characters/silver_priest/silver_priest.png"
 character_name = "Silver Priest"
 lore_blurb = "Ordained not by any church still standing, but by the blood moon itself. His silver rounds are blessed with rites older than the cathedral he preaches from."
 max_health = 100

@@ -1,9 +1,11 @@
-[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3 uid="uid://tx7b2d6g9j3l5n"]
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://tx7b2d6g9j3l5n"]
 
 [ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.gd" id="1_wd"]
+[ext_resource type="Texture2D" path="res://Assets/sprites/weapons/twin_stiletto_blades.png" id="icon_tex"]
 
 [resource]
 script = ExtResource("1_wd")
+icon = ExtResource("icon_tex")
 name = "Twin Stiletto Blades"
 damage = 11.0
 attack_speed = 2.4

@@ -1,9 +1,11 @@
-[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3 uid="uid://nr1v5x9a3d6f8h"]
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://nr1v5x9a3d6f8h"]
 
 [ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.gd" id="1_wd"]
+[ext_resource type="Texture2D" path="res://Assets/sprites/weapons/spellblade_of_ash.png" id="icon_tex"]
 
 [resource]
 script = ExtResource("1_wd")
+icon = ExtResource("icon_tex")
 name = "Spellblade of Ash"
 magic_scaling_per_point = 0.6
 damage = 20.0

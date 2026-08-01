@@ -1,18 +1,16 @@
-[gd_resource type="Resource" script_class="CharacterData" load_steps=4 format=3 uid="uid://c1r34ap3r0003"]
+[gd_resource type="Resource" script_class="CharacterData" load_steps=3 format=3 uid="uid://c1r34ap3r0003"]
 
 [ext_resource type="Script" path="res://Resources/CharacterData/CharacterData.gd" id="1_cd"]
 [ext_resource type="Resource" uid="uid://b8k3n6r1t4w7y" path="res://Resources/WeaponData/Data/SilverRevolver.tres" id="2_revolver"]
-[ext_resource type="Texture2D" uid="uid://bei7no55x0opc" path="res://Assets/sprites/nightbane_hunter.png" id="3_sheet"]
 
 [resource]
 script = ExtResource("1_cd")
 character_name = "Witch Hunter"
 lore_blurb = "Trained to find the one moment a hex-caster's guard drops, and never miss it. She doesn't chase kills — she waits for the killing blow to present itself."
-sprite_sheet = ExtResource("3_sheet")
-sprite_sheet_path = "res://Assets/sprites/nightbane_hunter.png"
-sprite_json_path = "res://Assets/sprites/nightbane_hunter.json"
-sprite_scale = 1.2
-attack_anim_name = "attack_whip"
+sprite_sheet_path = "res://Assets/sprites/characters/witch_hunter/witch_hunter.png"
+sprite_json_path = "res://Assets/sprites/characters/witch_hunter/witch_hunter.json"
+sprite_scale = 0.65
+attack_anim_name = "attack"
 max_health = 95
 move_speed = 305.0
 starting_armor = 1

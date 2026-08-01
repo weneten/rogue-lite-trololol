@@ -1,19 +1,17 @@
-[gd_resource type="Resource" script_class="EnemyData" load_steps=4 format=3 uid="uid://e4b7c0r9p2s5t"]
+[gd_resource type="Resource" script_class="EnemyData" load_steps=3 format=3 uid="uid://e4b7c0r9p2s5t"]
 
 [ext_resource type="Script" path="res://Resources/EnemyData/EnemyData.gd" id="1_ed"]
 [ext_resource type="PackedScene" uid="uid://b8h1w4k2t9c7r" path="res://Scenes/Enemies/Enemy.tscn" id="2_scene"]
-[ext_resource type="Texture2D" uid="uid://bmdp6l4gtyevd" path="res://Assets/sprites/blutwaechter/blutwaechter.png" id="3_sheet"]
 
 [resource]
 script = ExtResource("1_ed")
 enemy_name = "Bloated Corpse"
 enemy_scene = ExtResource("2_scene")
 sprite_color = Color(0.9, 0.8, 0.95, 1)
-sprite_sheet = ExtResource("3_sheet")
-sprite_sheet_path = "res://Assets/sprites/blutwaechter/blutwaechter.png"
-sprite_json_path = "res://Assets/sprites/blutwaechter/blutwaechter.json"
-sprite_scale = 1.35
-attack_anim_name = "shield_bash"
+sprite_sheet_path = "res://Assets/sprites/enemies/bloated_corpse/bloated_corpse.png"
+sprite_json_path = "res://Assets/sprites/enemies/bloated_corpse/bloated_corpse.json"
+sprite_scale = 0.85
+attack_anim_name = "attack"
 max_health = 70
 is_undead = true
 move_speed = 48.0

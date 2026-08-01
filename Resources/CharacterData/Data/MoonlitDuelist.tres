@@ -6,6 +6,10 @@
 
 [resource]
 script = ExtResource("1_cd")
+sprite_scale = 0.65
+attack_anim_name = "attack"
+sprite_json_path = "res://Assets/sprites/characters/moonlit_duelist/moonlit_duelist.json"
+sprite_sheet_path = "res://Assets/sprites/characters/moonlit_duelist/moonlit_duelist.png"
 character_name = "Moonlit Duelist"
 lore_blurb = "Blade in one hand, pistol in the other, she's never once needed both at the same time — until the night she started keeping count."
 max_health = 95
