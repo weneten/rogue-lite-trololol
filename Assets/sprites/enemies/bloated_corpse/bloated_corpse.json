@@ -1,13 +1,14 @@
 {
   "image": "bloated_corpse.png",
-  "frameWidth": 128,
-  "frameHeight": 128,
+  "frameWidth": 64,
+  "frameHeight": 64,
   "columns": 6,
-  "rows": 11,
+  "rows": 6,
   "facing": "right",
+  "pixelArt": true,
   "origin": {
-    "x": 64,
-    "y": 122
+    "x": 29.4,
+    "y": 58.0
   },
   "animations": {
     "idle": {
@@ -53,7 +54,7 @@
         17
       ],
       "frameCount": 6,
-      "fps": 12,
+      "fps": 14,
       "loop": false
     },
     "hurt": {
@@ -65,116 +66,164 @@
         19
       ],
       "frameCount": 2,
-      "fps": 10,
+      "fps": 12,
       "loop": false
     },
     "death": {
       "row": 4,
       "from": 24,
-      "to": 27,
+      "to": 28,
       "frames": [
         24,
         25,
         26,
-        27
+        27,
+        28
       ],
-      "frameCount": 4,
-      "fps": 8,
+      "frameCount": 5,
+      "fps": 9,
       "loop": false
     },
-    "attack_slash": {
+    "dash": {
       "row": 5,
       "from": 30,
-      "to": 35,
+      "to": 33,
       "frames": [
         30,
         31,
         32,
-        33,
-        34,
-        35
+        33
       ],
-      "frameCount": 6,
-      "fps": 12,
+      "frameCount": 4,
+      "fps": 16,
       "loop": false
     },
-    "shield_bash": {
-      "row": 6,
-      "from": 36,
-      "to": 41,
+    "attack_slash": {
+      "row": 2,
+      "from": 12,
+      "to": 17,
       "frames": [
-        36,
-        37,
-        38,
-        39,
-        40,
-        41
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
       ],
       "frameCount": 6,
-      "fps": 12,
+      "fps": 14,
       "loop": false
     },
     "attack_whip": {
-      "row": 7,
-      "from": 42,
-      "to": 47,
+      "row": 2,
+      "from": 12,
+      "to": 17,
       "frames": [
-        42,
-        43,
-        44,
-        45,
-        46,
-        47
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
       ],
       "frameCount": 6,
-      "fps": 12,
+      "fps": 14,
       "loop": false
     },
     "attack_orbs": {
-      "row": 8,
-      "from": 48,
-      "to": 53,
+      "row": 2,
+      "from": 12,
+      "to": 17,
       "frames": [
-        48,
-        49,
-        50,
-        51,
-        52,
-        53
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
       ],
       "frameCount": 6,
-      "fps": 12,
+      "fps": 14,
+      "loop": false
+    },
+    "shield_bash": {
+      "row": 2,
+      "from": 12,
+      "to": 17,
+      "frames": [
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "frameCount": 6,
+      "fps": 14,
+      "loop": false
+    },
+    "chain_swing": {
+      "row": 2,
+      "from": 12,
+      "to": 17,
+      "frames": [
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "frameCount": 6,
+      "fps": 14,
+      "loop": false
+    },
+    "attack_spin": {
+      "row": 2,
+      "from": 12,
+      "to": 17,
+      "frames": [
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "frameCount": 6,
+      "fps": 14,
       "loop": false
     },
     "attack_nova": {
-      "row": 9,
-      "from": 54,
-      "to": 59,
+      "row": 2,
+      "from": 12,
+      "to": 17,
       "frames": [
-        54,
-        55,
-        56,
-        57,
-        58,
-        59
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
       ],
       "frameCount": 6,
-      "fps": 12,
+      "fps": 14,
       "loop": false
     },
-    "dash": {
-      "row": 10,
-      "from": 60,
-      "to": 64,
+    "attack_cross": {
+      "row": 2,
+      "from": 12,
+      "to": 17,
       "frames": [
-        60,
-        61,
-        62,
-        63,
-        64
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
       ],
-      "frameCount": 5,
-      "fps": 12,
+      "frameCount": 6,
+      "fps": 14,
       "loop": false
     }
   }
