@@ -1,22 +1,22 @@
 [gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://qu4y8a3d6g9i2k"]
 
-[ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.cs" id="1_wd"]
+[ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.gd" id="1_wd"]
 [ext_resource type="Resource" uid="uid://ae5i9k4n7q1s3u" path="res://Resources/WeaponData/Data/BellOfJudgement.tres" id="2_upgrade"]
 
 [resource]
 script = ExtResource("1_wd")
-Name = "Holy Water Flask"
-UpgradesTo = ExtResource("2_upgrade")
-AoERadius = 90.0
-AoECenteredOnSelf = false
-Damage = 10.0
-AttackSpeed = 0.8
-Range = 260.0
-CritChance = 0.05
-CritMultiplier = 2.0
-ProjectileCount = 1
-Spread = 0.0
-Knockback = 0.0
-RarityTier = 0
-WeaponClass = 82
-ShopCost = 3
+name = "Holy Water Flask"
+upgrades_to = ExtResource("2_upgrade")
+aoe_radius = 90.0
+aoe_centered_on_self = false
+damage = 10.0
+attack_speed = 0.8
+range = 260.0
+crit_chance = 0.05
+crit_multiplier = 2.0
+projectile_count = 1
+spread = 0.0
+knockback = 0.0
+rarity_tier = 0
+weapon_class = 82
+shop_cost = 3

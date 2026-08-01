@@ -1,28 +1,28 @@
 [gd_resource type="Resource" script_class="CharacterData" load_steps=4 format=3 uid="uid://c1r34ap3r0003"]
 
-[ext_resource type="Script" path="res://Resources/CharacterData/CharacterData.cs" id="1_cd"]
+[ext_resource type="Script" path="res://Resources/CharacterData/CharacterData.gd" id="1_cd"]
 [ext_resource type="Resource" uid="uid://b8k3n6r1t4w7y" path="res://Resources/WeaponData/Data/SilverRevolver.tres" id="2_revolver"]
 [ext_resource type="Texture2D" uid="uid://bei7no55x0opc" path="res://Assets/sprites/nightbane_hunter.png" id="3_sheet"]
 
 [resource]
 script = ExtResource("1_cd")
-CharacterName = "Witch Hunter"
-LoreBlurb = "Trained to find the one moment a hex-caster's guard drops, and never miss it. She doesn't chase kills — she waits for the killing blow to present itself."
-SpriteSheet = ExtResource("3_sheet")
-SpriteSheetPath = "res://Assets/sprites/nightbane_hunter.png"
-SpriteJsonPath = "res://Assets/sprites/nightbane_hunter.json"
-SpriteScale = 1.2
-AttackAnimName = "attack_whip"
-MaxHealth = 95
-MoveSpeed = 305.0
-StartingArmor = 1
-StartingDodgeChance = 0.05
-StartingCritChance = 0.1
-StartingMagicPower = 1.0
-StartingWeapons = Array[Resource]([ExtResource("2_revolver")])
-PassiveId = "crit_bonus"
-PassiveName = "Marked for Burning"
-PassiveDescription = "+15% critical chance and +50% critical damage."
-PassiveValueA = 0.15
-PassiveValueB = 0.5
-DifficultyRating = 2
+character_name = "Witch Hunter"
+lore_blurb = "Trained to find the one moment a hex-caster's guard drops, and never miss it. She doesn't chase kills — she waits for the killing blow to present itself."
+sprite_sheet = ExtResource("3_sheet")
+sprite_sheet_path = "res://Assets/sprites/nightbane_hunter.png"
+sprite_json_path = "res://Assets/sprites/nightbane_hunter.json"
+sprite_scale = 1.2
+attack_anim_name = "attack_whip"
+max_health = 95
+move_speed = 305.0
+starting_armor = 1
+starting_dodge_chance = 0.05
+starting_crit_chance = 0.1
+starting_magic_power = 1.0
+starting_weapons = Array[Resource]([ExtResource("2_revolver")])
+passive_id = "crit_bonus"
+passive_name = "Marked for Burning"
+passive_description = "+15% critical chance and +50% critical damage."
+passive_value_a = 0.15
+passive_value_b = 0.5
+difficulty_rating = 2

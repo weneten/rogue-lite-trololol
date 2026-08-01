@@ -1,32 +1,32 @@
 [gd_resource type="Resource" script_class="EnemyData" load_steps=5 format=3 uid="uid://d2m6n9p3q5r7s"]
 
-[ext_resource type="Script" path="res://Resources/EnemyData/EnemyData.cs" id="1_ed"]
+[ext_resource type="Script" path="res://Resources/EnemyData/EnemyData.gd" id="1_ed"]
 [ext_resource type="PackedScene" uid="uid://b8h1w4k2t9c7r" path="res://Scenes/Enemies/Enemy.tscn" id="2_scene"]
 [ext_resource type="PackedScene" uid="uid://dk3n7q1w9m2xf" path="res://Scenes/Weapons/EnemyArrow.tscn" id="3_arrow"]
 [ext_resource type="Texture2D" uid="uid://bei7no55x0opc" path="res://Assets/sprites/nightbane_hunter.png" id="4_sheet"]
 
 [resource]
 script = ExtResource("1_ed")
-EnemyName = "Skeletal Archer"
-EnemyScene = ExtResource("2_scene")
-SpriteColor = Color(0.95, 0.95, 0.9, 1)
-SpriteSheet = ExtResource("4_sheet")
-SpriteSheetPath = "res://Assets/sprites/nightbane_hunter.png"
-SpriteJsonPath = "res://Assets/sprites/nightbane_hunter.json"
-SpriteScale = 1.15
-AttackAnimName = "attack_whip"
-MaxHealth = 14
-IsUndead = true
-MoveSpeed = 95.0
-AttackDamage = 5.0
-AttackPattern = 1
-BehaviorType = 3
-ProjectileScene = ExtResource("3_arrow")
-AggroRange = 900.0
-AttackRange = 380.0
-PreferredDistance = 220.0
-AttackCooldown = 1.6
-CurrencyReward = 3
-ExperienceReward = 5
-SpawnWeight = 1.0
-MinWaveToAppear = 2
+enemy_name = "Skeletal Archer"
+enemy_scene = ExtResource("2_scene")
+sprite_color = Color(0.95, 0.95, 0.9, 1)
+sprite_sheet = ExtResource("4_sheet")
+sprite_sheet_path = "res://Assets/sprites/nightbane_hunter.png"
+sprite_json_path = "res://Assets/sprites/nightbane_hunter.json"
+sprite_scale = 1.15
+attack_anim_name = "attack_whip"
+max_health = 14
+is_undead = true
+move_speed = 95.0
+attack_damage = 5.0
+attack_pattern = 1
+behavior_type = 3
+projectile_scene = ExtResource("3_arrow")
+aggro_range = 900.0
+attack_range = 380.0
+preferred_distance = 220.0
+attack_cooldown = 1.6
+currency_reward = 3
+experience_reward = 5
+spawn_weight = 1.0
+min_wave_to_appear = 2

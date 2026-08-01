@@ -17,26 +17,22 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 config/name="Nightbane"
 config/description="A dark gothic horror top-down arena survival roguelite."
 run/main_scene="res://Scenes/MainMenu/MainMenu.tscn"
-config/features=PackedStringArray("4.7", "C#", "Forward Plus")
+config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://Assets/Art/icon.svg"
 
 [autoload]
 
-EventBus="*res://Autoloads/EventBus.cs"
-GameManager="*res://Autoloads/GameManager.cs"
-WaveManager="*res://Autoloads/WaveManager.cs"
-BossManager="*res://Autoloads/BossManager.cs"
-AudioManager="*res://Autoloads/AudioManager.cs"
+EventBus="*res://Autoloads/EventBus.gd"
+GameManager="*res://Autoloads/GameManager.gd"
+WaveManager="*res://Autoloads/WaveManager.gd"
+BossManager="*res://Autoloads/BossManager.gd"
+AudioManager="*res://Autoloads/AudioManager.gd"
 
 [display]
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
 window/stretch/mode="canvas_items"
-
-[dotnet]
-
-project/assembly_name="Nightbane"
 
 [input]
 

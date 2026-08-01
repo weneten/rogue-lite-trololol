@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="ShopPoolData" load_steps=30 format=3 uid="uid://a7k2n5q8t1w4y"]
 
-[ext_resource type="Script" path="res://Resources/ShopData/ShopPoolData.cs" id="1_spd"]
+[ext_resource type="Script" path="res://Resources/ShopData/ShopPoolData.gd" id="1_spd"]
 [ext_resource type="Resource" uid="uid://cx3v9m2k7q1n8" path="res://Resources/WeaponData/Data/RustyScythe.tres" id="2_scythe"]
 [ext_resource type="Resource" uid="uid://b8k3n6r1t4w7y" path="res://Resources/WeaponData/Data/SilverRevolver.tres" id="3_revolver"]
 [ext_resource type="Resource" uid="uid://c9m4p7q2u5x8z" path="res://Resources/WeaponData/Data/BoneCleaver.tres" id="4_cleaver"]
@@ -32,5 +32,5 @@
 
 [resource]
 script = ExtResource("1_spd")
-WeaponPool = Array[Resource]([ExtResource("2_scythe"), ExtResource("3_revolver"), ExtResource("4_cleaver"), ExtResource("5_familiarbolt"), ExtResource("6_dagger"), ExtResource("7_crossbow"), ExtResource("8_bonebow"), ExtResource("9_flintlock"), ExtResource("10_blunderbuss"), ExtResource("11_hexedrevolver"), ExtResource("12_cathedralrifle"), ExtResource("13_spellblade"), ExtResource("14_wraithstaff"), ExtResource("15_grimoire"), ExtResource("16_holywater"), ExtResource("17_chainwhip"), ExtResource("18_warcleaver"), ExtResource("19_twinstiletto"), ExtResource("20_stakelauncher"), ExtResource("21_vampiricclaws"), ExtResource("22_firebomb"), ExtResource("23_frostlantern"), ExtResource("24_beartrap"), ExtResource("25_houndwhistle"), ExtResource("26_bell")])
-PassivePool = Array[Resource]([ExtResource("27_tonic"), ExtResource("28_boots"), ExtResource("29_vial")])
+weapon_pool = Array[Resource]([ExtResource("2_scythe"), ExtResource("3_revolver"), ExtResource("4_cleaver"), ExtResource("5_familiarbolt"), ExtResource("6_dagger"), ExtResource("7_crossbow"), ExtResource("8_bonebow"), ExtResource("9_flintlock"), ExtResource("10_blunderbuss"), ExtResource("11_hexedrevolver"), ExtResource("12_cathedralrifle"), ExtResource("13_spellblade"), ExtResource("14_wraithstaff"), ExtResource("15_grimoire"), ExtResource("16_holywater"), ExtResource("17_chainwhip"), ExtResource("18_warcleaver"), ExtResource("19_twinstiletto"), ExtResource("20_stakelauncher"), ExtResource("21_vampiricclaws"), ExtResource("22_firebomb"), ExtResource("23_frostlantern"), ExtResource("24_beartrap"), ExtResource("25_houndwhistle"), ExtResource("26_bell")])
+passive_pool = Array[Resource]([ExtResource("27_tonic"), ExtResource("28_boots"), ExtResource("29_vial")])

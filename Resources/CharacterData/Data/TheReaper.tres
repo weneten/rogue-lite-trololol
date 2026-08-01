@@ -1,22 +1,22 @@
 [gd_resource type="Resource" script_class="CharacterData" load_steps=3 format=3 uid="uid://c1r34ap3r0001"]
 
-[ext_resource type="Script" path="res://Resources/CharacterData/CharacterData.cs" id="1_cd"]
+[ext_resource type="Script" path="res://Resources/CharacterData/CharacterData.gd" id="1_cd"]
 [ext_resource type="Resource" uid="uid://cx3v9m2k7q1n8" path="res://Resources/WeaponData/Data/RustyScythe.tres" id="2_scythe"]
 
 [resource]
 script = ExtResource("1_cd")
-CharacterName = "The Reaper"
-LoreBlurb = "She stopped counting the graves she'd dug for others long before she started digging her own. Every swing of her scythe is a wager: more blood spilled, hers included."
-MaxHealth = 90
-MoveSpeed = 310.0
-StartingArmor = 0
-StartingDodgeChance = 0.05
-StartingCritChance = 0.08
-StartingMagicPower = 1.0
-StartingWeapons = Array[Resource]([ExtResource("2_scythe")])
-PassiveId = "hp_for_damage"
-PassiveName = "Blood Wager"
-PassiveDescription = "Deals 30% more damage but takes 30% more damage in return."
-PassiveValueA = 0.3
-PassiveValueB = 0.3
-DifficultyRating = 3
+character_name = "The Reaper"
+lore_blurb = "She stopped counting the graves she'd dug for others long before she started digging her own. Every swing of her scythe is a wager: more blood spilled, hers included."
+max_health = 90
+move_speed = 310.0
+starting_armor = 0
+starting_dodge_chance = 0.05
+starting_crit_chance = 0.08
+starting_magic_power = 1.0
+starting_weapons = Array[Resource]([ExtResource("2_scythe")])
+passive_id = "hp_for_damage"
+passive_name = "Blood Wager"
+passive_description = "Deals 30% more damage but takes 30% more damage in return."
+passive_value_a = 0.3
+passive_value_b = 0.3
+difficulty_rating = 3

@@ -1,36 +1,36 @@
 [gd_resource type="Resource" script_class="EnemyData" load_steps=4 format=3 uid="uid://f5w8r1a4i7t0h"]
 
-[ext_resource type="Script" path="res://Resources/EnemyData/EnemyData.cs" id="1_ed"]
+[ext_resource type="Script" path="res://Resources/EnemyData/EnemyData.gd" id="1_ed"]
 [ext_resource type="PackedScene" uid="uid://b8h1w4k2t9c7r" path="res://Scenes/Enemies/Enemy.tscn" id="2_scene"]
 [ext_resource type="Texture2D" uid="uid://cvo7n31rbf6d1" path="res://Assets/sprites/schattenhexerin/schattenhexerin.png" id="3_sheet"]
 
 [resource]
 script = ExtResource("1_ed")
-EnemyName = "Wraith"
-EnemyScene = ExtResource("2_scene")
-SpriteColor = Color(0.75, 0.85, 1, 0.9)
-SpriteSheet = ExtResource("3_sheet")
-SpriteSheetPath = "res://Assets/sprites/schattenhexerin/schattenhexerin.png"
-SpriteJsonPath = "res://Assets/sprites/schattenhexerin/schattenhexerin.json"
-SpriteScale = 1.2
-AttackAnimName = "attack_orbs"
-MaxHealth = 18
-IsUndead = true
-MoveSpeed = 120.0
-AttackDamage = 7.0
-AttackPattern = 0
-BehaviorType = 0
-ProjectileScene = null
-AggroRange = 900.0
-AttackRange = 36.0
-PreferredDistance = 0.0
-AttackCooldown = 0.9
-ExplodeOnDeath = false
-ExplosionRadius = 90.0
-ExplosionDamage = 18.0
-PhasesThroughObstacles = true
-ErraticMovement = true
-CurrencyReward = 4
-ExperienceReward = 6
-SpawnWeight = 0.8
-MinWaveToAppear = 4
+enemy_name = "Wraith"
+enemy_scene = ExtResource("2_scene")
+sprite_color = Color(0.75, 0.85, 1, 0.9)
+sprite_sheet = ExtResource("3_sheet")
+sprite_sheet_path = "res://Assets/sprites/schattenhexerin/schattenhexerin.png"
+sprite_json_path = "res://Assets/sprites/schattenhexerin/schattenhexerin.json"
+sprite_scale = 1.2
+attack_anim_name = "attack_orbs"
+max_health = 18
+is_undead = true
+move_speed = 120.0
+attack_damage = 7.0
+attack_pattern = 0
+behavior_type = 0
+projectile_scene = null
+aggro_range = 900.0
+attack_range = 36.0
+preferred_distance = 0.0
+attack_cooldown = 0.9
+explode_on_death = false
+explosion_radius = 90.0
+explosion_damage = 18.0
+phases_through_obstacles = true
+erratic_movement = true
+currency_reward = 4
+experience_reward = 6
+spawn_weight = 0.8
+min_wave_to_appear = 4

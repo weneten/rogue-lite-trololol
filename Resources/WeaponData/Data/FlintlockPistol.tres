@@ -1,22 +1,22 @@
 [gd_resource type="Resource" script_class="WeaponData" load_steps=4 format=3 uid="uid://jn6r1t5w8z2b4d"]
 
-[ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.cs" id="1_wd"]
+[ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.gd" id="1_wd"]
 [ext_resource type="PackedScene" uid="uid://dv1p8k0m3x2wq" path="res://Scenes/Weapons/Projectile.tscn" id="2_proj"]
 [ext_resource type="Resource" uid="uid://lp8t3v7y1b4d6f" path="res://Resources/WeaponData/Data/HexedRevolver.tres" id="3_upgrade"]
 
 [resource]
 script = ExtResource("1_wd")
-Name = "Flintlock Pistol"
-ProjectileScene = ExtResource("2_proj")
-UpgradesTo = ExtResource("3_upgrade")
-Damage = 11.0
-AttackSpeed = 1.1
-Range = 300.0
-CritChance = 0.08
-CritMultiplier = 2.0
-ProjectileCount = 1
-Spread = 0.0
-Knockback = 30.0
-RarityTier = 0
-WeaponClass = 6
-ShopCost = 3
+name = "Flintlock Pistol"
+projectile_scene = ExtResource("2_proj")
+upgrades_to = ExtResource("3_upgrade")
+damage = 11.0
+attack_speed = 1.1
+range = 300.0
+crit_chance = 0.08
+crit_multiplier = 2.0
+projectile_count = 1
+spread = 0.0
+knockback = 30.0
+rarity_tier = 0
+weapon_class = 6
+shop_cost = 3

@@ -1,36 +1,36 @@
 [gd_resource type="Resource" script_class="EnemyData" load_steps=4 format=3 uid="uid://g6p9l2a5g8u1e"]
 
-[ext_resource type="Script" path="res://Resources/EnemyData/EnemyData.cs" id="1_ed"]
+[ext_resource type="Script" path="res://Resources/EnemyData/EnemyData.gd" id="1_ed"]
 [ext_resource type="PackedScene" uid="uid://b8h1w4k2t9c7r" path="res://Scenes/Enemies/Enemy.tscn" id="2_scene"]
 [ext_resource type="Texture2D" uid="uid://q4s10rifnalm" path="res://Assets/sprites/blutwolf/blutwolf.png" id="3_sheet"]
 
 [resource]
 script = ExtResource("1_ed")
-EnemyName = "Plague Rat"
-EnemyScene = ExtResource("2_scene")
-SpriteColor = Color(0.75, 0.7, 0.55, 1)
-SpriteSheet = ExtResource("3_sheet")
-SpriteSheetPath = "res://Assets/sprites/blutwolf/blutwolf.png"
-SpriteJsonPath = "res://Assets/sprites/blutwolf/blutwolf.json"
-SpriteScale = 0.65
-AttackAnimName = "attack_slash"
-MaxHealth = 5
-IsUndead = false
-MoveSpeed = 190.0
-AttackDamage = 3.0
-AttackPattern = 0
-BehaviorType = 0
-ProjectileScene = null
-AggroRange = 900.0
-AttackRange = 28.0
-PreferredDistance = 0.0
-AttackCooldown = 0.55
-ExplodeOnDeath = false
-ExplosionRadius = 90.0
-ExplosionDamage = 18.0
-PhasesThroughObstacles = false
-ErraticMovement = false
-CurrencyReward = 1
-ExperienceReward = 1
-SpawnWeight = 5.5
-MinWaveToAppear = 2
+enemy_name = "Plague Rat"
+enemy_scene = ExtResource("2_scene")
+sprite_color = Color(0.75, 0.7, 0.55, 1)
+sprite_sheet = ExtResource("3_sheet")
+sprite_sheet_path = "res://Assets/sprites/blutwolf/blutwolf.png"
+sprite_json_path = "res://Assets/sprites/blutwolf/blutwolf.json"
+sprite_scale = 0.65
+attack_anim_name = "attack_slash"
+max_health = 5
+is_undead = false
+move_speed = 190.0
+attack_damage = 3.0
+attack_pattern = 0
+behavior_type = 0
+projectile_scene = null
+aggro_range = 900.0
+attack_range = 28.0
+preferred_distance = 0.0
+attack_cooldown = 0.55
+explode_on_death = false
+explosion_radius = 90.0
+explosion_damage = 18.0
+phases_through_obstacles = false
+erratic_movement = false
+currency_reward = 1
+experience_reward = 1
+spawn_weight = 5.5
+min_wave_to_appear = 2

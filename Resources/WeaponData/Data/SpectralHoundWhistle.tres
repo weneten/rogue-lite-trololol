@@ -1,22 +1,22 @@
 [gd_resource type="Resource" script_class="WeaponData" load_steps=4 format=3 uid="uid://zd4h8j3m6p9r2t"]
 
-[ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.cs" id="1_wd"]
+[ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.gd" id="1_wd"]
 [ext_resource type="PackedScene" uid="uid://dv1p8k0m3x2wq" path="res://Scenes/Weapons/Projectile.tscn" id="2_proj"]
 [ext_resource type="PackedScene" uid="uid://dr4t8n1q5w2y6" path="res://Scenes/Weapons/Familiar.tscn" id="3_familiar"]
 
 [resource]
 script = ExtResource("1_wd")
-Name = "Spectral Hound Whistle"
-ProjectileScene = ExtResource("2_proj")
-SummonScene = ExtResource("3_familiar")
-Damage = 14.0
-AttackSpeed = 1.2
-Range = 240.0
-CritChance = 0.08
-CritMultiplier = 2.2
-ProjectileCount = 1
-Spread = 0.0
-Knockback = 20.0
-RarityTier = 2
-WeaponClass = 128
-ShopCost = 4
+name = "Spectral Hound Whistle"
+projectile_scene = ExtResource("2_proj")
+summon_scene = ExtResource("3_familiar")
+damage = 14.0
+attack_speed = 1.2
+range = 240.0
+crit_chance = 0.08
+crit_multiplier = 2.2
+projectile_count = 1
+spread = 0.0
+knockback = 20.0
+rarity_tier = 2
+weapon_class = 128
+shop_cost = 4

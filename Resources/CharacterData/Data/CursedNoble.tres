@@ -1,22 +1,22 @@
 [gd_resource type="Resource" script_class="CharacterData" load_steps=3 format=3 uid="uid://c1r34ap3r0010"]
 
-[ext_resource type="Script" path="res://Resources/CharacterData/CharacterData.cs" id="1_cd"]
+[ext_resource type="Script" path="res://Resources/CharacterData/CharacterData.gd" id="1_cd"]
 [ext_resource type="Resource" uid="uid://c9m4p7q2u5x8z" path="res://Resources/WeaponData/Data/BoneCleaver.tres" id="2_cleaver"]
 
 [resource]
 script = ExtResource("1_cd")
-CharacterName = "Cursed Noble"
-LoreBlurb = "Stripped of his title, his estate, and most of his blood by whatever curse still clings to his name — but every night he survives, a little more of it burns away."
-MaxHealth = 100
-MoveSpeed = 295.0
-StartingArmor = 1
-StartingDodgeChance = 0.03
-StartingCritChance = 0.05
-StartingMagicPower = 1.0
-StartingWeapons = Array[Resource]([ExtResource("2_cleaver")])
-PassiveId = "curse_lift_scaling"
-PassiveName = "Lifting Curse"
-PassiveDescription = "Damage grows the longer he survives, +5% per minute, up to +60%."
-PassiveValueA = 0.05
-PassiveValueB = 0.6
-DifficultyRating = 5
+character_name = "Cursed Noble"
+lore_blurb = "Stripped of his title, his estate, and most of his blood by whatever curse still clings to his name — but every night he survives, a little more of it burns away."
+max_health = 100
+move_speed = 295.0
+starting_armor = 1
+starting_dodge_chance = 0.03
+starting_crit_chance = 0.05
+starting_magic_power = 1.0
+starting_weapons = Array[Resource]([ExtResource("2_cleaver")])
+passive_id = "curse_lift_scaling"
+passive_name = "Lifting Curse"
+passive_description = "Damage grows the longer he survives, +5% per minute, up to +60%."
+passive_value_a = 0.05
+passive_value_b = 0.6
+difficulty_rating = 5

@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://p9x2r5t8k1w4z"]
 
-[ext_resource type="Script" path="res://Scripts/UI/CharacterSelect.cs" id="1_charselect"]
+[ext_resource type="Script" path="res://Scripts/UI/CharacterSelect.gd" id="1_charselect"]
 
 [node name="CharacterSelect" type="Control"]
 layout_mode = 3
@@ -10,20 +10,20 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_charselect")
-RosterContainerPath = NodePath("Margin/HBox/RosterScroll/RosterList")
-NameLabelPath = NodePath("Margin/HBox/Detail/NameLabel")
-LoreLabelPath = NodePath("Margin/HBox/Detail/LoreLabel")
-StatsLabelPath = NodePath("Margin/HBox/Detail/StatsLabel")
-PassiveLabelPath = NodePath("Margin/HBox/Detail/PassiveLabel")
-DifficultyLabelPath = NodePath("Margin/HBox/Detail/DifficultyLabel")
-BeginButtonPath = NodePath("Margin/HBox/Detail/ButtonRow/BeginButton")
-BackButtonPath = NodePath("Margin/HBox/Detail/ButtonRow/BackButton")
-MetaCurrencyLabelPath = NodePath("MetaCurrencyLabel")
-UnlockButtonPath = NodePath("Margin/HBox/Detail/ButtonRow/UnlockButton")
-UnlockStatusLabelPath = NodePath("Margin/HBox/Detail/UnlockStatusLabel")
-PortraitPanelPath = NodePath("Margin/HBox/PortraitPanel")
-PortraitSpritePath = NodePath("Margin/HBox/PortraitPanel/PortraitSprite")
-PortraitPlaceholderPath = NodePath("Margin/HBox/PortraitPanel/PortraitPlaceholder")
+roster_container_path = NodePath("Margin/HBox/RosterScroll/RosterList")
+name_label_path = NodePath("Margin/HBox/Detail/NameLabel")
+lore_label_path = NodePath("Margin/HBox/Detail/LoreLabel")
+stats_label_path = NodePath("Margin/HBox/Detail/StatsLabel")
+passive_label_path = NodePath("Margin/HBox/Detail/PassiveLabel")
+difficulty_label_path = NodePath("Margin/HBox/Detail/DifficultyLabel")
+begin_button_path = NodePath("Margin/HBox/Detail/ButtonRow/BeginButton")
+back_button_path = NodePath("Margin/HBox/Detail/ButtonRow/BackButton")
+meta_currency_label_path = NodePath("MetaCurrencyLabel")
+unlock_button_path = NodePath("Margin/HBox/Detail/ButtonRow/UnlockButton")
+unlock_status_label_path = NodePath("Margin/HBox/Detail/UnlockStatusLabel")
+portrait_panel_path = NodePath("Margin/HBox/PortraitPanel")
+portrait_sprite_path = NodePath("Margin/HBox/PortraitPanel/PortraitSprite")
+portrait_placeholder_path = NodePath("Margin/HBox/PortraitPanel/PortraitPlaceholder")
 
 [node name="Background" type="ColorRect" parent="."]
 layout_mode = 1

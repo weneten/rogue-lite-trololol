@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://d0y5t9r2m1x3n"]
 
-[ext_resource type="Script" path="res://Scripts/Combat/TargetDummy.cs" id="1_dummy"]
-[ext_resource type="Script" path="res://Scripts/Combat/HealthComponent.cs" id="2_health"]
+[ext_resource type="Script" path="res://Scripts/Combat/TargetDummy.gd" id="1_dummy"]
+[ext_resource type="Script" path="res://Scripts/Combat/HealthComponent.gd" id="2_health"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_dummy"]
 radius = 18.0
@@ -10,7 +10,7 @@ radius = 18.0
 collision_layer = 4
 collision_mask = 1
 script = ExtResource("1_dummy")
-HealthComponentPath = NodePath("HealthComponent")
+health_component_path = NodePath("HealthComponent")
 
 [node name="Sprite" type="Polygon2D" parent="."]
 color = Color(0.55, 0.42, 0.28, 1)
@@ -25,4 +25,4 @@ shape = SubResource("CircleShape2D_dummy")
 
 [node name="HealthComponent" type="Node" parent="."]
 script = ExtResource("2_health")
-MaxHealth = 60
+max_health = 60

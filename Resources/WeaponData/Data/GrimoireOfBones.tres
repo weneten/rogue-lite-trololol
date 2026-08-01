@@ -1,23 +1,23 @@
 [gd_resource type="Resource" script_class="WeaponData" load_steps=4 format=3 uid="uid://pt3x7z2c5f8h1j"]
 
-[ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.cs" id="1_wd"]
+[ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.gd" id="1_wd"]
 [ext_resource type="PackedScene" uid="uid://dv1p8k0m3x2wq" path="res://Scenes/Weapons/Projectile.tscn" id="2_proj"]
 [ext_resource type="PackedScene" uid="uid://dr4t8n1q5w2y6" path="res://Scenes/Weapons/Familiar.tscn" id="3_familiar"]
 
 [resource]
 script = ExtResource("1_wd")
-Name = "Grimoire of Bones"
-ProjectileScene = ExtResource("2_proj")
-SummonScene = ExtResource("3_familiar")
-MagicScalingPerPoint = 0.3
-Damage = 10.0
-AttackSpeed = 0.8
-Range = 260.0
-CritChance = 0.05
-CritMultiplier = 2.0
-ProjectileCount = 1
-Spread = 0.0
-Knockback = 10.0
-RarityTier = 2
-WeaponClass = 136
-ShopCost = 4
+name = "Grimoire of Bones"
+projectile_scene = ExtResource("2_proj")
+summon_scene = ExtResource("3_familiar")
+magic_scaling_per_point = 0.3
+damage = 10.0
+attack_speed = 0.8
+range = 260.0
+crit_chance = 0.05
+crit_multiplier = 2.0
+projectile_count = 1
+spread = 0.0
+knockback = 10.0
+rarity_tier = 2
+weapon_class = 136
+shop_cost = 4

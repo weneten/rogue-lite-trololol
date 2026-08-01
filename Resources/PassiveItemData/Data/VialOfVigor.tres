@@ -1,13 +1,13 @@
 [gd_resource type="Resource" script_class="PassiveItemData" load_steps=2 format=3 uid="uid://f3q7s1t5x8a2c"]
 
-[ext_resource type="Script" path="res://Resources/PassiveItemData/PassiveItemData.cs" id="1_pid"]
+[ext_resource type="Script" path="res://Resources/PassiveItemData/PassiveItemData.gd" id="1_pid"]
 
 [resource]
 script = ExtResource("1_pid")
-Id = "vial_of_vigor"
-DisplayName = "Vial of Vigor"
-Description = "+15 max health."
-EffectType = 2
-Value = 15.0
-RarityTier = 1
-ShopCost = 3
+id = "vial_of_vigor"
+display_name = "Vial of Vigor"
+description = "+15 max health."
+effect_type = 2
+value = 15.0
+rarity_tier = 1
+shop_cost = 3

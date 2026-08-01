@@ -1,15 +1,15 @@
 [gd_scene load_steps=14 format=3 uid="uid://cqk8n2x5f8h3a"]
 
 [ext_resource type="PackedScene" uid="uid://c3g8t6qk1n0wp" path="res://Scenes/Player/Player.tscn" id="1_player"]
-[ext_resource type="Script" path="res://Scripts/Waves/XpGemSpawner.cs" id="3_gemspawner"]
+[ext_resource type="Script" path="res://Scripts/Waves/XpGemSpawner.gd" id="3_gemspawner"]
 [ext_resource type="PackedScene" uid="uid://g2h4u6d8n1r3s" path="res://Scenes/UI/HUD.tscn" id="4_hud"]
 [ext_resource type="PackedScene" uid="uid://h5l7u9p3v6x8k" path="res://Scenes/UI/LevelUpUI.tscn" id="5_levelup"]
 [ext_resource type="PackedScene" uid="uid://k4x8u1r5t2n6q" path="res://Scenes/UI/ShopUI.tscn" id="6_shop"]
 [ext_resource type="PackedScene" uid="uid://c8pausemenu0001" path="res://Scenes/UI/PauseMenu.tscn" id="7_pause"]
 [ext_resource type="PackedScene" uid="uid://c8deathscreen01" path="res://Scenes/UI/DeathScreen.tscn" id="8_death"]
-[ext_resource type="Script" path="res://Scripts/Meta/RunStats.cs" id="9_runstats"]
-[ext_resource type="Script" path="res://Scripts/Juice/JuiceController.cs" id="10_juice"]
-[ext_resource type="Script" path="res://Scripts/Arena/ArenaVisuals.cs" id="11_visuals"]
+[ext_resource type="Script" path="res://Scripts/Meta/RunStats.gd" id="9_runstats"]
+[ext_resource type="Script" path="res://Scripts/Juice/JuiceController.gd" id="10_juice"]
+[ext_resource type="Script" path="res://Scripts/Arena/ArenaVisuals.gd" id="11_visuals"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_north"]
 size = Vector2(1664, 64)
@@ -30,11 +30,11 @@ color = Color(1.05, 1.02, 0.96, 1)
 [node name="ArenaVisuals" type="Node2D" parent="World"]
 z_index = -10
 script = ExtResource("11_visuals")
-ArenaSize = Vector2(1600, 1000)
-TileSize = 48
-BorderThickness = 56
-ClutterCount = 52
-Seed = 1337
+arena_size = Vector2(1600, 1000)
+tile_size = 48
+border_thickness = 56
+clutter_count = 52
+seed = 1337
 
 [node name="Ground" type="Polygon2D" parent="World"]
 visible = false

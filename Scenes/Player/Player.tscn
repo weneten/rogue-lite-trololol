@@ -1,12 +1,12 @@
 [gd_scene load_steps=9 format=3 uid="uid://c3g8t6qk1n0wp"]
 
-[ext_resource type="Script" path="res://Scripts/Player/Player.cs" id="1_player"]
-[ext_resource type="Script" path="res://Scripts/Combat/HealthComponent.cs" id="2_health"]
+[ext_resource type="Script" path="res://Scripts/Player/Player.gd" id="1_player"]
+[ext_resource type="Script" path="res://Scripts/Combat/HealthComponent.gd" id="2_health"]
 [ext_resource type="PackedScene" uid="uid://bqf7r2n8x1k0y" path="res://Scenes/Weapons/Weapon.tscn" id="3_weapon"]
 [ext_resource type="Resource" uid="uid://cx3v9m2k7q1n8" path="res://Resources/WeaponData/Data/RustyScythe.tres" id="4_rusty_scythe"]
-[ext_resource type="Script" path="res://Scripts/Player/PlayerStats.cs" id="5_stats"]
-[ext_resource type="Script" path="res://Scripts/Player/WeaponInventory.cs" id="6_weaponinv"]
-[ext_resource type="Script" path="res://Scripts/AI/EnemySpriteAnimator.cs" id="7_anim"]
+[ext_resource type="Script" path="res://Scripts/Player/PlayerStats.gd" id="5_stats"]
+[ext_resource type="Script" path="res://Scripts/Player/WeaponInventory.gd" id="6_weaponinv"]
+[ext_resource type="Script" path="res://Scripts/AI/EnemySpriteAnimator.gd" id="7_anim"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_player"]
 radius = 16.0
@@ -15,12 +15,12 @@ radius = 16.0
 collision_layer = 2
 collision_mask = 1
 script = ExtResource("1_player")
-HealthComponentPath = NodePath("HealthComponent")
-CameraPath = NodePath("Camera2D")
-PlayerStatsPath = NodePath("PlayerStats")
-SpriteNodePath = NodePath("Sprite")
-SpriteAnimatorPath = NodePath("SpriteAnimator")
-FallbackPolygonPath = NodePath("FallbackPolygon")
+health_component_path = NodePath("HealthComponent")
+camera_path = NodePath("Camera2D")
+player_stats_path = NodePath("PlayerStats")
+sprite_node_path = NodePath("Sprite")
+sprite_animator_path = NodePath("SpriteAnimator")
+fallback_polygon_path = NodePath("FallbackPolygon")
 
 [node name="Sprite" type="AnimatedSprite2D" parent="."]
 visible = false
@@ -40,18 +40,18 @@ polygon = PackedVector2Array(-6, -14, 6, -14, 4, -4, -4, -4)
 
 [node name="SpriteAnimator" type="Node" parent="."]
 script = ExtResource("7_anim")
-SpritePath = NodePath("../Sprite")
+sprite_path = NodePath("../Sprite")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_player")
 
 [node name="HealthComponent" type="Node" parent="."]
 script = ExtResource("2_health")
-MaxHealth = 100
+max_health = 100
 
 [node name="PlayerStats" type="Node" parent="."]
 script = ExtResource("5_stats")
-HealthComponentPath = NodePath("../HealthComponent")
+health_component_path = NodePath("../HealthComponent")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 zoom = Vector2(1.5, 1.5)

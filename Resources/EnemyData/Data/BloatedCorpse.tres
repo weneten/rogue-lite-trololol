@@ -1,36 +1,36 @@
 [gd_resource type="Resource" script_class="EnemyData" load_steps=4 format=3 uid="uid://e4b7c0r9p2s5t"]
 
-[ext_resource type="Script" path="res://Resources/EnemyData/EnemyData.cs" id="1_ed"]
+[ext_resource type="Script" path="res://Resources/EnemyData/EnemyData.gd" id="1_ed"]
 [ext_resource type="PackedScene" uid="uid://b8h1w4k2t9c7r" path="res://Scenes/Enemies/Enemy.tscn" id="2_scene"]
 [ext_resource type="Texture2D" uid="uid://bmdp6l4gtyevd" path="res://Assets/sprites/blutwaechter/blutwaechter.png" id="3_sheet"]
 
 [resource]
 script = ExtResource("1_ed")
-EnemyName = "Bloated Corpse"
-EnemyScene = ExtResource("2_scene")
-SpriteColor = Color(0.9, 0.8, 0.95, 1)
-SpriteSheet = ExtResource("3_sheet")
-SpriteSheetPath = "res://Assets/sprites/blutwaechter/blutwaechter.png"
-SpriteJsonPath = "res://Assets/sprites/blutwaechter/blutwaechter.json"
-SpriteScale = 1.35
-AttackAnimName = "shield_bash"
-MaxHealth = 70
-IsUndead = true
-MoveSpeed = 48.0
-AttackDamage = 10.0
-AttackPattern = 0
-BehaviorType = 0
-ProjectileScene = null
-AggroRange = 900.0
-AttackRange = 38.0
-PreferredDistance = 0.0
-AttackCooldown = 1.4
-ExplodeOnDeath = true
-ExplosionRadius = 110.0
-ExplosionDamage = 22.0
-PhasesThroughObstacles = false
-ErraticMovement = false
-CurrencyReward = 5
-ExperienceReward = 8
-SpawnWeight = 0.7
-MinWaveToAppear = 3
+enemy_name = "Bloated Corpse"
+enemy_scene = ExtResource("2_scene")
+sprite_color = Color(0.9, 0.8, 0.95, 1)
+sprite_sheet = ExtResource("3_sheet")
+sprite_sheet_path = "res://Assets/sprites/blutwaechter/blutwaechter.png"
+sprite_json_path = "res://Assets/sprites/blutwaechter/blutwaechter.json"
+sprite_scale = 1.35
+attack_anim_name = "shield_bash"
+max_health = 70
+is_undead = true
+move_speed = 48.0
+attack_damage = 10.0
+attack_pattern = 0
+behavior_type = 0
+projectile_scene = null
+aggro_range = 900.0
+attack_range = 38.0
+preferred_distance = 0.0
+attack_cooldown = 1.4
+explode_on_death = true
+explosion_radius = 110.0
+explosion_damage = 22.0
+phases_through_obstacles = false
+erratic_movement = false
+currency_reward = 5
+experience_reward = 8
+spawn_weight = 0.7
+min_wave_to_appear = 3

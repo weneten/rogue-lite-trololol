@@ -1,20 +1,20 @@
 [gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3 uid="uid://wa1e5g9j3m6o8q"]
 
-[ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.cs" id="1_wd"]
+[ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.gd" id="1_wd"]
 
 [resource]
 script = ExtResource("1_wd")
-Name = "Alchemist's Firebomb"
-AoERadius = 110.0
-AoECenteredOnSelf = false
-Damage = 22.0
-AttackSpeed = 0.55
-Range = 300.0
-CritChance = 0.05
-CritMultiplier = 2.0
-ProjectileCount = 1
-Spread = 0.0
-Knockback = 40.0
-RarityTier = 1
-WeaponClass = 66
-ShopCost = 4
+name = "Alchemist's Firebomb"
+aoe_radius = 110.0
+aoe_centered_on_self = false
+damage = 22.0
+attack_speed = 0.55
+range = 300.0
+crit_chance = 0.05
+crit_multiplier = 2.0
+projectile_count = 1
+spread = 0.0
+knockback = 40.0
+rarity_tier = 1
+weapon_class = 66
+shop_cost = 4

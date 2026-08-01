@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://cq8n2m5p9r1t3"]
 
-[ext_resource type="Script" path="res://Scripts/Combat/Trap.cs" id="1_trap"]
+[ext_resource type="Script" path="res://Scripts/Combat/Trap.gd" id="1_trap"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_trap"]
 radius = 20.0

@@ -1,22 +1,22 @@
 [gd_resource type="Resource" script_class="CharacterData" load_steps=3 format=3 uid="uid://c1r34ap3r0007"]
 
-[ext_resource type="Script" path="res://Resources/CharacterData/CharacterData.cs" id="1_cd"]
+[ext_resource type="Script" path="res://Resources/CharacterData/CharacterData.gd" id="1_cd"]
 [ext_resource type="Resource" uid="uid://cx3v9m2k7q1n8" path="res://Resources/WeaponData/Data/RustyScythe.tres" id="2_scythe"]
 
 [resource]
 script = ExtResource("1_cd")
-CharacterName = "Grave Warden"
-LoreBlurb = "Keeper of a graveyard so old the names have worn off every stone. He never fights alone — the dead he tends still owe him a favor or two."
-MaxHealth = 110
-MoveSpeed = 280.0
-StartingArmor = 1
-StartingDodgeChance = 0.02
-StartingCritChance = 0.05
-StartingMagicPower = 1.0
-StartingWeapons = Array[Resource]([ExtResource("2_scythe")])
-PassiveId = "summon_familiars"
-PassiveName = "Restless Dead"
-PassiveDescription = "Raises 2 spectral familiars that orbit and auto-attack nearby enemies."
-PassiveValueA = 2.0
-PassiveValueB = 0.0
-DifficultyRating = 4
+character_name = "Grave Warden"
+lore_blurb = "Keeper of a graveyard so old the names have worn off every stone. He never fights alone — the dead he tends still owe him a favor or two."
+max_health = 110
+move_speed = 280.0
+starting_armor = 1
+starting_dodge_chance = 0.02
+starting_crit_chance = 0.05
+starting_magic_power = 1.0
+starting_weapons = Array[Resource]([ExtResource("2_scythe")])
+passive_id = "summon_familiars"
+passive_name = "Restless Dead"
+passive_description = "Raises 2 spectral familiars that orbit and auto-attack nearby enemies."
+passive_value_a = 2.0
+passive_value_b = 0.0
+difficulty_rating = 4

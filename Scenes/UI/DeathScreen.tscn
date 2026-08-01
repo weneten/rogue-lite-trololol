@@ -1,16 +1,16 @@
 [gd_scene load_steps=2 format=3 uid="uid://c8deathscreen01"]
 
-[ext_resource type="Script" path="res://Scripts/UI/DeathScreen.cs" id="1_death"]
+[ext_resource type="Script" path="res://Scripts/UI/DeathScreen.gd" id="1_death"]
 
 [node name="DeathScreen" type="CanvasLayer"]
 layer = 100
 process_mode = 3
 script = ExtResource("1_death")
-RootPanelPath = NodePath("Root")
-TitleLabelPath = NodePath("Root/Panel/VBox/Title")
-StatsLabelPath = NodePath("Root/Panel/VBox/Stats")
-MetaLabelPath = NodePath("Root/Panel/VBox/Meta")
-ContinueButtonPath = NodePath("Root/Panel/VBox/ContinueButton")
+root_panel_path = NodePath("Root")
+title_label_path = NodePath("Root/Panel/VBox/Title")
+stats_label_path = NodePath("Root/Panel/VBox/Stats")
+meta_label_path = NodePath("Root/Panel/VBox/Meta")
+continue_button_path = NodePath("Root/Panel/VBox/ContinueButton")
 
 [node name="Root" type="Control" parent="."]
 layout_mode = 3

@@ -1,23 +1,23 @@
 [gd_resource type="Resource" script_class="WeaponData" load_steps=4 format=3 uid="uid://lp8t3v7y1b4d6f"]
 
-[ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.cs" id="1_wd"]
+[ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.gd" id="1_wd"]
 [ext_resource type="PackedScene" uid="uid://dv1p8k0m3x2wq" path="res://Scenes/Weapons/Projectile.tscn" id="2_proj"]
 [ext_resource type="Resource" uid="uid://mq9u4w8z2c5e7g" path="res://Resources/WeaponData/Data/CathedralRifle.tres" id="3_upgrade"]
 
 [resource]
 script = ExtResource("1_wd")
-Name = "Hexed Revolver"
-ProjectileScene = ExtResource("2_proj")
-UpgradesTo = ExtResource("3_upgrade")
-CursedMissingHpScaling = 1.2
-Damage = 14.0
-AttackSpeed = 1.3
-Range = 340.0
-CritChance = 0.1
-CritMultiplier = 2.2
-ProjectileCount = 1
-Spread = 0.0
-Knockback = 30.0
-RarityTier = 1
-WeaponClass = 38
-ShopCost = 4
+name = "Hexed Revolver"
+projectile_scene = ExtResource("2_proj")
+upgrades_to = ExtResource("3_upgrade")
+cursed_missing_hp_scaling = 1.2
+damage = 14.0
+attack_speed = 1.3
+range = 340.0
+crit_chance = 0.1
+crit_multiplier = 2.2
+projectile_count = 1
+spread = 0.0
+knockback = 30.0
+rarity_tier = 1
+weapon_class = 38
+shop_cost = 4

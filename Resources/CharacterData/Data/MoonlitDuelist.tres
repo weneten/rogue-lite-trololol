@@ -1,23 +1,23 @@
 [gd_resource type="Resource" script_class="CharacterData" load_steps=4 format=3 uid="uid://c1r34ap3r0008"]
 
-[ext_resource type="Script" path="res://Resources/CharacterData/CharacterData.cs" id="1_cd"]
+[ext_resource type="Script" path="res://Resources/CharacterData/CharacterData.gd" id="1_cd"]
 [ext_resource type="Resource" uid="uid://cx3v9m2k7q1n8" path="res://Resources/WeaponData/Data/RustyScythe.tres" id="2_scythe"]
 [ext_resource type="Resource" uid="uid://b8k3n6r1t4w7y" path="res://Resources/WeaponData/Data/SilverRevolver.tres" id="3_revolver"]
 
 [resource]
 script = ExtResource("1_cd")
-CharacterName = "Moonlit Duelist"
-LoreBlurb = "Blade in one hand, pistol in the other, she's never once needed both at the same time — until the night she started keeping count."
-MaxHealth = 95
-MoveSpeed = 320.0
-StartingArmor = 0
-StartingDodgeChance = 0.08
-StartingCritChance = 0.1
-StartingMagicPower = 1.0
-StartingWeapons = Array[Resource]([ExtResource("2_scythe"), ExtResource("3_revolver")])
-PassiveId = "dual_wield_attack_speed"
-PassiveName = "Twin Tempo"
-PassiveDescription = "+35% attack speed on every equipped weapon."
-PassiveValueA = 0.35
-PassiveValueB = 0.0
-DifficultyRating = 4
+character_name = "Moonlit Duelist"
+lore_blurb = "Blade in one hand, pistol in the other, she's never once needed both at the same time — until the night she started keeping count."
+max_health = 95
+move_speed = 320.0
+starting_armor = 0
+starting_dodge_chance = 0.08
+starting_crit_chance = 0.1
+starting_magic_power = 1.0
+starting_weapons = Array[Resource]([ExtResource("2_scythe"), ExtResource("3_revolver")])
+passive_id = "dual_wield_attack_speed"
+passive_name = "Twin Tempo"
+passive_description = "+35% attack speed on every equipped weapon."
+passive_value_a = 0.35
+passive_value_b = 0.0
+difficulty_rating = 4

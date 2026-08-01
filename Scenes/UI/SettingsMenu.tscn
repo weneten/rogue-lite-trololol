@@ -1,17 +1,17 @@
 [gd_scene load_steps=2 format=3 uid="uid://c8settingsmenu01"]
 
-[ext_resource type="Script" path="res://Scripts/UI/SettingsMenu.cs" id="1_settings"]
+[ext_resource type="Script" path="res://Scripts/UI/SettingsMenu.gd" id="1_settings"]
 
 [node name="SettingsMenu" type="CanvasLayer"]
 layer = 90
 script = ExtResource("1_settings")
-RootPanelPath = NodePath("Root")
-MasterSliderPath = NodePath("Root/Panel/VBox/MasterRow/MasterSlider")
-MusicSliderPath = NodePath("Root/Panel/VBox/MusicRow/MusicSlider")
-SfxSliderPath = NodePath("Root/Panel/VBox/SfxRow/SfxSlider")
-CloseButtonPath = NodePath("Root/Panel/VBox/CloseButton")
-RebindStubButtonPath = NodePath("Root/Panel/VBox/RebindButton")
-RebindStatusLabelPath = NodePath("Root/Panel/VBox/RebindStatus")
+root_panel_path = NodePath("Root")
+master_slider_path = NodePath("Root/Panel/VBox/MasterRow/MasterSlider")
+music_slider_path = NodePath("Root/Panel/VBox/MusicRow/MusicSlider")
+sfx_slider_path = NodePath("Root/Panel/VBox/SfxRow/SfxSlider")
+close_button_path = NodePath("Root/Panel/VBox/CloseButton")
+rebind_stub_button_path = NodePath("Root/Panel/VBox/RebindButton")
+rebind_status_label_path = NodePath("Root/Panel/VBox/RebindStatus")
 
 [node name="Root" type="Control" parent="."]
 layout_mode = 3

@@ -1,23 +1,23 @@
 [gd_scene load_steps=2 format=3 uid="uid://k4x8u1r5t2n6q"]
 
-[ext_resource type="Script" path="res://Scripts/UI/ShopUI.cs" id="1_shop"]
+[ext_resource type="Script" path="res://Scripts/UI/ShopUI.gd" id="1_shop"]
 
 [node name="ShopUI" type="CanvasLayer"]
 script = ExtResource("1_shop")
-RootPanelPath = NodePath("RootPanel")
-CurrencyLabelPath = NodePath("RootPanel/Content/TopRow/CurrencyLabel")
-RerollButtonPath = NodePath("RootPanel/Content/BottomRow/RerollButton")
-RerollCostLabelPath = NodePath("RootPanel/Content/BottomRow/RerollCostLabel")
-NextWaveButtonPath = NodePath("RootPanel/Content/BottomRow/NextWaveButton")
-WeaponButtonPaths = Array[NodePath]([NodePath("RootPanel/Content/WeaponOffers/Weapon0/VBox/Button"), NodePath("RootPanel/Content/WeaponOffers/Weapon1/VBox/Button"), NodePath("RootPanel/Content/WeaponOffers/Weapon2/VBox/Button")])
-WeaponNamePaths = Array[NodePath]([NodePath("RootPanel/Content/WeaponOffers/Weapon0/VBox/NameLabel"), NodePath("RootPanel/Content/WeaponOffers/Weapon1/VBox/NameLabel"), NodePath("RootPanel/Content/WeaponOffers/Weapon2/VBox/NameLabel")])
-WeaponDescPaths = Array[NodePath]([NodePath("RootPanel/Content/WeaponOffers/Weapon0/VBox/DescLabel"), NodePath("RootPanel/Content/WeaponOffers/Weapon1/VBox/DescLabel"), NodePath("RootPanel/Content/WeaponOffers/Weapon2/VBox/DescLabel")])
-PassiveButtonPaths = Array[NodePath]([NodePath("RootPanel/Content/PassiveOffers/Passive0/VBox/Button"), NodePath("RootPanel/Content/PassiveOffers/Passive1/VBox/Button")])
-PassiveNamePaths = Array[NodePath]([NodePath("RootPanel/Content/PassiveOffers/Passive0/VBox/NameLabel"), NodePath("RootPanel/Content/PassiveOffers/Passive1/VBox/NameLabel")])
-PassiveDescPaths = Array[NodePath]([NodePath("RootPanel/Content/PassiveOffers/Passive0/VBox/DescLabel"), NodePath("RootPanel/Content/PassiveOffers/Passive1/VBox/DescLabel")])
-EquippedRowPaths = Array[NodePath]([NodePath("RootPanel/Content/EquippedRow/Equipped0"), NodePath("RootPanel/Content/EquippedRow/Equipped1"), NodePath("RootPanel/Content/EquippedRow/Equipped2"), NodePath("RootPanel/Content/EquippedRow/Equipped3"), NodePath("RootPanel/Content/EquippedRow/Equipped4"), NodePath("RootPanel/Content/EquippedRow/Equipped5")])
-EquippedNamePaths = Array[NodePath]([NodePath("RootPanel/Content/EquippedRow/Equipped0/NameLabel"), NodePath("RootPanel/Content/EquippedRow/Equipped1/NameLabel"), NodePath("RootPanel/Content/EquippedRow/Equipped2/NameLabel"), NodePath("RootPanel/Content/EquippedRow/Equipped3/NameLabel"), NodePath("RootPanel/Content/EquippedRow/Equipped4/NameLabel"), NodePath("RootPanel/Content/EquippedRow/Equipped5/NameLabel")])
-EquippedSellButtonPaths = Array[NodePath]([NodePath("RootPanel/Content/EquippedRow/Equipped0/SellButton"), NodePath("RootPanel/Content/EquippedRow/Equipped1/SellButton"), NodePath("RootPanel/Content/EquippedRow/Equipped2/SellButton"), NodePath("RootPanel/Content/EquippedRow/Equipped3/SellButton"), NodePath("RootPanel/Content/EquippedRow/Equipped4/SellButton"), NodePath("RootPanel/Content/EquippedRow/Equipped5/SellButton")])
+root_panel_path = NodePath("RootPanel")
+currency_label_path = NodePath("RootPanel/Content/TopRow/CurrencyLabel")
+reroll_button_path = NodePath("RootPanel/Content/BottomRow/RerollButton")
+reroll_cost_label_path = NodePath("RootPanel/Content/BottomRow/RerollCostLabel")
+next_wave_button_path = NodePath("RootPanel/Content/BottomRow/NextWaveButton")
+weapon_button_paths = Array[NodePath]([NodePath("RootPanel/Content/WeaponOffers/Weapon0/VBox/Button"), NodePath("RootPanel/Content/WeaponOffers/Weapon1/VBox/Button"), NodePath("RootPanel/Content/WeaponOffers/Weapon2/VBox/Button")])
+weapon_name_paths = Array[NodePath]([NodePath("RootPanel/Content/WeaponOffers/Weapon0/VBox/NameLabel"), NodePath("RootPanel/Content/WeaponOffers/Weapon1/VBox/NameLabel"), NodePath("RootPanel/Content/WeaponOffers/Weapon2/VBox/NameLabel")])
+weapon_desc_paths = Array[NodePath]([NodePath("RootPanel/Content/WeaponOffers/Weapon0/VBox/DescLabel"), NodePath("RootPanel/Content/WeaponOffers/Weapon1/VBox/DescLabel"), NodePath("RootPanel/Content/WeaponOffers/Weapon2/VBox/DescLabel")])
+passive_button_paths = Array[NodePath]([NodePath("RootPanel/Content/PassiveOffers/Passive0/VBox/Button"), NodePath("RootPanel/Content/PassiveOffers/Passive1/VBox/Button")])
+passive_name_paths = Array[NodePath]([NodePath("RootPanel/Content/PassiveOffers/Passive0/VBox/NameLabel"), NodePath("RootPanel/Content/PassiveOffers/Passive1/VBox/NameLabel")])
+passive_desc_paths = Array[NodePath]([NodePath("RootPanel/Content/PassiveOffers/Passive0/VBox/DescLabel"), NodePath("RootPanel/Content/PassiveOffers/Passive1/VBox/DescLabel")])
+equipped_row_paths = Array[NodePath]([NodePath("RootPanel/Content/EquippedRow/Equipped0"), NodePath("RootPanel/Content/EquippedRow/Equipped1"), NodePath("RootPanel/Content/EquippedRow/Equipped2"), NodePath("RootPanel/Content/EquippedRow/Equipped3"), NodePath("RootPanel/Content/EquippedRow/Equipped4"), NodePath("RootPanel/Content/EquippedRow/Equipped5")])
+equipped_name_paths = Array[NodePath]([NodePath("RootPanel/Content/EquippedRow/Equipped0/NameLabel"), NodePath("RootPanel/Content/EquippedRow/Equipped1/NameLabel"), NodePath("RootPanel/Content/EquippedRow/Equipped2/NameLabel"), NodePath("RootPanel/Content/EquippedRow/Equipped3/NameLabel"), NodePath("RootPanel/Content/EquippedRow/Equipped4/NameLabel"), NodePath("RootPanel/Content/EquippedRow/Equipped5/NameLabel")])
+equipped_sell_button_paths = Array[NodePath]([NodePath("RootPanel/Content/EquippedRow/Equipped0/SellButton"), NodePath("RootPanel/Content/EquippedRow/Equipped1/SellButton"), NodePath("RootPanel/Content/EquippedRow/Equipped2/SellButton"), NodePath("RootPanel/Content/EquippedRow/Equipped3/SellButton"), NodePath("RootPanel/Content/EquippedRow/Equipped4/SellButton"), NodePath("RootPanel/Content/EquippedRow/Equipped5/SellButton")])
 
 [node name="RootPanel" type="ColorRect" parent="."]
 anchors_preset = 15

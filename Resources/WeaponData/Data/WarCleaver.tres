@@ -1,18 +1,18 @@
 [gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3 uid="uid://sw6a1c5f8i2k4m"]
 
-[ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.cs" id="1_wd"]
+[ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.gd" id="1_wd"]
 
 [resource]
 script = ExtResource("1_wd")
-Name = "War Cleaver"
-Damage = 32.0
-AttackSpeed = 0.5
-Range = 80.0
-CritChance = 0.08
-CritMultiplier = 2.5
-ProjectileCount = 1
-Spread = 0.0
-Knockback = 260.0
-RarityTier = 2
-WeaponClass = 65
-ShopCost = 4
+name = "War Cleaver"
+damage = 32.0
+attack_speed = 0.5
+range = 80.0
+crit_chance = 0.08
+crit_multiplier = 2.5
+projectile_count = 1
+spread = 0.0
+knockback = 260.0
+rarity_tier = 2
+weapon_class = 65
+shop_cost = 4

@@ -1,14 +1,14 @@
 [gd_scene load_steps=3 format=3 uid="uid://bqf7r2n8x1k0y"]
 
-[ext_resource type="Script" path="res://Scripts/Combat/Weapon.cs" id="1_weapon"]
+[ext_resource type="Script" path="res://Scripts/Combat/Weapon.gd" id="1_weapon"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_hitbox"]
 radius = 55.0
 
 [node name="Weapon" type="Node2D"]
 script = ExtResource("1_weapon")
-MeleeHitboxPath = NodePath("MeleeHitbox")
-ProjectileSpawnPointPath = NodePath("ProjectileSpawnPoint")
+melee_hitbox_path = NodePath("MeleeHitbox")
+projectile_spawn_point_path = NodePath("ProjectileSpawnPoint")
 
 [node name="MeleeHitbox" type="Area2D" parent="."]
 collision_layer = 0

@@ -1,12 +1,12 @@
 [gd_resource type="Resource" script_class="UpgradeData" load_steps=2 format=3 uid="uid://k3s5p7e9d2u4y"]
 
-[ext_resource type="Script" path="res://Resources/UpgradeData/UpgradeData.cs" id="1_ud"]
+[ext_resource type="Script" path="res://Resources/UpgradeData/UpgradeData.gd" id="1_ud"]
 
 [resource]
 script = ExtResource("1_ud")
-Id = "speed_up"
-DisplayName = "Hunter's Haste"
-Description = "+10% movement speed."
-UpgradeType = 1
-Value = 0.1
-Weight = 1.0
+id = "speed_up"
+display_name = "Hunter's Haste"
+description = "+10% movement speed."
+upgrade_type = 1
+value = 0.1
+weight = 1.0

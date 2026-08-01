@@ -1,19 +1,19 @@
 [gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3 uid="uid://nr1v5x9a3d6f8h"]
 
-[ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.cs" id="1_wd"]
+[ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.gd" id="1_wd"]
 
 [resource]
 script = ExtResource("1_wd")
-Name = "Spellblade of Ash"
-MagicScalingPerPoint = 0.6
-Damage = 20.0
-AttackSpeed = 1.0
-Range = 65.0
-CritChance = 0.08
-CritMultiplier = 2.2
-ProjectileCount = 1
-Spread = 0.0
-Knockback = 100.0
-RarityTier = 2
-WeaponClass = 9
-ShopCost = 4
+name = "Spellblade of Ash"
+magic_scaling_per_point = 0.6
+damage = 20.0
+attack_speed = 1.0
+range = 65.0
+crit_chance = 0.08
+crit_multiplier = 2.2
+projectile_count = 1
+spread = 0.0
+knockback = 100.0
+rarity_tier = 2
+weapon_class = 9
+shop_cost = 4

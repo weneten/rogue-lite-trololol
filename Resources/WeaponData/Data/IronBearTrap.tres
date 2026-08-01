@@ -1,22 +1,22 @@
 [gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://yc3g7i2l5o8q1s"]
 
-[ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.cs" id="1_wd"]
+[ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.gd" id="1_wd"]
 [ext_resource type="PackedScene" uid="uid://cq8n2m5p9r1t3" path="res://Scenes/Weapons/Trap.tscn" id="2_trap"]
 
 [resource]
 script = ExtResource("1_wd")
-Name = "Iron Bear Trap"
-TrapScene = ExtResource("2_trap")
-TrapRootDurationSeconds = 2.0
-TrapLifetimeSeconds = 10.0
-Damage = 26.0
-AttackSpeed = 0.4
-Range = 200.0
-CritChance = 0.05
-CritMultiplier = 2.0
-ProjectileCount = 1
-Spread = 0.0
-Knockback = 0.0
-RarityTier = 1
-WeaponClass = 256
-ShopCost = 3
+name = "Iron Bear Trap"
+trap_scene = ExtResource("2_trap")
+trap_root_duration_seconds = 2.0
+trap_lifetime_seconds = 10.0
+damage = 26.0
+attack_speed = 0.4
+range = 200.0
+crit_chance = 0.05
+crit_multiplier = 2.0
+projectile_count = 1
+spread = 0.0
+knockback = 0.0
+rarity_tier = 1
+weapon_class = 256
+shop_cost = 3

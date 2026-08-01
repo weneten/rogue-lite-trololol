@@ -1,31 +1,31 @@
 [gd_resource type="Resource" script_class="EnemyData" load_steps=4 format=3 uid="uid://c1k5m8n2p4q6r"]
 
-[ext_resource type="Script" path="res://Resources/EnemyData/EnemyData.cs" id="1_ed"]
+[ext_resource type="Script" path="res://Resources/EnemyData/EnemyData.gd" id="1_ed"]
 [ext_resource type="PackedScene" uid="uid://b8h1w4k2t9c7r" path="res://Scenes/Enemies/Enemy.tscn" id="2_scene"]
 [ext_resource type="Texture2D" uid="uid://q4s10rifnalm" path="res://Assets/sprites/blutwolf/blutwolf.png" id="3_sheet"]
 
 [resource]
 script = ExtResource("1_ed")
-EnemyName = "Ghoul"
-EnemyScene = ExtResource("2_scene")
-SpriteColor = Color(0.85, 1, 0.85, 1)
-SpriteSheet = ExtResource("3_sheet")
-SpriteSheetPath = "res://Assets/sprites/blutwolf/blutwolf.png"
-SpriteJsonPath = "res://Assets/sprites/blutwolf/blutwolf.json"
-SpriteScale = 1.15
-AttackAnimName = "attack_slash"
-MaxHealth = 18
-IsUndead = true
-MoveSpeed = 150.0
-AttackDamage = 6.0
-AttackPattern = 0
-BehaviorType = 0
-ProjectileScene = null
-AggroRange = 900.0
-AttackRange = 34.0
-PreferredDistance = 0.0
-AttackCooldown = 0.8
-CurrencyReward = 2
-ExperienceReward = 3
-SpawnWeight = 2.0
-MinWaveToAppear = 1
+enemy_name = "Ghoul"
+enemy_scene = ExtResource("2_scene")
+sprite_color = Color(0.85, 1, 0.85, 1)
+sprite_sheet = ExtResource("3_sheet")
+sprite_sheet_path = "res://Assets/sprites/blutwolf/blutwolf.png"
+sprite_json_path = "res://Assets/sprites/blutwolf/blutwolf.json"
+sprite_scale = 1.15
+attack_anim_name = "attack_slash"
+max_health = 18
+is_undead = true
+move_speed = 150.0
+attack_damage = 6.0
+attack_pattern = 0
+behavior_type = 0
+projectile_scene = null
+aggro_range = 900.0
+attack_range = 34.0
+preferred_distance = 0.0
+attack_cooldown = 0.8
+currency_reward = 2
+experience_reward = 3
+spawn_weight = 2.0
+min_wave_to_appear = 1

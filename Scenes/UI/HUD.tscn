@@ -1,15 +1,15 @@
 [gd_scene load_steps=2 format=3 uid="uid://g2h4u6d8n1r3s"]
 
-[ext_resource type="Script" path="res://Scripts/UI/HUD.cs" id="1_hud"]
+[ext_resource type="Script" path="res://Scripts/UI/HUD.gd" id="1_hud"]
 
 [node name="HUD" type="CanvasLayer"]
 script = ExtResource("1_hud")
-HealthBarPath = NodePath("Margin/VBox/HealthBar")
-XpBarPath = NodePath("Margin/VBox/XpBar")
-WaveLabelPath = NodePath("Margin/VBox/InfoRow/WaveLabel")
-TimerLabelPath = NodePath("Margin/VBox/InfoRow/TimerLabel")
-CurrencyLabelPath = NodePath("Margin/VBox/InfoRow/CurrencyLabel")
-ArrowLayerPath = NodePath("OffscreenArrows")
+health_bar_path = NodePath("Margin/VBox/HealthBar")
+xp_bar_path = NodePath("Margin/VBox/XpBar")
+wave_label_path = NodePath("Margin/VBox/InfoRow/WaveLabel")
+timer_label_path = NodePath("Margin/VBox/InfoRow/TimerLabel")
+currency_label_path = NodePath("Margin/VBox/InfoRow/CurrencyLabel")
+arrow_layer_path = NodePath("OffscreenArrows")
 
 [node name="Margin" type="MarginContainer" parent="."]
 anchors_preset = 15

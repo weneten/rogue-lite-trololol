@@ -1,10 +1,10 @@
 [gd_scene load_steps=2 format=3 uid="uid://dr4t8n1q5w2y6"]
 
-[ext_resource type="Script" path="res://Scripts/Combat/Familiar.cs" id="1_familiar"]
+[ext_resource type="Script" path="res://Scripts/Combat/Familiar.gd" id="1_familiar"]
 
 [node name="Familiar" type="Node2D"]
 script = ExtResource("1_familiar")
-ProjectileSpawnPointPath = NodePath("ProjectileSpawnPoint")
+projectile_spawn_point_path = NodePath("ProjectileSpawnPoint")
 
 [node name="Sprite" type="Polygon2D" parent="."]
 color = Color(0.78, 0.78, 0.7, 1)

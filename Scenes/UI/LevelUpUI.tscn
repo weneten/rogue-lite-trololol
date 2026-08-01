@@ -1,13 +1,13 @@
 [gd_scene load_steps=2 format=3 uid="uid://h5l7u9p3v6x8k"]
 
-[ext_resource type="Script" path="res://Scripts/UI/LevelUpUI.cs" id="1_lvlup"]
+[ext_resource type="Script" path="res://Scripts/UI/LevelUpUI.gd" id="1_lvlup"]
 
 [node name="LevelUpUI" type="CanvasLayer"]
 script = ExtResource("1_lvlup")
-RootPanelPath = NodePath("RootPanel")
-ChoiceButtonPaths = Array[NodePath]([NodePath("RootPanel/Choices/Choice0/VBox/Button"), NodePath("RootPanel/Choices/Choice1/VBox/Button"), NodePath("RootPanel/Choices/Choice2/VBox/Button")])
-ChoiceNamePaths = Array[NodePath]([NodePath("RootPanel/Choices/Choice0/VBox/NameLabel"), NodePath("RootPanel/Choices/Choice1/VBox/NameLabel"), NodePath("RootPanel/Choices/Choice2/VBox/NameLabel")])
-ChoiceDescriptionPaths = Array[NodePath]([NodePath("RootPanel/Choices/Choice0/VBox/DescLabel"), NodePath("RootPanel/Choices/Choice1/VBox/DescLabel"), NodePath("RootPanel/Choices/Choice2/VBox/DescLabel")])
+root_panel_path = NodePath("RootPanel")
+choice_button_paths = Array[NodePath]([NodePath("RootPanel/Choices/Choice0/VBox/Button"), NodePath("RootPanel/Choices/Choice1/VBox/Button"), NodePath("RootPanel/Choices/Choice2/VBox/Button")])
+choice_name_paths = Array[NodePath]([NodePath("RootPanel/Choices/Choice0/VBox/NameLabel"), NodePath("RootPanel/Choices/Choice1/VBox/NameLabel"), NodePath("RootPanel/Choices/Choice2/VBox/NameLabel")])
+choice_description_paths = Array[NodePath]([NodePath("RootPanel/Choices/Choice0/VBox/DescLabel"), NodePath("RootPanel/Choices/Choice1/VBox/DescLabel"), NodePath("RootPanel/Choices/Choice2/VBox/DescLabel")])
 
 [node name="RootPanel" type="ColorRect" parent="."]
 anchors_preset = 15

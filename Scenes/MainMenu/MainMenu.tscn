@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://b7wj0lqxsyvpq"]
 
-[ext_resource type="Script" path="res://Scenes/MainMenu/MainMenu.cs" id="1_menu"]
+[ext_resource type="Script" path="res://Scenes/MainMenu/MainMenu.gd" id="1_menu"]
 [ext_resource type="PackedScene" uid="uid://c8settingsmenu01" path="res://Scenes/UI/SettingsMenu.tscn" id="2_settings"]
 
 [node name="MainMenu" type="Control"]
@@ -11,11 +11,11 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_menu")
-StartButtonPath = NodePath("CenterContainer/VBoxContainer/StartButton")
-QuitButtonPath = NodePath("CenterContainer/VBoxContainer/QuitButton")
-SettingsButtonPath = NodePath("CenterContainer/VBoxContainer/SettingsButton")
-MetaCurrencyLabelPath = NodePath("CenterContainer/VBoxContainer/MetaCurrencyLabel")
-SettingsMenuPath = NodePath("SettingsMenu")
+start_button_path = NodePath("CenterContainer/VBoxContainer/StartButton")
+quit_button_path = NodePath("CenterContainer/VBoxContainer/QuitButton")
+settings_button_path = NodePath("CenterContainer/VBoxContainer/SettingsButton")
+meta_currency_label_path = NodePath("CenterContainer/VBoxContainer/MetaCurrencyLabel")
+settings_menu_path = NodePath("SettingsMenu")
 
 [node name="Background" type="ColorRect" parent="."]
 layout_mode = 1

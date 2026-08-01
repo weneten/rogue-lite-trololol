@@ -1,13 +1,13 @@
 [gd_resource type="Resource" script_class="PassiveItemData" load_steps=2 format=3 uid="uid://e2p6r9s4w7z1b"]
 
-[ext_resource type="Script" path="res://Resources/PassiveItemData/PassiveItemData.cs" id="1_pid"]
+[ext_resource type="Script" path="res://Resources/PassiveItemData/PassiveItemData.gd" id="1_pid"]
 
 [resource]
 script = ExtResource("1_pid")
-Id = "grave_runner_boots"
-DisplayName = "Grave Runner Boots"
-Description = "+8% move speed."
-EffectType = 1
-Value = 0.08
-RarityTier = 0
-ShopCost = 2
+id = "grave_runner_boots"
+display_name = "Grave Runner Boots"
+description = "+8% move speed."
+effect_type = 1
+value = 0.08
+rarity_tier = 0
+shop_cost = 2

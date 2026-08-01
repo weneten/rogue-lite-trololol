@@ -1,28 +1,28 @@
 [gd_resource type="Resource" script_class="CharacterData" format=3 uid="uid://c1r34ap3r0005"]
 
-[ext_resource type="Script" path="res://Resources/CharacterData/CharacterData.cs" id="1_cd"]
+[ext_resource type="Script" path="res://Resources/CharacterData/CharacterData.gd" id="1_cd"]
 [ext_resource type="Resource" uid="uid://c9m4p7q2u5x8z" path="res://Resources/WeaponData/Data/BoneCleaver.tres" id="2_cleaver"]
 [ext_resource type="Texture2D" uid="uid://bmdp6l4gtyevd" path="res://Assets/sprites/blutwaechter/blutwaechter.png" id="3_sheet"]
 
 [resource]
 script = ExtResource("1_cd")
-CharacterName = "Bloodstained Crusader"
-LoreBlurb = "He buried his order and every soldier who ever underestimated his plating. Nothing that hits him walks away without regretting it."
-SpriteSheet = ExtResource("3_sheet")
-SpriteSheetPath = "res://Assets/sprites/blutwaechter/blutwaechter.png"
-SpriteJsonPath = "res://Assets/sprites/blutwaechter/blutwaechter.json"
-SpriteScale = 1.2
-AttackAnimName = "shield_bash"
-MaxHealth = 140
-MoveSpeed = 260.0
-StartingArmor = 3
-StartingDodgeChance = 0.0
-StartingCritChance = 0.03
-StartingMagicPower = 1.0
-StartingWeapons = Array[Resource]([ExtResource("2_cleaver")])
-PassiveId = "taunt_armor"
-PassiveName = "Iron Thorns"
-PassiveDescription = "+5 flat Armor. Reflects 25% of damage taken back at the attacker."
-PassiveValueA = 5.0
-PassiveValueB = 0.25
-DifficultyRating = 2
+character_name = "Bloodstained Crusader"
+lore_blurb = "He buried his order and every soldier who ever underestimated his plating. Nothing that hits him walks away without regretting it."
+sprite_sheet = ExtResource("3_sheet")
+sprite_sheet_path = "res://Assets/sprites/blutwaechter/blutwaechter.png"
+sprite_json_path = "res://Assets/sprites/blutwaechter/blutwaechter.json"
+sprite_scale = 1.2
+attack_anim_name = "shield_bash"
+max_health = 140
+move_speed = 260.0
+starting_armor = 3
+starting_dodge_chance = 0.0
+starting_crit_chance = 0.03
+starting_magic_power = 1.0
+starting_weapons = Array[Resource]([ExtResource("2_cleaver")])
+passive_id = "taunt_armor"
+passive_name = "Iron Thorns"
+passive_description = "+5 flat Armor. Reflects 25% of damage taken back at the attacker."
+passive_value_a = 5.0
+passive_value_b = 0.25
+difficulty_rating = 2

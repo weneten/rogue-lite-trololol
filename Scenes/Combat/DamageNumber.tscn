@@ -1,14 +1,14 @@
 [gd_scene load_steps=2 format=3 uid="uid://d4mgnum7k2p9q"]
 
-[ext_resource type="Script" path="res://Scripts/Juice/DamageNumber.cs" id="1_dmg"]
+[ext_resource type="Script" path="res://Scripts/Juice/DamageNumber.gd" id="1_dmg"]
 
 [node name="DamageNumber" type="Node2D"]
 z_index = 20
 script = ExtResource("1_dmg")
-RiseSpeed = 48.0
-LifetimeSeconds = 0.55
-FadeStartFraction = 0.45
-LabelPath = NodePath("Label")
+rise_speed = 48.0
+lifetime_seconds = 0.55
+fade_start_fraction = 0.45
+label_path = NodePath("Label")
 
 [node name="Label" type="Label" parent="."]
 offset_left = -24.0

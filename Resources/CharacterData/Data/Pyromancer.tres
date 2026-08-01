@@ -1,22 +1,22 @@
 [gd_resource type="Resource" script_class="CharacterData" load_steps=3 format=3 uid="uid://c1r34ap3r0006"]
 
-[ext_resource type="Script" path="res://Resources/CharacterData/CharacterData.cs" id="1_cd"]
+[ext_resource type="Script" path="res://Resources/CharacterData/CharacterData.gd" id="1_cd"]
 [ext_resource type="Resource" uid="uid://b8k3n6r1t4w7y" path="res://Resources/WeaponData/Data/SilverRevolver.tres" id="2_revolver"]
 
 [resource]
 script = ExtResource("1_cd")
-CharacterName = "Pyromancer"
-LoreBlurb = "Excommunicated for burning down the wrong shrine — or the right one, depending who's asking. Every round she fires still carries a whisper of that fire."
-MaxHealth = 90
-MoveSpeed = 295.0
-StartingArmor = 0
-StartingDodgeChance = 0.05
-StartingCritChance = 0.05
-StartingMagicPower = 1.3
-StartingWeapons = Array[Resource]([ExtResource("2_revolver")])
-PassiveId = "fire_dot"
-PassiveName = "Lingering Ember"
-PassiveDescription = "Hits set the target ablaze, burning for 25% of the hit's damage each second for 4 seconds."
-PassiveValueA = 0.25
-PassiveValueB = 4.0
-DifficultyRating = 3
+character_name = "Pyromancer"
+lore_blurb = "Excommunicated for burning down the wrong shrine — or the right one, depending who's asking. Every round she fires still carries a whisper of that fire."
+max_health = 90
+move_speed = 295.0
+starting_armor = 0
+starting_dodge_chance = 0.05
+starting_crit_chance = 0.05
+starting_magic_power = 1.3
+starting_weapons = Array[Resource]([ExtResource("2_revolver")])
+passive_id = "fire_dot"
+passive_name = "Lingering Ember"
+passive_description = "Hits set the target ablaze, burning for 25% of the hit's damage each second for 4 seconds."
+passive_value_a = 0.25
+passive_value_b = 4.0
+difficulty_rating = 3

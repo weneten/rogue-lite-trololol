@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://dk3n7q1w9m2xf"]
 
-[ext_resource type="Script" path="res://Scripts/Combat/Projectile.cs" id="1_proj"]
+[ext_resource type="Script" path="res://Scripts/Combat/Projectile.gd" id="1_proj"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_arrow"]
 radius = 5.0
@@ -11,8 +11,8 @@ collision_mask = 2
 monitoring = true
 monitorable = false
 script = ExtResource("1_proj")
-Speed = 420.0
-MaxLifetimeSeconds = 2.5
+speed = 420.0
+max_lifetime_seconds = 2.5
 
 [node name="Sprite" type="Polygon2D" parent="."]
 color = Color(0.78, 0.75, 0.68, 1)

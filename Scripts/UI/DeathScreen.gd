@@ -1,0 +1,105 @@
+extends CanvasLayer
+class_name DeathScreen
+
+# Run-end summary: player death OR wave-20 clear. Grants meta-currency via RunStats,
+# shows waves/kills/damage/gold, Continue -> MainMenu.
+
+# True while the overlay is up (PauseMenu ignores ESC while set).
+static var is_showing: bool = false
+
+@export var root_panel_path: NodePath
+@export var title_label_path: NodePath
+@export var stats_label_path: NodePath
+@export var meta_label_path: NodePath
+@export var continue_button_path: NodePath
+@export var main_menu_scene_path: String = "res://Scenes/MainMenu/MainMenu.tscn"
+@export var victory_wave: int = 20
+
+var _root_panel: Control
+var _title_label: Label
+var _stats_label: Label
+var _meta_label: Label
+var _continue_button: Button
+var _shown: bool = false
+
+func _ready() -> void:
+	process_mode = PROCESS_MODE_ALWAYS
+	layer = 100
+
+	_root_panel = get_node_or_null(root_panel_path)
+	_title_label = get_node_or_null(title_label_path)
+	_stats_label = get_node_or_null(stats_label_path)
+	_meta_label = get_node_or_null(meta_label_path)
+	_continue_button = get_node_or_null(continue_button_path)
+
+	if _continue_button != null:
+		_continue_button.pressed.connect(_on_continue_pressed)
+
+	if _root_panel != null:
+		_root_panel.visible = false
+
+	is_showing = false
+	_shown = false
+
+	if EventBus != null:
+		EventBus.player_died.connect(_on_player_died)
+		EventBus.wave_end.connect(_on_wave_end)
+
+func _exit_tree() -> void:
+	if EventBus != null:
+		EventBus.player_died.disconnect(_on_player_died)
+		EventBus.wave_end.disconnect(_on_wave_end)
+
+	is_showing = false
+
+func _on_player_died() -> void:
+	_show_summary(false)
+
+func _on_wave_end(wave_number: int) -> void:
+	if wave_number >= victory_wave:
+		_show_summary(true)
+
+func _show_summary(run_complete: bool) -> void:
+	if _shown:
+		return
+
+	_shown = true
+	is_showing = true
+	get_tree().paused = true
+
+	var stats = RunStats.instance if RunStats != null else null
+	var waves = (stats.waves_survived if stats != null else (GameManager.wave_number if GameManager != null else 0))
+	var kills = (stats.kills if stats != null else 0)
+	var damage = (stats.damage_dealt if stats != null else 0)
+	var gold = (stats.gold_earned if stats != null else (GameManager.currency if GameManager != null else 0))
+
+	var meta_granted = 0
+	if stats != null:
+		meta_granted = stats.finalize_and_grant_meta(run_complete)
+	else:
+		meta_granted = RunStats.preview_payout(waves, kills, gold, run_complete)
+
+	if stats == null and meta_granted > 0:
+		MetaSave.add_meta_currency(meta_granted)
+
+	if _title_label != null:
+		_title_label.text = "The Blood Moon Wanes" if run_complete else "You Have Fallen"
+
+	if _stats_label != null:
+		_stats_label.text = (
+			"Waves Survived: %d\n" % waves +
+			"Kills: %d\n" % kills +
+			"Damage Dealt: %d\n" % damage +
+			"Gold Earned: %d" % gold
+		)
+
+	if _meta_label != null:
+		_meta_label.text = "+%d Blood Marks\nTotal: %d" % [meta_granted, MetaSave.get_meta_currency()]
+
+	if _root_panel != null:
+		_root_panel.visible = true
+
+func _on_continue_pressed() -> void:
+	is_showing = false
+	get_tree().paused = false
+	get_tree().change_scene_to_file(main_menu_scene_path)
