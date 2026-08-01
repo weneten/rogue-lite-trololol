@@ -10,7 +10,9 @@ class_name PauseMenu
 @export var quit_button_path: NodePath
 @export var settings_menu_path: NodePath
 @export var main_menu_scene_path: String = "res://Scenes/MainMenu/MainMenu.tscn"
+@export var card_path: NodePath
 
+var _card: Control
 var _root_panel: Control
 var _resume_button: Button
 var _settings_button: Button
@@ -23,6 +25,7 @@ func _ready() -> void:
 	layer = 80
 
 	_root_panel = get_node_or_null(root_panel_path)
+	_card = get_node_or_null(card_path)
 	_resume_button = get_node_or_null(resume_button_path)
 	_settings_button = get_node_or_null(settings_button_path)
 	_quit_button = get_node_or_null(quit_button_path)
@@ -36,6 +39,10 @@ func _ready() -> void:
 
 	if _quit_button != null:
 		_quit_button.pressed.connect(_on_quit_pressed)
+
+	for button in [_resume_button, _settings_button, _quit_button]:
+		if button != null:
+			UIAnim.juice_button(button)
 
 	if _root_panel != null:
 		_root_panel.visible = false
@@ -67,6 +74,13 @@ func open() -> void:
 	_open = true
 	if _root_panel != null:
 		_root_panel.visible = true
+		_root_panel.modulate.a = 0.0
+		var tween = _root_panel.create_tween()
+		tween.tween_property(_root_panel, "modulate:a", 1.0, 0.14)
+
+	UIAnim.pop_in(_card)
+	if _resume_button != null:
+		_resume_button.grab_focus()
 
 	get_tree().paused = true
 

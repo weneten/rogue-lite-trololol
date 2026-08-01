@@ -13,12 +13,16 @@ class_name LevelUpUI
 @export var choice_button_paths: Array[NodePath] = []
 @export var choice_name_paths: Array[NodePath] = []
 @export var choice_description_paths: Array[NodePath] = []
+@export var choices_container_path: NodePath
+@export var header_path: NodePath
 
 var _root_panel: Control
 var _choice_buttons: Array[Button] = []
 var _choice_names: Array[Label] = []
 var _choice_descriptions: Array[Label] = []
 var _current_choices: Array[UpgradeData] = []
+var _choices_container: Control
+var _header: Control
 
 func _ready() -> void:
 	# Lets the buttons still receive input/process while GetTree().Paused is true for the
@@ -28,6 +32,8 @@ func _ready() -> void:
 	if upgrade_pool == null:
 		upgrade_pool = load("res://Resources/UpgradeData/Data/StandardUpgradePool.tres")
 	_root_panel = get_node_or_null(root_panel_path)
+	_choices_container = get_node_or_null(choices_container_path)
+	_header = get_node_or_null(header_path)
 
 	for i in range(choice_button_paths.size()):
 		_choice_buttons.append(get_node_or_null(choice_button_paths[i]))
@@ -43,6 +49,7 @@ func _ready() -> void:
 		var choice_index = i  # capture by value for the closure below
 		if _choice_buttons[i] != null:
 			_choice_buttons[i].pressed.connect(func(): _on_choice_selected(choice_index))
+			UIAnim.juice_button(_choice_buttons[i])
 
 	if _root_panel != null:
 		_root_panel.visible = false
@@ -55,6 +62,17 @@ func _on_player_level_up(new_level: int) -> void:
 
 	if _root_panel != null:
 		_root_panel.visible = true
+		_root_panel.modulate.a = 0.0
+		var tween = _root_panel.create_tween()
+		tween.tween_property(_root_panel, "modulate:a", 1.0, 0.18)
+
+	# Cards deal in one at a time — the pause before the third is what makes
+	# the choice feel like a choice.
+	if _header != null:
+		UIAnim.rise_in(_header, 0.05, 12.0)
+
+	if _choices_container != null:
+		UIAnim.cascade(_choices_container, 0.09, true)
 
 # Weighted, non-repeating draw of ChoiceCount upgrades from the pool, then pushes the result into the choice cards.
 func _roll_choices() -> void:
@@ -107,9 +125,13 @@ func _on_choice_selected(index: int) -> void:
 		return
 
 	_apply_upgrade(_current_choices[index])
+	AudioManager.play_sfx("ui_confirm")
+
+	if index < _choice_buttons.size() and _choice_buttons[index] != null:
+		UIAnim.punch(_choice_buttons[index], 1.2)
 
 	if _root_panel != null:
-		_root_panel.visible = false
+		UIAnim.fade_out(_root_panel, 0.16)
 
 	if PlayerStats.instance != null:
 		PlayerStats.instance.confirm_upgrade_selected()

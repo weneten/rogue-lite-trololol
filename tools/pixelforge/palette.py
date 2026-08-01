@@ -6,7 +6,7 @@ hand. Everything else in the toolkit pulls from here.
 """
 from __future__ import annotations
 
-from .core import Ramp, rgb
+from .core import Ramp, mix, rgb, shade
 
 # -- neutrals ---------------------------------------------------------------
 VOID = rgb("0b0710")

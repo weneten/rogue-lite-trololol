@@ -1,107 +1,161 @@
-[gd_scene load_steps=2 format=3 uid="uid://h5l7u9p3v6x8k"]
+[gd_scene load_steps=4 format=3 uid="uid://h5l7u9p3v6x8k"]
 
-[ext_resource type="Script" path="res://Scripts/UI/LevelUpUI.gd" id="1_lvlup"]
+[ext_resource type="Script" path="res://Scripts/UI/LevelUpUI.gd" id="1_levelup"]
+[ext_resource type="Theme" path="res://Assets/UI/nightbane_theme.tres" id="theme"]
+[ext_resource type="Texture2D" path="res://Assets/UI/icon_star.png" id="star"]
 
 [node name="LevelUpUI" type="CanvasLayer"]
-script = ExtResource("1_lvlup")
+script = ExtResource("1_levelup")
 root_panel_path = NodePath("RootPanel")
-choice_button_paths = Array[NodePath]([NodePath("RootPanel/Choices/Choice0/VBox/Button"), NodePath("RootPanel/Choices/Choice1/VBox/Button"), NodePath("RootPanel/Choices/Choice2/VBox/Button")])
-choice_name_paths = Array[NodePath]([NodePath("RootPanel/Choices/Choice0/VBox/NameLabel"), NodePath("RootPanel/Choices/Choice1/VBox/NameLabel"), NodePath("RootPanel/Choices/Choice2/VBox/NameLabel")])
-choice_description_paths = Array[NodePath]([NodePath("RootPanel/Choices/Choice0/VBox/DescLabel"), NodePath("RootPanel/Choices/Choice1/VBox/DescLabel"), NodePath("RootPanel/Choices/Choice2/VBox/DescLabel")])
+choice_button_paths = Array[NodePath]([NodePath("RootPanel/Center/Column/Choices/Choice0/VBox/Button"), NodePath("RootPanel/Center/Column/Choices/Choice1/VBox/Button"), NodePath("RootPanel/Center/Column/Choices/Choice2/VBox/Button")])
+choice_name_paths = Array[NodePath]([NodePath("RootPanel/Center/Column/Choices/Choice0/VBox/NameLabel"), NodePath("RootPanel/Center/Column/Choices/Choice1/VBox/NameLabel"), NodePath("RootPanel/Center/Column/Choices/Choice2/VBox/NameLabel")])
+choice_description_paths = Array[NodePath]([NodePath("RootPanel/Center/Column/Choices/Choice0/VBox/DescLabel"), NodePath("RootPanel/Center/Column/Choices/Choice1/VBox/DescLabel"), NodePath("RootPanel/Center/Column/Choices/Choice2/VBox/DescLabel")])
+choices_container_path = NodePath("RootPanel/Center/Column/Choices")
+header_path = NodePath("RootPanel/Center/Column/Header")
 
 [node name="RootPanel" type="ColorRect" parent="."]
+visible = false
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.02, 0.0, 0.03, 0.75)
-visible = false
+theme = ExtResource("theme")
+color = Color(0.035, 0.015, 0.045, 0.88)
 
-[node name="Title" type="Label" parent="RootPanel"]
+[node name="Center" type="CenterContainer" parent="RootPanel"]
 layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -150.0
-offset_top = 80.0
-offset_right = 150.0
-offset_bottom = 120.0
-horizontal_alignment = 1
-text = "Choose an Upgrade"
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="Choices" type="HBoxContainer" parent="RootPanel"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -420.0
-offset_top = -140.0
-offset_right = 420.0
-offset_bottom = 140.0
-theme_override_constants/separation = 24
-
-[node name="Choice0" type="PanelContainer" parent="RootPanel/Choices"]
+[node name="Column" type="VBoxContainer" parent="RootPanel/Center"]
 layout_mode = 2
-custom_minimum_size = Vector2(260, 280)
+theme_override_constants/separation = 18
 
-[node name="VBox" type="VBoxContainer" parent="RootPanel/Choices/Choice0"]
+[node name="Header" type="VBoxContainer" parent="RootPanel/Center/Column"]
 layout_mode = 2
+theme_override_constants/separation = 4
 
-[node name="NameLabel" type="Label" parent="RootPanel/Choices/Choice0/VBox"]
+[node name="Title" type="Label" parent="RootPanel/Center/Column/Header"]
 layout_mode = 2
 horizontal_alignment = 1
-text = "Upgrade Name"
+theme_type_variation = &"TitleLabel"
+text = "THE MOON GRANTS A BOON"
 
-[node name="DescLabel" type="Label" parent="RootPanel/Choices/Choice0/VBox"]
+[node name="Subtitle" type="Label" parent="RootPanel/Center/Column/Header"]
 layout_mode = 2
+horizontal_alignment = 1
+theme_type_variation = &"SubtitleLabel"
+text = "CHOOSE ONE"
+
+[node name="Choices" type="HBoxContainer" parent="RootPanel/Center/Column"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="Choice0" type="PanelContainer" parent="RootPanel/Center/Column/Choices"]
+custom_minimum_size = Vector2(250, 220)
+layout_mode = 2
+theme_type_variation = &"OrnatePanel"
+
+[node name="VBox" type="VBoxContainer" parent="RootPanel/Center/Column/Choices/Choice0"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Icon" type="TextureRect" parent="RootPanel/Center/Column/Choices/Choice0/VBox"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+texture = ExtResource("star")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="NameLabel" type="Label" parent="RootPanel/Center/Column/Choices/Choice0/VBox"]
+layout_mode = 2
+horizontal_alignment = 1
 autowrap_mode = 3
+theme_type_variation = &"GoldLabel"
+text = "Upgrade"
+
+[node name="DescLabel" type="Label" parent="RootPanel/Center/Column/Choices/Choice0/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_alignment = 1
+autowrap_mode = 3
+theme_type_variation = &"StatLabel"
 text = "Description"
 
-[node name="Button" type="Button" parent="RootPanel/Choices/Choice0/VBox"]
+[node name="Button" type="Button" parent="RootPanel/Center/Column/Choices/Choice0/VBox"]
 layout_mode = 2
-text = "Choose"
+text = "TAKE"
 
-[node name="Choice1" type="PanelContainer" parent="RootPanel/Choices"]
+[node name="Choice1" type="PanelContainer" parent="RootPanel/Center/Column/Choices"]
+custom_minimum_size = Vector2(250, 220)
 layout_mode = 2
-custom_minimum_size = Vector2(260, 280)
+theme_type_variation = &"OrnatePanel"
 
-[node name="VBox" type="VBoxContainer" parent="RootPanel/Choices/Choice1"]
+[node name="VBox" type="VBoxContainer" parent="RootPanel/Center/Column/Choices/Choice1"]
 layout_mode = 2
+theme_override_constants/separation = 8
 
-[node name="NameLabel" type="Label" parent="RootPanel/Choices/Choice1/VBox"]
+[node name="Icon" type="TextureRect" parent="RootPanel/Center/Column/Choices/Choice1/VBox"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+texture = ExtResource("star")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="NameLabel" type="Label" parent="RootPanel/Center/Column/Choices/Choice1/VBox"]
 layout_mode = 2
 horizontal_alignment = 1
-text = "Upgrade Name"
-
-[node name="DescLabel" type="Label" parent="RootPanel/Choices/Choice1/VBox"]
-layout_mode = 2
 autowrap_mode = 3
+theme_type_variation = &"GoldLabel"
+text = "Upgrade"
+
+[node name="DescLabel" type="Label" parent="RootPanel/Center/Column/Choices/Choice1/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_alignment = 1
+autowrap_mode = 3
+theme_type_variation = &"StatLabel"
 text = "Description"
 
-[node name="Button" type="Button" parent="RootPanel/Choices/Choice1/VBox"]
+[node name="Button" type="Button" parent="RootPanel/Center/Column/Choices/Choice1/VBox"]
 layout_mode = 2
-text = "Choose"
+text = "TAKE"
 
-[node name="Choice2" type="PanelContainer" parent="RootPanel/Choices"]
+[node name="Choice2" type="PanelContainer" parent="RootPanel/Center/Column/Choices"]
+custom_minimum_size = Vector2(250, 220)
 layout_mode = 2
-custom_minimum_size = Vector2(260, 280)
+theme_type_variation = &"OrnatePanel"
 
-[node name="VBox" type="VBoxContainer" parent="RootPanel/Choices/Choice2"]
+[node name="VBox" type="VBoxContainer" parent="RootPanel/Center/Column/Choices/Choice2"]
 layout_mode = 2
+theme_override_constants/separation = 8
 
-[node name="NameLabel" type="Label" parent="RootPanel/Choices/Choice2/VBox"]
+[node name="Icon" type="TextureRect" parent="RootPanel/Center/Column/Choices/Choice2/VBox"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+texture = ExtResource("star")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="NameLabel" type="Label" parent="RootPanel/Center/Column/Choices/Choice2/VBox"]
 layout_mode = 2
 horizontal_alignment = 1
-text = "Upgrade Name"
-
-[node name="DescLabel" type="Label" parent="RootPanel/Choices/Choice2/VBox"]
-layout_mode = 2
 autowrap_mode = 3
+theme_type_variation = &"GoldLabel"
+text = "Upgrade"
+
+[node name="DescLabel" type="Label" parent="RootPanel/Center/Column/Choices/Choice2/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_alignment = 1
+autowrap_mode = 3
+theme_type_variation = &"StatLabel"
 text = "Description"
 
-[node name="Button" type="Button" parent="RootPanel/Choices/Choice2/VBox"]
+[node name="Button" type="Button" parent="RootPanel/Center/Column/Choices/Choice2/VBox"]
 layout_mode = 2
-text = "Choose"
+text = "TAKE"

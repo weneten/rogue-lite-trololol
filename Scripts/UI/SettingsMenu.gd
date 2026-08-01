@@ -12,6 +12,7 @@ class_name SettingsMenu
 @export var close_button_path: NodePath
 @export var rebind_stub_button_path: NodePath
 @export var rebind_status_label_path: NodePath
+@export var card_path: NodePath
 
 var _root_panel: Control
 var _master_slider: HSlider
@@ -22,6 +23,7 @@ var _rebind_stub_button: Button
 var _rebind_status_label: Label
 
 var is_open: bool
+var _card: Control
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -34,6 +36,7 @@ func _ready() -> void:
 	_close_button = get_node_or_null(close_button_path)
 	_rebind_stub_button = get_node_or_null(rebind_stub_button_path)
 	_rebind_status_label = get_node_or_null(rebind_status_label_path)
+	_card = get_node_or_null(card_path)
 
 	_configure_slider(_master_slider, _get_audio_volume("Master"), _on_master_changed)
 	_configure_slider(_music_slider, _get_audio_volume("Music"), _on_music_changed)
@@ -45,6 +48,10 @@ func _ready() -> void:
 	if _rebind_stub_button != null:
 		_rebind_stub_button.pressed.connect(_on_rebind_stub_pressed)
 
+	for button in [_close_button, _rebind_stub_button]:
+		if button != null:
+			UIAnim.juice_button(button)
+
 	if _root_panel != null:
 		_root_panel.visible = false
 
@@ -53,13 +60,20 @@ func _ready() -> void:
 func open() -> void:
 	if _root_panel != null:
 		_root_panel.visible = true
+		_root_panel.modulate.a = 0.0
+		var tween = _root_panel.create_tween()
+		tween.tween_property(_root_panel, "modulate:a", 1.0, 0.14)
 
+	UIAnim.pop_in(_card)
 	_sync_sliders_from_audio()
 	is_open = true
 
+	if _close_button != null:
+		_close_button.grab_focus()
+
 func close() -> void:
 	if _root_panel != null:
-		_root_panel.visible = false
+		UIAnim.fade_out(_root_panel, 0.14)
 
 	is_open = false
 

@@ -36,6 +36,9 @@ class_name ShopUI
 # Selling the last weapon would leave the player unable to fight; block it.
 @export var min_weapons_kept: int = 1
 
+@export_group("Presentation")
+@export var card_container_paths: Array[NodePath] = []
+
 var _root_panel: Control
 var _currency_label: Label
 var _reroll_button: Button
@@ -57,6 +60,8 @@ var _equipped_names: Array[Label] = []
 var _equipped_sell_buttons: Array[Button] = []
 
 var _rerolls_this_visit: int
+var _card_containers: Array[Control] = []
+var _last_currency: int = 0
 
 func _ready() -> void:
 	# Lets the shop's own buttons respond while GetTree().Paused is true, exactly like LevelUpUI.
@@ -83,10 +88,25 @@ func _ready() -> void:
 		if sell_button != null:
 			sell_button.pressed.connect(func(): _sell_equipped_weapon(slot_index))
 
+	for path in card_container_paths:
+		var container = get_node_or_null(path) as Control
+		if container != null:
+			_card_containers.append(container)
+
 	if _reroll_button != null:
 		_reroll_button.pressed.connect(_on_reroll_pressed)
 	if _next_wave_button != null:
 		_next_wave_button.pressed.connect(_on_next_wave_pressed)
+
+	var juiced: Array = []
+	juiced.append_array(_weapon_buttons)
+	juiced.append_array(_passive_buttons)
+	juiced.append_array(_equipped_sell_buttons)
+	juiced.append(_reroll_button)
+	juiced.append(_next_wave_button)
+	for button in juiced:
+		if button != null:
+			UIAnim.juice_button(button)
 	if _root_panel != null:
 		_root_panel.visible = false
 
@@ -118,8 +138,19 @@ func _open_shop() -> void:
 
 	if _root_panel != null:
 		_root_panel.visible = true
+		_root_panel.modulate.a = 0.0
+		var tween = _root_panel.create_tween()
+		tween.tween_property(_root_panel, "modulate:a", 1.0, 0.2)
 
+	_deal_cards()
 	get_tree().paused = true
+
+# Offers pop in left to right, both on open and on every reroll, so a reroll
+# feels like new stock rather than a text swap.
+func _deal_cards() -> void:
+	for container in _card_containers:
+		if is_instance_valid(container):
+			UIAnim.cascade(container, 0.07, true)
 
 func _on_reroll_pressed() -> void:
 	var cost = ShopEconomy.get_reroll_cost(_rerolls_this_visit)
@@ -129,6 +160,7 @@ func _on_reroll_pressed() -> void:
 	AudioManager.play_sfx("ui_click")
 	_rerolls_this_visit += 1
 	_roll_offers()
+	_deal_cards()
 	_refresh_reroll_cost()
 	_update_affordability()
 
@@ -171,6 +203,20 @@ func _roll_offers() -> void:
 		func(p): return p.display_name,
 		func(p): return "%s\n%dg" % [p.description, ShopEconomy.get_passive_price(p)])
 
+	# Show the weapon's own icon, so an offer looks like the thing you'll carry.
+	for i in range(_weapon_buttons.size()):
+		var offer = _weapon_offers[i] if i < _weapon_offers.size() else null
+		_set_card_icon(_weapon_buttons[i], offer.icon if offer != null else null)
+
+# The Icon TextureRect is a sibling of the Buy button inside each card's VBox.
+static func _set_card_icon(button: Button, texture: Texture2D) -> void:
+	if button == null or texture == null:
+		return
+
+	var icon_rect = button.get_parent().get_node_or_null("Icon") as TextureRect
+	if icon_rect != null:
+		icon_rect.texture = texture
+
 static func _refresh_offer_row(buttons: Array, names: Array, descs: Array, offers: Array, name_fn: Callable, desc_fn: Callable) -> void:
 	for i in range(buttons.size()):
 		var has_offer = i < offers.size()
@@ -206,7 +252,7 @@ func _refresh_equipped_row() -> void:
 
 func _refresh_reroll_cost() -> void:
 	if _reroll_cost_label != null:
-		_reroll_cost_label.text = "Reroll (%dg)" % ShopEconomy.get_reroll_cost(_rerolls_this_visit)
+		_reroll_cost_label.text = "%dg" % ShopEconomy.get_reroll_cost(_rerolls_this_visit)
 
 func _on_buy_weapon(offer_index: int) -> void:
 	if offer_index >= _weapon_offers.size() or not WeaponInventory.instance:

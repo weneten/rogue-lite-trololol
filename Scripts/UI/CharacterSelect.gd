@@ -88,7 +88,8 @@ func _ready() -> void:
 	_portrait_placeholder = get_node_or_null(portrait_placeholder_path)
 
 	if _portrait_sprite != null:
-		_portrait_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+		# Pixel art must never be filtered — linear turns 64px sprites to mush.
+		_portrait_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		_portrait_sprite.centered = true
 		_portrait_sprite.scale = Vector2.ONE * (portrait_zoom if portrait_zoom > 0.0 else 1.0)
 
@@ -265,13 +266,16 @@ func _build_roster_buttons() -> void:
 		var cost = MetaSave.get_character_unlock_cost(data.difficulty_rating)
 
 		var button = Button.new()
-		button.text = "%s  (Diff %d/5)" % [data.character_name, data.difficulty_rating] if unlocked \
-			else "???  %s  [%d BM]" % [data.character_name, cost]
+		button.text = "%s   %s" % [data.character_name.to_upper(), _difficulty_pips(data.difficulty_rating)] if unlocked \
+			else "LOCKED   %s   %d BM" % [data.character_name.to_upper(), cost]
 		button.toggle_mode = true
 		button.button_group = _roster_button_group
-		button.modulate = Color.WHITE if unlocked else Color(0.45, 0.45, 0.5, 1.0)
+		button.theme_type_variation = &"FlatButton"
+		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		button.modulate = Color.WHITE if unlocked else Color(0.5, 0.48, 0.55, 1.0)
 		# Ensure buttons are tall enough inside ScrollContainer.
-		button.custom_minimum_size = Vector2(0, 36)
+		button.custom_minimum_size = Vector2(0, 40)
+		UIAnim.juice_button(button, 1.03)
 
 		var captured = data
 		button.pressed.connect(func():
@@ -284,14 +288,26 @@ func _build_roster_buttons() -> void:
 		if unlocked and first_unlocked == null:
 			first_unlocked = data
 
+	# The roster assembles top to bottom instead of appearing all at once.
+	UIAnim.cascade(_roster_container, 0.035)
+
 	var initial = first_unlocked if first_unlocked != null else _roster[0]
 	_select_character(initial)
 	if initial.character_name in _roster_buttons:
 		var btn = _roster_buttons[initial.character_name] as Button
 		btn.button_pressed = true
 
+# Difficulty as filled/empty pips reads faster than "Diff 3/5".
+static func _difficulty_pips(rating: int) -> String:
+	var filled = clampi(rating, 0, 5)
+	return "*".repeat(filled) + "-".repeat(5 - filled)
+
 func _select_character(data: CharacterData) -> void:
+	var changed = _selected != data
 	_selected = data
+	if changed and _portrait_panel != null:
+		# A small kick on the portrait confirms the click landed.
+		UIAnim.punch(_portrait_panel, 1.04)
 	var unlocked = MetaSave.is_character_unlocked(data.character_name)
 	var cost = MetaSave.get_character_unlock_cost(data.difficulty_rating)
 

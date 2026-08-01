@@ -1,68 +1,253 @@
-[gd_scene load_steps=2 format=3 uid="uid://g2h4u6d8n1r3s"]
+[gd_scene load_steps=8 format=3 uid="uid://g2h4u6d8n1r3s"]
 
 [ext_resource type="Script" path="res://Scripts/UI/HUD.gd" id="1_hud"]
+[ext_resource type="Theme" path="res://Assets/UI/nightbane_theme.tres" id="2_theme"]
+[ext_resource type="Texture2D" path="res://Assets/UI/icon_health.png" id="3_hp"]
+[ext_resource type="Texture2D" path="res://Assets/UI/icon_coin.png" id="4_coin"]
+[ext_resource type="Texture2D" path="res://Assets/UI/icon_wave.png" id="5_wave"]
+[ext_resource type="Texture2D" path="res://Assets/UI/icon_time.png" id="6_time"]
+[ext_resource type="Texture2D" path="res://Assets/UI/icon_xp.png" id="7_xp"]
 
 [node name="HUD" type="CanvasLayer"]
 script = ExtResource("1_hud")
-health_bar_path = NodePath("Margin/VBox/HealthBar")
-xp_bar_path = NodePath("Margin/VBox/XpBar")
-wave_label_path = NodePath("Margin/VBox/InfoRow/WaveLabel")
-timer_label_path = NodePath("Margin/VBox/InfoRow/TimerLabel")
-currency_label_path = NodePath("Margin/VBox/InfoRow/CurrencyLabel")
-arrow_layer_path = NodePath("OffscreenArrows")
+health_bar_path = NodePath("Root/Margin/Columns/Left/Vitals/Inner/HealthRow/HealthBar")
+xp_bar_path = NodePath("Root/Margin/Columns/Left/Vitals/Inner/XpRow/XpBar")
+wave_label_path = NodePath("Root/Margin/Columns/Center/WavePanel/Inner/WaveLabel")
+timer_label_path = NodePath("Root/Margin/Columns/Center/WavePanel/Inner/TimerLabel")
+currency_label_path = NodePath("Root/Margin/Columns/Right/Purse/Inner/CurrencyLabel")
+arrow_layer_path = NodePath("Root/OffscreenArrows")
+health_label_path = NodePath("Root/Margin/Columns/Left/Vitals/Inner/HealthRow/HealthBar/HealthLabel")
+level_label_path = NodePath("Root/Margin/Columns/Left/Vitals/Inner/XpRow/LevelLabel")
+banner_path = NodePath("Root/Banner")
+banner_label_path = NodePath("Root/Banner/BannerLabel")
+banner_sub_label_path = NodePath("Root/Banner/BannerSub")
+damage_flash_path = NodePath("Root/DamageFlash")
+vitals_panel_path = NodePath("Root/Margin/Columns/Left/Vitals")
 
-[node name="Margin" type="MarginContainer" parent="."]
+[node name="Root" type="Control" parent="."]
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 12
+theme = ExtResource("2_theme")
 
-[node name="VBox" type="VBoxContainer" parent="Margin"]
+[node name="DamageFlash" type="ColorRect" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+modulate = Color(1, 1, 1, 0)
+color = Color(0.6, 0.05, 0.09, 0.35)
+
+[node name="Margin" type="MarginContainer" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 14
+
+[node name="Columns" type="HBoxContainer" parent="Root/Margin"]
 layout_mode = 2
 size_flags_vertical = 0
 mouse_filter = 2
+theme_override_constants/separation = 16
 
-[node name="HealthBar" type="ProgressBar" parent="Margin/VBox"]
+[node name="Left" type="VBoxContainer" parent="Root/Margin/Columns"]
 layout_mode = 2
-custom_minimum_size = Vector2(260, 18)
+size_flags_horizontal = 3
+size_flags_vertical = 0
+mouse_filter = 2
+
+[node name="Vitals" type="PanelContainer" parent="Root/Margin/Columns/Left"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+theme_type_variation = &"DarkPanel"
+
+[node name="Inner" type="VBoxContainer" parent="Root/Margin/Columns/Left/Vitals"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="HealthRow" type="HBoxContainer" parent="Root/Margin/Columns/Left/Vitals/Inner"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HealthIcon" type="TextureRect" parent="Root/Margin/Columns/Left/Vitals/Inner/HealthRow"]
+custom_minimum_size = Vector2(16, 16)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("3_hp")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HealthBar" type="ProgressBar" parent="Root/Margin/Columns/Left/Vitals/Inner/HealthRow"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
 max_value = 100.0
 value = 100.0
 show_percentage = false
 mouse_filter = 2
 
-[node name="XpBar" type="ProgressBar" parent="Margin/VBox"]
+[node name="HealthLabel" type="Label" parent="Root/Margin/Columns/Left/Vitals/Inner/HealthRow/HealthBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_type_variation = &"SmallLabel"
+theme_override_colors/font_color = Color(0.95, 0.9, 0.85, 1)
+text = "100 / 100"
+
+[node name="XpRow" type="HBoxContainer" parent="Root/Margin/Columns/Left/Vitals/Inner"]
 layout_mode = 2
-custom_minimum_size = Vector2(260, 10)
+theme_override_constants/separation = 8
+
+[node name="XpIcon" type="TextureRect" parent="Root/Margin/Columns/Left/Vitals/Inner/XpRow"]
+custom_minimum_size = Vector2(16, 16)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("7_xp")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="XpBar" type="ProgressBar" parent="Root/Margin/Columns/Left/Vitals/Inner/XpRow"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_type_variation = &"XpBar"
 max_value = 10.0
 value = 0.0
 show_percentage = false
-modulate = Color(0.6, 0.85, 1, 1)
 mouse_filter = 2
 
-[node name="InfoRow" type="HBoxContainer" parent="Margin/VBox"]
+[node name="LevelLabel" type="Label" parent="Root/Margin/Columns/Left/Vitals/Inner/XpRow"]
 layout_mode = 2
-theme_override_constants/separation = 16
+size_flags_vertical = 4
+theme_type_variation = &"SmallLabel"
+theme_override_colors/font_color = Color(0.37, 0.83, 0.78, 1)
+text = "LV 1"
+
+[node name="Center" type="VBoxContainer" parent="Root/Margin/Columns"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
 mouse_filter = 2
 
-[node name="WaveLabel" type="Label" parent="Margin/VBox/InfoRow"]
+[node name="WavePanel" type="PanelContainer" parent="Root/Margin/Columns/Center"]
 layout_mode = 2
-text = "Wave 1"
+size_flags_horizontal = 4
+theme_type_variation = &"DarkPanel"
 
-[node name="TimerLabel" type="Label" parent="Margin/VBox/InfoRow"]
+[node name="Inner" type="HBoxContainer" parent="Root/Margin/Columns/Center/WavePanel"]
 layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="WaveIcon" type="TextureRect" parent="Root/Margin/Columns/Center/WavePanel/Inner"]
+custom_minimum_size = Vector2(16, 16)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("5_wave")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="WaveLabel" type="Label" parent="Root/Margin/Columns/Center/WavePanel/Inner"]
+layout_mode = 2
+size_flags_vertical = 4
+text = "WAVE 1"
+
+[node name="Sep" type="VSeparator" parent="Root/Margin/Columns/Center/WavePanel/Inner"]
+layout_mode = 2
+
+[node name="TimeIcon" type="TextureRect" parent="Root/Margin/Columns/Center/WavePanel/Inner"]
+custom_minimum_size = Vector2(16, 16)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("6_time")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TimerLabel" type="Label" parent="Root/Margin/Columns/Center/WavePanel/Inner"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"GoldLabel"
 text = "0s"
 
-[node name="CurrencyLabel" type="Label" parent="Margin/VBox/InfoRow"]
+[node name="Right" type="VBoxContainer" parent="Root/Margin/Columns"]
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+alignment = 2
+mouse_filter = 2
+
+[node name="Purse" type="PanelContainer" parent="Root/Margin/Columns/Right"]
+layout_mode = 2
+size_flags_horizontal = 8
+theme_type_variation = &"DarkPanel"
+
+[node name="Inner" type="HBoxContainer" parent="Root/Margin/Columns/Right/Purse"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CoinIcon" type="TextureRect" parent="Root/Margin/Columns/Right/Purse/Inner"]
+custom_minimum_size = Vector2(16, 16)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("4_coin")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CurrencyLabel" type="Label" parent="Root/Margin/Columns/Right/Purse/Inner"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"GoldLabel"
 text = "0"
 
-[node name="OffscreenArrows" type="Control" parent="."]
+[node name="Banner" type="VBoxContainer" parent="Root"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -320.0
+offset_top = 132.0
+offset_right = 320.0
+offset_bottom = 210.0
+grow_horizontal = 2
+mouse_filter = 2
+modulate = Color(1, 1, 1, 0)
+
+[node name="BannerLabel" type="Label" parent="Root/Banner"]
+layout_mode = 2
+horizontal_alignment = 1
+theme_type_variation = &"TitleLabel"
+text = "WAVE 1"
+
+[node name="BannerSub" type="Label" parent="Root/Banner"]
+layout_mode = 2
+horizontal_alignment = 1
+theme_type_variation = &"SubtitleLabel"
+text = "THE HUNT BEGINS"
+
+[node name="OffscreenArrows" type="Control" parent="Root"]
+layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0

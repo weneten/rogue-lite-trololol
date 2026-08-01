@@ -6,7 +6,7 @@
 
 [resource]
 script = ExtResource("1_cd")
-sprite_scale = 0.65
+sprite_scale = 2.0
 attack_anim_name = "attack"
 sprite_json_path = "res://Assets/sprites/characters/moonlit_duelist/moonlit_duelist.json"
 sprite_sheet_path = "res://Assets/sprites/characters/moonlit_duelist/moonlit_duelist.png"
