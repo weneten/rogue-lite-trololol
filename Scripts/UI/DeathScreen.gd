@@ -14,12 +14,16 @@ static var is_showing: bool = false
 @export var continue_button_path: NodePath
 @export var main_menu_scene_path: String = "res://Scenes/MainMenu/MainMenu.tscn"
 @export var victory_wave: int = 20
+@export var card_path: NodePath
+@export var crest_path: NodePath
 
 var _root_panel: Control
 var _title_label: Label
 var _stats_label: Label
 var _meta_label: Label
 var _continue_button: Button
+var _card: Control
+var _crest: Control
 var _shown: bool = false
 
 func _ready() -> void:
@@ -31,9 +35,12 @@ func _ready() -> void:
 	_stats_label = get_node_or_null(stats_label_path)
 	_meta_label = get_node_or_null(meta_label_path)
 	_continue_button = get_node_or_null(continue_button_path)
+	_card = get_node_or_null(card_path)
+	_crest = get_node_or_null(crest_path)
 
 	if _continue_button != null:
 		_continue_button.pressed.connect(_on_continue_pressed)
+		UIAnim.juice_button(_continue_button)
 
 	if _root_panel != null:
 		_root_panel.visible = false
@@ -98,6 +105,24 @@ func _show_summary(run_complete: bool) -> void:
 
 	if _root_panel != null:
 		_root_panel.visible = true
+		# The overlay bleeds in slowly; the card and its numbers land after,
+		# so the run summary reads as a verdict rather than a popup.
+		_root_panel.modulate.a = 0.0
+		var tween = _root_panel.create_tween()
+		tween.tween_property(_root_panel, "modulate:a", 1.0, 0.5)
+
+	UIAnim.pop_in(_card, 0.35)
+
+	if _crest != null:
+		UIAnim.pulse(_crest, 0.55, 1.0, 2.6)
+
+	if _meta_label != null and meta_granted > 0:
+		UIAnim.roll_number(_meta_label, 0.0, float(meta_granted),
+			"+%d Blood Marks", 0.9)
+		await get_tree().create_timer(1.3).timeout
+		if is_instance_valid(_meta_label):
+			_meta_label.text = "+%d Blood Marks\nTotal: %d" % [meta_granted, MetaSave.get_meta_currency()]
+			UIAnim.punch(_meta_label, 1.2)
 
 func _on_continue_pressed() -> void:
 	is_showing = false

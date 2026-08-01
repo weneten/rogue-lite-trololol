@@ -1,7 +1,11 @@
-[gd_scene load_steps=3 format=3 uid="uid://b7wj0lqxsyvpq"]
+[gd_scene load_steps=7 format=3 uid="uid://b7wj0lqxsyvpq"]
 
 [ext_resource type="Script" path="res://Scenes/MainMenu/MainMenu.gd" id="1_menu"]
 [ext_resource type="PackedScene" uid="uid://c8settingsmenu01" path="res://Scenes/UI/SettingsMenu.tscn" id="2_settings"]
+[ext_resource type="Theme" path="res://Assets/UI/nightbane_theme.tres" id="3_theme"]
+[ext_resource type="Texture2D" path="res://Assets/UI/menu_backdrop.png" id="4_backdrop"]
+[ext_resource type="Texture2D" path="res://Assets/UI/vignette.png" id="5_vignette"]
+[ext_resource type="Texture2D" path="res://Assets/UI/icon_moon.png" id="6_moon"]
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -10,64 +14,152 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("3_theme")
 script = ExtResource("1_menu")
-start_button_path = NodePath("CenterContainer/VBoxContainer/StartButton")
-quit_button_path = NodePath("CenterContainer/VBoxContainer/QuitButton")
-settings_button_path = NodePath("CenterContainer/VBoxContainer/SettingsButton")
-meta_currency_label_path = NodePath("CenterContainer/VBoxContainer/MetaCurrencyLabel")
+start_button_path = NodePath("Layout/Rows/Center/Menu/Buttons/StartButton")
+quit_button_path = NodePath("Layout/Rows/Center/Menu/Buttons/QuitButton")
+settings_button_path = NodePath("Layout/Rows/Center/Menu/Buttons/SettingsButton")
+meta_currency_label_path = NodePath("Layout/Rows/TopBar/MetaRow/Inner/MetaCurrencyLabel")
 settings_menu_path = NodePath("SettingsMenu")
+title_path = NodePath("Layout/Rows/Center/Menu/Title")
+subtitle_path = NodePath("Layout/Rows/Center/Menu/Subtitle")
+button_box_path = NodePath("Layout/Rows/Center/Menu/Buttons")
+moon_path = NodePath("Backdrop/Moon")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Backdrop" type="TextureRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.05, 0.03, 0.05, 1)
+mouse_filter = 2
+texture = ExtResource("4_backdrop")
+expand_mode = 1
+stretch_mode = 6
 
-[node name="CenterContainer" type="CenterContainer" parent="."]
+[node name="Moon" type="TextureRect" parent="Backdrop"]
+layout_mode = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -300.0
+offset_top = 92.0
+offset_right = -172.0
+offset_bottom = 220.0
+mouse_filter = 2
+modulate = Color(1, 0.85, 0.85, 0.3)
+texture = ExtResource("6_moon")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Vignette" type="TextureRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("5_vignette")
+expand_mode = 1
+stretch_mode = 6
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
-layout_mode = 2
-theme_override_constants/separation = 24
-alignment = 1
+[node name="Layout" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 24
 
-[node name="Title" type="Label" parent="CenterContainer/VBoxContainer"]
+[node name="Rows" type="VBoxContainer" parent="Layout"]
 layout_mode = 2
-horizontal_alignment = 1
-theme_override_font_sizes/font_size = 48
-theme_override_colors/font_color = Color(0.72, 0.05, 0.09, 1)
-text = "NIGHTBANE"
+mouse_filter = 2
 
-[node name="Subtitle" type="Label" parent="CenterContainer/VBoxContainer"]
+[node name="TopBar" type="HBoxContainer" parent="Layout/Rows"]
 layout_mode = 2
-horizontal_alignment = 1
-theme_override_colors/font_color = Color(0.6, 0.55, 0.58, 1)
-text = "A Hunt Beneath the Blood Moon"
+size_flags_vertical = 0
+alignment = 2
+mouse_filter = 2
 
-[node name="MetaCurrencyLabel" type="Label" parent="CenterContainer/VBoxContainer"]
+[node name="MetaRow" type="PanelContainer" parent="Layout/Rows/TopBar"]
 layout_mode = 2
-horizontal_alignment = 1
-theme_override_colors/font_color = Color(0.85, 0.7, 0.25, 1)
+theme_type_variation = &"DarkPanel"
+
+[node name="Inner" type="HBoxContainer" parent="Layout/Rows/TopBar/MetaRow"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CoinIcon" type="TextureRect" parent="Layout/Rows/TopBar/MetaRow/Inner"]
+custom_minimum_size = Vector2(16, 16)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("6_moon")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="MetaCurrencyLabel" type="Label" parent="Layout/Rows/TopBar/MetaRow/Inner"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"GoldLabel"
 text = "Blood Marks: 0"
 
-[node name="StartButton" type="Button" parent="CenterContainer/VBoxContainer"]
+[node name="Center" type="CenterContainer" parent="Layout/Rows"]
 layout_mode = 2
-text = "Begin the Hunt"
+size_flags_vertical = 3
+mouse_filter = 2
 
-[node name="SettingsButton" type="Button" parent="CenterContainer/VBoxContainer"]
+[node name="Menu" type="VBoxContainer" parent="Layout/Rows/Center"]
 layout_mode = 2
-text = "Settings"
+theme_override_constants/separation = 10
+alignment = 1
 
-[node name="QuitButton" type="Button" parent="CenterContainer/VBoxContainer"]
+[node name="Title" type="Label" parent="Layout/Rows/Center/Menu"]
 layout_mode = 2
-text = "Quit"
+horizontal_alignment = 1
+theme_type_variation = &"DisplayLabel"
+text = "NIGHTBANE"
+
+[node name="Subtitle" type="Label" parent="Layout/Rows/Center/Menu"]
+layout_mode = 2
+horizontal_alignment = 1
+theme_type_variation = &"SubtitleLabel"
+text = "A HUNT BENEATH THE BLOOD MOON"
+
+[node name="TitleRule" type="Control" parent="Layout/Rows/Center/Menu"]
+custom_minimum_size = Vector2(0, 14)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Buttons" type="VBoxContainer" parent="Layout/Rows/Center/Menu"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="StartButton" type="Button" parent="Layout/Rows/Center/Menu/Buttons"]
+layout_mode = 2
+text = "BEGIN THE HUNT"
+
+[node name="SettingsButton" type="Button" parent="Layout/Rows/Center/Menu/Buttons"]
+layout_mode = 2
+theme_type_variation = &"FlatButton"
+text = "SETTINGS"
+
+[node name="QuitButton" type="Button" parent="Layout/Rows/Center/Menu/Buttons"]
+layout_mode = 2
+theme_type_variation = &"FlatButton"
+text = "QUIT"
+
+[node name="Footer" type="Label" parent="Layout/Rows"]
+layout_mode = 2
+size_flags_vertical = 8
+horizontal_alignment = 1
+theme_type_variation = &"SmallLabel"
+text = "WASD TO MOVE   -   ESC TO PAUSE"
 
 [node name="SettingsMenu" parent="." instance=ExtResource("2_settings")]

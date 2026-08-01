@@ -92,7 +92,7 @@ static func get_frames(sheet_path: String, json_path: String = "", preloaded_tex
 
 		frames.add_animation(anim_name)
 		var loop = _dict_bool(anim, "loop")
-		frames.set_animation_loop_mode(anim_name, SpriteFrames.LOOP_LINEAR if loop else SpriteFrames.LOOP_NONE)
+		frames.set_animation_loop(anim_name, loop)
 		var fps = _dict_float(anim, "fps", 10.0)
 		if fps <= 0.0:
 			fps = 10.0
@@ -218,7 +218,7 @@ static func _ensure_anim(frames: SpriteFrames, name: String, fallback: String = 
 		frames.remove_animation(name)
 
 	frames.add_animation(name)
-	frames.set_animation_loop_mode(name, SpriteFrames.LOOP_LINEAR if name in ["idle", "run"] else SpriteFrames.LOOP_NONE)
+	frames.set_animation_loop(name, name in ["idle", "run"])
 	frames.set_animation_speed(name, frames.get_animation_speed(source))
 	var count = frames.get_frame_count(source)
 	for i in range(count):

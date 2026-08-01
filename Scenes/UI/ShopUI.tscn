@@ -1,11 +1,14 @@
-[gd_scene load_steps=2 format=3 uid="uid://k4x8u1r5t2n6q"]
+[gd_scene load_steps=5 format=3 uid="uid://k4x8u1r5t2n6q"]
 
 [ext_resource type="Script" path="res://Scripts/UI/ShopUI.gd" id="1_shop"]
+[ext_resource type="Theme" path="res://Assets/UI/nightbane_theme.tres" id="theme"]
+[ext_resource type="Texture2D" path="res://Assets/UI/icon_coin.png" id="coin"]
+[ext_resource type="Texture2D" path="res://Assets/UI/icon_potion.png" id="relic"]
 
 [node name="ShopUI" type="CanvasLayer"]
 script = ExtResource("1_shop")
 root_panel_path = NodePath("RootPanel")
-currency_label_path = NodePath("RootPanel/Content/TopRow/CurrencyLabel")
+currency_label_path = NodePath("RootPanel/Content/TopRow/Purse/Inner/CurrencyLabel")
 reroll_button_path = NodePath("RootPanel/Content/BottomRow/RerollButton")
 reroll_cost_label_path = NodePath("RootPanel/Content/BottomRow/RerollCostLabel")
 next_wave_button_path = NodePath("RootPanel/Content/BottomRow/NextWaveButton")
@@ -15,18 +18,20 @@ weapon_desc_paths = Array[NodePath]([NodePath("RootPanel/Content/WeaponOffers/We
 passive_button_paths = Array[NodePath]([NodePath("RootPanel/Content/PassiveOffers/Passive0/VBox/Button"), NodePath("RootPanel/Content/PassiveOffers/Passive1/VBox/Button")])
 passive_name_paths = Array[NodePath]([NodePath("RootPanel/Content/PassiveOffers/Passive0/VBox/NameLabel"), NodePath("RootPanel/Content/PassiveOffers/Passive1/VBox/NameLabel")])
 passive_desc_paths = Array[NodePath]([NodePath("RootPanel/Content/PassiveOffers/Passive0/VBox/DescLabel"), NodePath("RootPanel/Content/PassiveOffers/Passive1/VBox/DescLabel")])
-equipped_row_paths = Array[NodePath]([NodePath("RootPanel/Content/EquippedRow/Equipped0"), NodePath("RootPanel/Content/EquippedRow/Equipped1"), NodePath("RootPanel/Content/EquippedRow/Equipped2"), NodePath("RootPanel/Content/EquippedRow/Equipped3"), NodePath("RootPanel/Content/EquippedRow/Equipped4"), NodePath("RootPanel/Content/EquippedRow/Equipped5")])
-equipped_name_paths = Array[NodePath]([NodePath("RootPanel/Content/EquippedRow/Equipped0/NameLabel"), NodePath("RootPanel/Content/EquippedRow/Equipped1/NameLabel"), NodePath("RootPanel/Content/EquippedRow/Equipped2/NameLabel"), NodePath("RootPanel/Content/EquippedRow/Equipped3/NameLabel"), NodePath("RootPanel/Content/EquippedRow/Equipped4/NameLabel"), NodePath("RootPanel/Content/EquippedRow/Equipped5/NameLabel")])
-equipped_sell_button_paths = Array[NodePath]([NodePath("RootPanel/Content/EquippedRow/Equipped0/SellButton"), NodePath("RootPanel/Content/EquippedRow/Equipped1/SellButton"), NodePath("RootPanel/Content/EquippedRow/Equipped2/SellButton"), NodePath("RootPanel/Content/EquippedRow/Equipped3/SellButton"), NodePath("RootPanel/Content/EquippedRow/Equipped4/SellButton"), NodePath("RootPanel/Content/EquippedRow/Equipped5/SellButton")])
+equipped_row_paths = Array[NodePath]([NodePath("RootPanel/Content/EquippedPanel/EquippedRow/Equipped0"), NodePath("RootPanel/Content/EquippedPanel/EquippedRow/Equipped1"), NodePath("RootPanel/Content/EquippedPanel/EquippedRow/Equipped2"), NodePath("RootPanel/Content/EquippedPanel/EquippedRow/Equipped3"), NodePath("RootPanel/Content/EquippedPanel/EquippedRow/Equipped4"), NodePath("RootPanel/Content/EquippedPanel/EquippedRow/Equipped5")])
+equipped_name_paths = Array[NodePath]([NodePath("RootPanel/Content/EquippedPanel/EquippedRow/Equipped0/NameLabel"), NodePath("RootPanel/Content/EquippedPanel/EquippedRow/Equipped1/NameLabel"), NodePath("RootPanel/Content/EquippedPanel/EquippedRow/Equipped2/NameLabel"), NodePath("RootPanel/Content/EquippedPanel/EquippedRow/Equipped3/NameLabel"), NodePath("RootPanel/Content/EquippedPanel/EquippedRow/Equipped4/NameLabel"), NodePath("RootPanel/Content/EquippedPanel/EquippedRow/Equipped5/NameLabel")])
+equipped_sell_button_paths = Array[NodePath]([NodePath("RootPanel/Content/EquippedPanel/EquippedRow/Equipped0/SellButton"), NodePath("RootPanel/Content/EquippedPanel/EquippedRow/Equipped1/SellButton"), NodePath("RootPanel/Content/EquippedPanel/EquippedRow/Equipped2/SellButton"), NodePath("RootPanel/Content/EquippedPanel/EquippedRow/Equipped3/SellButton"), NodePath("RootPanel/Content/EquippedPanel/EquippedRow/Equipped4/SellButton"), NodePath("RootPanel/Content/EquippedPanel/EquippedRow/Equipped5/SellButton")])
+card_container_paths = Array[NodePath]([NodePath("RootPanel/Content/WeaponOffers"), NodePath("RootPanel/Content/PassiveOffers")])
 
 [node name="RootPanel" type="ColorRect" parent="."]
+visible = false
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.02, 0.0, 0.03, 0.85)
-visible = false
+theme = ExtResource("theme")
+color = Color(0.035, 0.015, 0.045, 0.9)
 
 [node name="Content" type="VBoxContainer" parent="RootPanel"]
 layout_mode = 1
@@ -35,229 +40,372 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -460.0
+offset_left = -470.0
 offset_top = -300.0
-offset_right = 460.0
+offset_right = 470.0
 offset_bottom = 300.0
+grow_horizontal = 2
+grow_vertical = 2
 theme_override_constants/separation = 14
 
 [node name="TopRow" type="HBoxContainer" parent="RootPanel/Content"]
 layout_mode = 2
+theme_override_constants/separation = 16
 
 [node name="Title" type="Label" parent="RootPanel/Content/TopRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "The Ossuary Shop"
+size_flags_vertical = 4
+theme_type_variation = &"TitleLabel"
+text = "THE OSSUARY"
 
-[node name="CurrencyLabel" type="Label" parent="RootPanel/Content/TopRow"]
+[node name="Purse" type="PanelContainer" parent="RootPanel/Content/TopRow"]
 layout_mode = 2
-horizontal_alignment = 2
-text = "0g"
+size_flags_horizontal = 8
+theme_type_variation = &"DarkPanel"
+
+[node name="Inner" type="HBoxContainer" parent="RootPanel/Content/TopRow/Purse"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CoinIcon" type="TextureRect" parent="RootPanel/Content/TopRow/Purse/Inner"]
+custom_minimum_size = Vector2(16, 16)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("coin")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CurrencyLabel" type="Label" parent="RootPanel/Content/TopRow/Purse/Inner"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"GoldLabel"
+text = "0"
+
+[node name="ArmoryLabel" type="Label" parent="RootPanel/Content"]
+layout_mode = 2
+theme_type_variation = &"SmallLabel"
+text = "ARMAMENTS"
 
 [node name="WeaponOffers" type="HBoxContainer" parent="RootPanel/Content"]
 layout_mode = 2
 theme_override_constants/separation = 16
 
 [node name="Weapon0" type="PanelContainer" parent="RootPanel/Content/WeaponOffers"]
+custom_minimum_size = Vector2(0, 190)
 layout_mode = 2
 size_flags_horizontal = 3
-custom_minimum_size = Vector2(0, 130)
+theme_type_variation = &"OrnatePanel"
 
 [node name="VBox" type="VBoxContainer" parent="RootPanel/Content/WeaponOffers/Weapon0"]
 layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Icon" type="TextureRect" parent="RootPanel/Content/WeaponOffers/Weapon0/VBox"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+texture = ExtResource("coin")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="NameLabel" type="Label" parent="RootPanel/Content/WeaponOffers/Weapon0/VBox"]
 layout_mode = 2
 horizontal_alignment = 1
+autowrap_mode = 3
+theme_type_variation = &"SpectralLabel"
 text = "Weapon Name"
 
 [node name="DescLabel" type="Label" parent="RootPanel/Content/WeaponOffers/Weapon0/VBox"]
 layout_mode = 2
+size_flags_vertical = 3
 autowrap_mode = 3
 horizontal_alignment = 1
+theme_type_variation = &"StatLabel"
 text = "Stats"
 
 [node name="Button" type="Button" parent="RootPanel/Content/WeaponOffers/Weapon0/VBox"]
 layout_mode = 2
-text = "Buy"
+text = "BUY"
 
 [node name="Weapon1" type="PanelContainer" parent="RootPanel/Content/WeaponOffers"]
+custom_minimum_size = Vector2(0, 190)
 layout_mode = 2
 size_flags_horizontal = 3
-custom_minimum_size = Vector2(0, 130)
+theme_type_variation = &"OrnatePanel"
 
 [node name="VBox" type="VBoxContainer" parent="RootPanel/Content/WeaponOffers/Weapon1"]
 layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Icon" type="TextureRect" parent="RootPanel/Content/WeaponOffers/Weapon1/VBox"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+texture = ExtResource("coin")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="NameLabel" type="Label" parent="RootPanel/Content/WeaponOffers/Weapon1/VBox"]
 layout_mode = 2
 horizontal_alignment = 1
+autowrap_mode = 3
+theme_type_variation = &"SpectralLabel"
 text = "Weapon Name"
 
 [node name="DescLabel" type="Label" parent="RootPanel/Content/WeaponOffers/Weapon1/VBox"]
 layout_mode = 2
+size_flags_vertical = 3
 autowrap_mode = 3
 horizontal_alignment = 1
+theme_type_variation = &"StatLabel"
 text = "Stats"
 
 [node name="Button" type="Button" parent="RootPanel/Content/WeaponOffers/Weapon1/VBox"]
 layout_mode = 2
-text = "Buy"
+text = "BUY"
 
 [node name="Weapon2" type="PanelContainer" parent="RootPanel/Content/WeaponOffers"]
+custom_minimum_size = Vector2(0, 190)
 layout_mode = 2
 size_flags_horizontal = 3
-custom_minimum_size = Vector2(0, 130)
+theme_type_variation = &"OrnatePanel"
 
 [node name="VBox" type="VBoxContainer" parent="RootPanel/Content/WeaponOffers/Weapon2"]
 layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Icon" type="TextureRect" parent="RootPanel/Content/WeaponOffers/Weapon2/VBox"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+texture = ExtResource("coin")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="NameLabel" type="Label" parent="RootPanel/Content/WeaponOffers/Weapon2/VBox"]
 layout_mode = 2
 horizontal_alignment = 1
+autowrap_mode = 3
+theme_type_variation = &"SpectralLabel"
 text = "Weapon Name"
 
 [node name="DescLabel" type="Label" parent="RootPanel/Content/WeaponOffers/Weapon2/VBox"]
 layout_mode = 2
+size_flags_vertical = 3
 autowrap_mode = 3
 horizontal_alignment = 1
+theme_type_variation = &"StatLabel"
 text = "Stats"
 
 [node name="Button" type="Button" parent="RootPanel/Content/WeaponOffers/Weapon2/VBox"]
 layout_mode = 2
-text = "Buy"
+text = "BUY"
+
+[node name="RelicLabel" type="Label" parent="RootPanel/Content"]
+layout_mode = 2
+theme_type_variation = &"SmallLabel"
+text = "RELICS"
 
 [node name="PassiveOffers" type="HBoxContainer" parent="RootPanel/Content"]
 layout_mode = 2
 theme_override_constants/separation = 16
 
 [node name="Passive0" type="PanelContainer" parent="RootPanel/Content/PassiveOffers"]
+custom_minimum_size = Vector2(0, 150)
 layout_mode = 2
 size_flags_horizontal = 3
-custom_minimum_size = Vector2(0, 110)
+theme_type_variation = &"OrnatePanel"
 
 [node name="VBox" type="VBoxContainer" parent="RootPanel/Content/PassiveOffers/Passive0"]
 layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Icon" type="TextureRect" parent="RootPanel/Content/PassiveOffers/Passive0/VBox"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+texture = ExtResource("relic")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="NameLabel" type="Label" parent="RootPanel/Content/PassiveOffers/Passive0/VBox"]
 layout_mode = 2
 horizontal_alignment = 1
+autowrap_mode = 3
+theme_type_variation = &"GoldLabel"
 text = "Relic Name"
 
 [node name="DescLabel" type="Label" parent="RootPanel/Content/PassiveOffers/Passive0/VBox"]
 layout_mode = 2
+size_flags_vertical = 3
 autowrap_mode = 3
 horizontal_alignment = 1
+theme_type_variation = &"StatLabel"
 text = "Effect"
 
 [node name="Button" type="Button" parent="RootPanel/Content/PassiveOffers/Passive0/VBox"]
 layout_mode = 2
-text = "Buy"
+text = "BUY"
 
 [node name="Passive1" type="PanelContainer" parent="RootPanel/Content/PassiveOffers"]
+custom_minimum_size = Vector2(0, 150)
 layout_mode = 2
 size_flags_horizontal = 3
-custom_minimum_size = Vector2(0, 110)
+theme_type_variation = &"OrnatePanel"
 
 [node name="VBox" type="VBoxContainer" parent="RootPanel/Content/PassiveOffers/Passive1"]
 layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Icon" type="TextureRect" parent="RootPanel/Content/PassiveOffers/Passive1/VBox"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+texture = ExtResource("relic")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="NameLabel" type="Label" parent="RootPanel/Content/PassiveOffers/Passive1/VBox"]
 layout_mode = 2
 horizontal_alignment = 1
+autowrap_mode = 3
+theme_type_variation = &"GoldLabel"
 text = "Relic Name"
 
 [node name="DescLabel" type="Label" parent="RootPanel/Content/PassiveOffers/Passive1/VBox"]
 layout_mode = 2
+size_flags_vertical = 3
 autowrap_mode = 3
 horizontal_alignment = 1
+theme_type_variation = &"StatLabel"
 text = "Effect"
 
 [node name="Button" type="Button" parent="RootPanel/Content/PassiveOffers/Passive1/VBox"]
 layout_mode = 2
-text = "Buy"
+text = "BUY"
 
-[node name="EquippedRow" type="HBoxContainer" parent="RootPanel/Content"]
+[node name="EquippedLabel" type="Label" parent="RootPanel/Content"]
+layout_mode = 2
+theme_type_variation = &"SmallLabel"
+text = "CARRIED"
+
+[node name="EquippedPanel" type="PanelContainer" parent="RootPanel/Content"]
+layout_mode = 2
+theme_type_variation = &"InsetPanel"
+
+[node name="EquippedRow" type="HBoxContainer" parent="RootPanel/Content/EquippedPanel"]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Equipped0" type="HBoxContainer" parent="RootPanel/Content/EquippedRow"]
+[node name="Equipped0" type="HBoxContainer" parent="RootPanel/Content/EquippedPanel/EquippedRow"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_constants/separation = 4
 
-[node name="NameLabel" type="Label" parent="RootPanel/Content/EquippedRow/Equipped0"]
+[node name="NameLabel" type="Label" parent="RootPanel/Content/EquippedPanel/EquippedRow/Equipped0"]
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 4
+autowrap_mode = 3
+theme_type_variation = &"StatLabel"
 text = "-"
 
-[node name="SellButton" type="Button" parent="RootPanel/Content/EquippedRow/Equipped0"]
+[node name="SellButton" type="Button" parent="RootPanel/Content/EquippedPanel/EquippedRow/Equipped0"]
 layout_mode = 2
-text = "Sell"
+size_flags_vertical = 4
+theme_type_variation = &"FlatButton"
+text = "SELL"
 
-[node name="Equipped1" type="HBoxContainer" parent="RootPanel/Content/EquippedRow"]
+[node name="Equipped1" type="HBoxContainer" parent="RootPanel/Content/EquippedPanel/EquippedRow"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_constants/separation = 4
 
-[node name="NameLabel" type="Label" parent="RootPanel/Content/EquippedRow/Equipped1"]
+[node name="NameLabel" type="Label" parent="RootPanel/Content/EquippedPanel/EquippedRow/Equipped1"]
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 4
+autowrap_mode = 3
+theme_type_variation = &"StatLabel"
 text = "-"
 
-[node name="SellButton" type="Button" parent="RootPanel/Content/EquippedRow/Equipped1"]
+[node name="SellButton" type="Button" parent="RootPanel/Content/EquippedPanel/EquippedRow/Equipped1"]
 layout_mode = 2
-text = "Sell"
+size_flags_vertical = 4
+theme_type_variation = &"FlatButton"
+text = "SELL"
 
-[node name="Equipped2" type="HBoxContainer" parent="RootPanel/Content/EquippedRow"]
+[node name="Equipped2" type="HBoxContainer" parent="RootPanel/Content/EquippedPanel/EquippedRow"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_constants/separation = 4
 
-[node name="NameLabel" type="Label" parent="RootPanel/Content/EquippedRow/Equipped2"]
+[node name="NameLabel" type="Label" parent="RootPanel/Content/EquippedPanel/EquippedRow/Equipped2"]
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 4
+autowrap_mode = 3
+theme_type_variation = &"StatLabel"
 text = "-"
 
-[node name="SellButton" type="Button" parent="RootPanel/Content/EquippedRow/Equipped2"]
+[node name="SellButton" type="Button" parent="RootPanel/Content/EquippedPanel/EquippedRow/Equipped2"]
 layout_mode = 2
-text = "Sell"
+size_flags_vertical = 4
+theme_type_variation = &"FlatButton"
+text = "SELL"
 
-[node name="Equipped3" type="HBoxContainer" parent="RootPanel/Content/EquippedRow"]
+[node name="Equipped3" type="HBoxContainer" parent="RootPanel/Content/EquippedPanel/EquippedRow"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_constants/separation = 4
 
-[node name="NameLabel" type="Label" parent="RootPanel/Content/EquippedRow/Equipped3"]
+[node name="NameLabel" type="Label" parent="RootPanel/Content/EquippedPanel/EquippedRow/Equipped3"]
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 4
+autowrap_mode = 3
+theme_type_variation = &"StatLabel"
 text = "-"
 
-[node name="SellButton" type="Button" parent="RootPanel/Content/EquippedRow/Equipped3"]
+[node name="SellButton" type="Button" parent="RootPanel/Content/EquippedPanel/EquippedRow/Equipped3"]
 layout_mode = 2
-text = "Sell"
+size_flags_vertical = 4
+theme_type_variation = &"FlatButton"
+text = "SELL"
 
-[node name="Equipped4" type="HBoxContainer" parent="RootPanel/Content/EquippedRow"]
+[node name="Equipped4" type="HBoxContainer" parent="RootPanel/Content/EquippedPanel/EquippedRow"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_constants/separation = 4
 
-[node name="NameLabel" type="Label" parent="RootPanel/Content/EquippedRow/Equipped4"]
+[node name="NameLabel" type="Label" parent="RootPanel/Content/EquippedPanel/EquippedRow/Equipped4"]
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 4
+autowrap_mode = 3
+theme_type_variation = &"StatLabel"
 text = "-"
 
-[node name="SellButton" type="Button" parent="RootPanel/Content/EquippedRow/Equipped4"]
+[node name="SellButton" type="Button" parent="RootPanel/Content/EquippedPanel/EquippedRow/Equipped4"]
 layout_mode = 2
-text = "Sell"
+size_flags_vertical = 4
+theme_type_variation = &"FlatButton"
+text = "SELL"
 
-[node name="Equipped5" type="HBoxContainer" parent="RootPanel/Content/EquippedRow"]
+[node name="Equipped5" type="HBoxContainer" parent="RootPanel/Content/EquippedPanel/EquippedRow"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_constants/separation = 4
 
-[node name="NameLabel" type="Label" parent="RootPanel/Content/EquippedRow/Equipped5"]
+[node name="NameLabel" type="Label" parent="RootPanel/Content/EquippedPanel/EquippedRow/Equipped5"]
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 4
+autowrap_mode = 3
+theme_type_variation = &"StatLabel"
 text = "-"
 
-[node name="SellButton" type="Button" parent="RootPanel/Content/EquippedRow/Equipped5"]
+[node name="SellButton" type="Button" parent="RootPanel/Content/EquippedPanel/EquippedRow/Equipped5"]
 layout_mode = 2
-text = "Sell"
+size_flags_vertical = 4
+theme_type_variation = &"FlatButton"
+text = "SELL"
 
 [node name="BottomRow" type="HBoxContainer" parent="RootPanel/Content"]
 layout_mode = 2
@@ -266,12 +414,15 @@ alignment = 1
 
 [node name="RerollButton" type="Button" parent="RootPanel/Content/BottomRow"]
 layout_mode = 2
-text = "Reroll"
+theme_type_variation = &"FlatButton"
+text = "REROLL"
 
 [node name="RerollCostLabel" type="Label" parent="RootPanel/Content/BottomRow"]
 layout_mode = 2
-text = "Reroll (2g)"
+size_flags_vertical = 4
+theme_type_variation = &"GoldLabel"
+text = "2g"
 
 [node name="NextWaveButton" type="Button" parent="RootPanel/Content/BottomRow"]
 layout_mode = 2
-text = "Next Wave"
+text = "NEXT WAVE"

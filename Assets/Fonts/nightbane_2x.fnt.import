@@ -1,0 +1,17 @@
+[remap]
+
+importer="font_data_bmfont"
+type="FontFile"
+uid="uid://dlkodmfiysmjy"
+path="res://.godot/imported/nightbane_2x.fnt-9d4c1f0b1bf7696915297dbe57620a53.fontdata"
+
+[deps]
+
+source_file="res://Assets/Fonts/nightbane_2x.fnt"
+dest_files=["res://.godot/imported/nightbane_2x.fnt-9d4c1f0b1bf7696915297dbe57620a53.fontdata"]
+
+[params]
+
+fallbacks=[]
+compress=true
+scaling_mode=2

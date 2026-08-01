@@ -1,91 +1,79 @@
-[gd_scene load_steps=2 format=3 uid="uid://c8deathscreen01"]
+[gd_scene load_steps=4 format=3 uid="uid://c8deathscreen01"]
 
 [ext_resource type="Script" path="res://Scripts/UI/DeathScreen.gd" id="1_death"]
+[ext_resource type="Theme" path="res://Assets/UI/nightbane_theme.tres" id="theme"]
+[ext_resource type="Texture2D" path="res://Assets/UI/icon_skull.png" id="skull"]
 
 [node name="DeathScreen" type="CanvasLayer"]
-layer = 100
-process_mode = 3
 script = ExtResource("1_death")
-root_panel_path = NodePath("Root")
-title_label_path = NodePath("Root/Panel/VBox/Title")
-stats_label_path = NodePath("Root/Panel/VBox/Stats")
-meta_label_path = NodePath("Root/Panel/VBox/Meta")
-continue_button_path = NodePath("Root/Panel/VBox/ContinueButton")
+root_panel_path = NodePath("RootPanel")
+title_label_path = NodePath("RootPanel/Center/Card/VBox/TitleLabel")
+stats_label_path = NodePath("RootPanel/Center/Card/VBox/StatsPanel/StatsLabel")
+meta_label_path = NodePath("RootPanel/Center/Card/VBox/MetaLabel")
+continue_button_path = NodePath("RootPanel/Center/Card/VBox/ContinueButton")
+card_path = NodePath("RootPanel/Center/Card")
+crest_path = NodePath("RootPanel/Center/Card/VBox/Crest")
 
-[node name="Root" type="Control" parent="."]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="RootPanel" type="ColorRect" parent="."]
 visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("theme")
+color = Color(0.05, 0.005, 0.02, 0.92)
 
-[node name="Dim" type="ColorRect" parent="Root"]
+[node name="Center" type="CenterContainer" parent="RootPanel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.02, 0, 0.04, 0.78)
 
-[node name="Panel" type="ColorRect" parent="Root"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -220.0
-offset_top = -180.0
-offset_right = 220.0
-offset_bottom = 180.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0.08, 0.04, 0.08, 0.97)
+[node name="Card" type="PanelContainer" parent="RootPanel/Center"]
+custom_minimum_size = Vector2(440, 0)
+layout_mode = 2
+theme_type_variation = &"BloodPanel"
 
-[node name="VBox" type="VBoxContainer" parent="Root/Panel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 24.0
-offset_top = 20.0
-offset_right = -24.0
-offset_bottom = -20.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="VBox" type="VBoxContainer" parent="RootPanel/Center/Card"]
+layout_mode = 2
 theme_override_constants/separation = 14
-alignment = 1
 
-[node name="Title" type="Label" parent="Root/Panel/VBox"]
+[node name="Crest" type="TextureRect" parent="RootPanel/Center/Card/VBox"]
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
-theme_override_colors/font_color = Color(0.72, 0.05, 0.09, 1)
-text = "You Have Fallen"
+texture = ExtResource("skull")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TitleLabel" type="Label" parent="RootPanel/Center/Card/VBox"]
+layout_mode = 2
 horizontal_alignment = 1
+autowrap_mode = 3
+theme_type_variation = &"TitleLabel"
+text = "YOU HAVE FALLEN"
 
-[node name="Stats" type="Label" parent="Root/Panel/VBox"]
+[node name="Sep" type="HSeparator" parent="RootPanel/Center/Card/VBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.8, 0.75, 1)
-text = "Waves Survived: 0
-Kills: 0
-Damage Dealt: 0
-Gold Earned: 0"
+
+[node name="StatsPanel" type="PanelContainer" parent="RootPanel/Center/Card/VBox"]
+layout_mode = 2
+theme_type_variation = &"InsetPanel"
+
+[node name="StatsLabel" type="Label" parent="RootPanel/Center/Card/VBox/StatsPanel"]
+layout_mode = 2
 horizontal_alignment = 1
+theme_type_variation = &"StatLabel"
+text = "Waves Survived: 0"
 
-[node name="Meta" type="Label" parent="Root/Panel/VBox"]
+[node name="MetaLabel" type="Label" parent="RootPanel/Center/Card/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
-theme_override_colors/font_color = Color(0.85, 0.7, 0.25, 1)
+horizontal_alignment = 1
+theme_type_variation = &"GoldLabel"
 text = "+0 Blood Marks"
-horizontal_alignment = 1
 
-[node name="Spacer" type="Control" parent="Root/Panel/VBox"]
+[node name="ContinueButton" type="Button" parent="RootPanel/Center/Card/VBox"]
 layout_mode = 2
-size_flags_vertical = 3
-
-[node name="ContinueButton" type="Button" parent="Root/Panel/VBox"]
-layout_mode = 2
-text = "Return to Menu"
+text = "CONTINUE"

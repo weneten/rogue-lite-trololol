@@ -1,134 +1,134 @@
-[gd_scene load_steps=2 format=3 uid="uid://c8settingsmenu01"]
+[gd_scene load_steps=3 format=3 uid="uid://c8settingsmenu01"]
 
 [ext_resource type="Script" path="res://Scripts/UI/SettingsMenu.gd" id="1_settings"]
+[ext_resource type="Theme" path="res://Assets/UI/nightbane_theme.tres" id="theme"]
 
 [node name="SettingsMenu" type="CanvasLayer"]
-layer = 90
 script = ExtResource("1_settings")
-root_panel_path = NodePath("Root")
-master_slider_path = NodePath("Root/Panel/VBox/MasterRow/MasterSlider")
-music_slider_path = NodePath("Root/Panel/VBox/MusicRow/MusicSlider")
-sfx_slider_path = NodePath("Root/Panel/VBox/SfxRow/SfxSlider")
-close_button_path = NodePath("Root/Panel/VBox/CloseButton")
-rebind_stub_button_path = NodePath("Root/Panel/VBox/RebindButton")
-rebind_status_label_path = NodePath("Root/Panel/VBox/RebindStatus")
+root_panel_path = NodePath("RootPanel")
+master_slider_path = NodePath("RootPanel/Center/Card/VBox/Rows/MasterRow/MasterSlider")
+music_slider_path = NodePath("RootPanel/Center/Card/VBox/Rows/MusicRow/MusicSlider")
+sfx_slider_path = NodePath("RootPanel/Center/Card/VBox/Rows/SfxRow/SfxSlider")
+close_button_path = NodePath("RootPanel/Center/Card/VBox/CloseButton")
+rebind_stub_button_path = NodePath("RootPanel/Center/Card/VBox/RebindButton")
+rebind_status_label_path = NodePath("RootPanel/Center/Card/VBox/RebindStatusLabel")
+card_path = NodePath("RootPanel/Center/Card")
 
-[node name="Root" type="Control" parent="."]
-layout_mode = 3
+[node name="RootPanel" type="ColorRect" parent="."]
+visible = false
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 0
+theme = ExtResource("theme")
+color = Color(0.02, 0.01, 0.03, 0.85)
 
-[node name="Dim" type="ColorRect" parent="Root"]
+[node name="Center" type="CenterContainer" parent="RootPanel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 0.55)
-mouse_filter = 0
 
-[node name="Panel" type="ColorRect" parent="Root"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -200.0
-offset_top = -180.0
-offset_right = 200.0
-offset_bottom = 180.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0.1, 0.06, 0.1, 0.96)
+[node name="Card" type="PanelContainer" parent="RootPanel/Center"]
+custom_minimum_size = Vector2(440, 0)
+layout_mode = 2
+theme_type_variation = &"OrnatePanel"
 
-[node name="VBox" type="VBoxContainer" parent="Root/Panel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 20.0
-offset_top = 16.0
-offset_right = -20.0
-offset_bottom = -16.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="VBox" type="VBoxContainer" parent="RootPanel/Center/Card"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="RootPanel/Center/Card/VBox"]
+layout_mode = 2
+horizontal_alignment = 1
+theme_type_variation = &"TitleLabel"
+text = "SETTINGS"
+
+[node name="Sep" type="HSeparator" parent="RootPanel/Center/Card/VBox"]
+layout_mode = 2
+
+[node name="Rows" type="VBoxContainer" parent="RootPanel/Center/Card/VBox"]
+layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="Title" type="Label" parent="Root/Panel/VBox"]
+[node name="MasterRow" type="HBoxContainer" parent="RootPanel/Center/Card/VBox/Rows"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
-theme_override_colors/font_color = Color(0.85, 0.78, 0.62, 1)
-text = "Settings"
+theme_override_constants/separation = 14
+
+[node name="MasterLabel" type="Label" parent="RootPanel/Center/Card/VBox/Rows/MasterRow"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"StatLabel"
+text = "MASTER"
+
+[node name="MasterSlider" type="HSlider" parent="RootPanel/Center/Card/VBox/Rows/MasterRow"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.01
+value = 1.0
+
+[node name="MusicRow" type="HBoxContainer" parent="RootPanel/Center/Card/VBox/Rows"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="MusicLabel" type="Label" parent="RootPanel/Center/Card/VBox/Rows/MusicRow"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"StatLabel"
+text = "MUSIC"
+
+[node name="MusicSlider" type="HSlider" parent="RootPanel/Center/Card/VBox/Rows/MusicRow"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.01
+value = 1.0
+
+[node name="SfxRow" type="HBoxContainer" parent="RootPanel/Center/Card/VBox/Rows"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="SfxLabel" type="Label" parent="RootPanel/Center/Card/VBox/Rows/SfxRow"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"StatLabel"
+text = "EFFECTS"
+
+[node name="SfxSlider" type="HSlider" parent="RootPanel/Center/Card/VBox/Rows/SfxRow"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.01
+value = 1.0
+
+[node name="Sep2" type="HSeparator" parent="RootPanel/Center/Card/VBox"]
+layout_mode = 2
+
+[node name="RebindButton" type="Button" parent="RootPanel/Center/Card/VBox"]
+layout_mode = 2
+theme_type_variation = &"FlatButton"
+text = "REBIND KEYS"
+
+[node name="RebindStatusLabel" type="Label" parent="RootPanel/Center/Card/VBox"]
+layout_mode = 2
 horizontal_alignment = 1
-
-[node name="MasterRow" type="HBoxContainer" parent="Root/Panel/VBox"]
-layout_mode = 2
-
-[node name="MasterLabel" type="Label" parent="Root/Panel/VBox/MasterRow"]
-custom_minimum_size = Vector2(80, 0)
-layout_mode = 2
-text = "Master"
-
-[node name="MasterSlider" type="HSlider" parent="Root/Panel/VBox/MasterRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-min_value = 0.0
-max_value = 1.0
-step = 0.01
-value = 1.0
-
-[node name="MusicRow" type="HBoxContainer" parent="Root/Panel/VBox"]
-layout_mode = 2
-
-[node name="MusicLabel" type="Label" parent="Root/Panel/VBox/MusicRow"]
-custom_minimum_size = Vector2(80, 0)
-layout_mode = 2
-text = "Music"
-
-[node name="MusicSlider" type="HSlider" parent="Root/Panel/VBox/MusicRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-min_value = 0.0
-max_value = 1.0
-step = 0.01
-value = 1.0
-
-[node name="SfxRow" type="HBoxContainer" parent="Root/Panel/VBox"]
-layout_mode = 2
-
-[node name="SfxLabel" type="Label" parent="Root/Panel/VBox/SfxRow"]
-custom_minimum_size = Vector2(80, 0)
-layout_mode = 2
-text = "SFX"
-
-[node name="SfxSlider" type="HSlider" parent="Root/Panel/VBox/SfxRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-min_value = 0.0
-max_value = 1.0
-step = 0.01
-value = 1.0
-
-[node name="RebindButton" type="Button" parent="Root/Panel/VBox"]
-layout_mode = 2
-text = "Rebind Keys (Soon)"
-
-[node name="RebindStatus" type="Label" parent="Root/Panel/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.6, 0.55, 0.58, 1)
+autowrap_mode = 3
+theme_type_variation = &"SmallLabel"
 text = ""
-horizontal_alignment = 1
 
-[node name="Spacer" type="Control" parent="Root/Panel/VBox"]
+[node name="CloseButton" type="Button" parent="RootPanel/Center/Card/VBox"]
 layout_mode = 2
-size_flags_vertical = 3
-
-[node name="CloseButton" type="Button" parent="Root/Panel/VBox"]
-layout_mode = 2
-text = "Close"
+text = "BACK"

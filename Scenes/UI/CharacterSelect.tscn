@@ -1,6 +1,9 @@
-[gd_scene load_steps=2 format=3 uid="uid://p9x2r5t8k1w4z"]
+[gd_scene load_steps=5 format=3 uid="uid://p9x2r5t8k1w4z"]
 
 [ext_resource type="Script" path="res://Scripts/UI/CharacterSelect.gd" id="1_charselect"]
+[ext_resource type="Theme" path="res://Assets/UI/nightbane_theme.tres" id="2_theme"]
+[ext_resource type="Texture2D" path="res://Assets/UI/menu_backdrop.png" id="3_backdrop"]
+[ext_resource type="Texture2D" path="res://Assets/UI/vignette.png" id="4_vignette"]
 
 [node name="CharacterSelect" type="Control"]
 layout_mode = 3
@@ -9,168 +12,211 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("2_theme")
 script = ExtResource("1_charselect")
-roster_container_path = NodePath("Margin/HBox/RosterScroll/RosterList")
-name_label_path = NodePath("Margin/HBox/Detail/NameLabel")
-lore_label_path = NodePath("Margin/HBox/Detail/LoreLabel")
-stats_label_path = NodePath("Margin/HBox/Detail/StatsLabel")
-passive_label_path = NodePath("Margin/HBox/Detail/PassiveLabel")
-difficulty_label_path = NodePath("Margin/HBox/Detail/DifficultyLabel")
-begin_button_path = NodePath("Margin/HBox/Detail/ButtonRow/BeginButton")
-back_button_path = NodePath("Margin/HBox/Detail/ButtonRow/BackButton")
-meta_currency_label_path = NodePath("MetaCurrencyLabel")
-unlock_button_path = NodePath("Margin/HBox/Detail/ButtonRow/UnlockButton")
-unlock_status_label_path = NodePath("Margin/HBox/Detail/UnlockStatusLabel")
-portrait_panel_path = NodePath("Margin/HBox/PortraitPanel")
-portrait_sprite_path = NodePath("Margin/HBox/PortraitPanel/PortraitSprite")
-portrait_placeholder_path = NodePath("Margin/HBox/PortraitPanel/PortraitPlaceholder")
+roster_container_path = NodePath("Layout/Rows/Body/RosterPanel/RosterScroll/RosterList")
+name_label_path = NodePath("Layout/Rows/Body/Detail/DetailPanel/Inner/NameLabel")
+lore_label_path = NodePath("Layout/Rows/Body/Detail/DetailPanel/Inner/LoreLabel")
+stats_label_path = NodePath("Layout/Rows/Body/Detail/DetailPanel/Inner/StatsPanel/StatsLabel")
+passive_label_path = NodePath("Layout/Rows/Body/Detail/DetailPanel/Inner/PassiveLabel")
+difficulty_label_path = NodePath("Layout/Rows/Body/Detail/DetailPanel/Inner/DifficultyLabel")
+begin_button_path = NodePath("Layout/Rows/Footer/BeginButton")
+back_button_path = NodePath("Layout/Rows/Footer/BackButton")
+meta_currency_label_path = NodePath("Layout/Rows/Header/MetaRow/Inner/MetaCurrencyLabel")
+unlock_button_path = NodePath("Layout/Rows/Footer/UnlockButton")
+unlock_status_label_path = NodePath("Layout/Rows/Body/Detail/DetailPanel/Inner/UnlockStatusLabel")
+portrait_panel_path = NodePath("Layout/Rows/Body/Detail/PortraitPanel")
+portrait_sprite_path = NodePath("Layout/Rows/Body/Detail/PortraitPanel/PortraitSprite")
+portrait_placeholder_path = NodePath("Layout/Rows/Body/Detail/PortraitPanel/PortraitPlaceholder")
+portrait_zoom = 4.0
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Backdrop" type="TextureRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.05, 0.03, 0.05, 1)
+mouse_filter = 2
+modulate = Color(0.7, 0.7, 0.78, 1)
+texture = ExtResource("3_backdrop")
+expand_mode = 1
+stretch_mode = 6
 
-[node name="Title" type="Label" parent="."]
+[node name="Vignette" type="TextureRect" parent="."]
 layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
-offset_top = 16.0
-offset_bottom = 60.0
-horizontal_alignment = 1
-theme_override_font_sizes/font_size = 32
-theme_override_colors/font_color = Color(0.72, 0.05, 0.09, 1)
-text = "Choose Your Hunter"
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_vignette")
+expand_mode = 1
+stretch_mode = 6
 
-[node name="MetaCurrencyLabel" type="Label" parent="."]
+[node name="Layout" type="MarginContainer" parent="."]
 layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
+anchors_preset = 15
 anchor_right = 1.0
-offset_left = -220.0
-offset_top = 20.0
-offset_right = -24.0
-offset_bottom = 48.0
-horizontal_alignment = 2
-theme_override_colors/font_color = Color(0.85, 0.7, 0.25, 1)
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 20
+
+[node name="Rows" type="VBoxContainer" parent="Layout"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Header" type="HBoxContainer" parent="Layout/Rows"]
+layout_mode = 2
+size_flags_vertical = 0
+
+[node name="Title" type="Label" parent="Layout/Rows/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_type_variation = &"TitleLabel"
+text = "CHOOSE YOUR HUNTER"
+
+[node name="MetaRow" type="PanelContainer" parent="Layout/Rows/Header"]
+layout_mode = 2
+size_flags_horizontal = 8
+theme_type_variation = &"DarkPanel"
+
+[node name="Inner" type="HBoxContainer" parent="Layout/Rows/Header/MetaRow"]
+layout_mode = 2
+
+[node name="MetaCurrencyLabel" type="Label" parent="Layout/Rows/Header/MetaRow/Inner"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"GoldLabel"
 text = "Blood Marks: 0"
 
-[node name="Margin" type="MarginContainer" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-offset_top = 70.0
-theme_override_constants/margin_left = 24
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 24
-theme_override_constants/margin_bottom = 24
-
-[node name="HBox" type="HBoxContainer" parent="Margin"]
+[node name="Body" type="HBoxContainer" parent="Layout/Rows"]
 layout_mode = 2
-theme_override_constants/separation = 24
+size_flags_vertical = 3
+theme_override_constants/separation = 18
 
-[node name="RosterScroll" type="ScrollContainer" parent="Margin/HBox"]
+[node name="RosterPanel" type="PanelContainer" parent="Layout/Rows/Body"]
 custom_minimum_size = Vector2(340, 0)
 layout_mode = 2
 size_flags_horizontal = 0
+theme_type_variation = &"DarkPanel"
 
-[node name="RosterList" type="VBoxContainer" parent="Margin/HBox/RosterScroll"]
+[node name="RosterScroll" type="ScrollContainer" parent="Layout/Rows/Body/RosterPanel"]
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="RosterList" type="VBoxContainer" parent="Layout/Rows/Body/RosterPanel/RosterScroll"]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 0
-theme_override_constants/separation = 6
-size_flags_horizontal = 3
 theme_override_constants/separation = 6
 
-[node name="PortraitPanel" type="Panel" parent="Margin/HBox"]
-custom_minimum_size = Vector2(240, 0)
+[node name="Detail" type="HBoxContainer" parent="Layout/Rows/Body"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 18
+
+[node name="PortraitPanel" type="PanelContainer" parent="Layout/Rows/Body/Detail"]
+custom_minimum_size = Vector2(260, 0)
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 3
+theme_type_variation = &"InsetPanel"
 
-[node name="PortraitSprite" type="AnimatedSprite2D" parent="Margin/HBox/PortraitPanel"]
+[node name="PortraitSprite" type="AnimatedSprite2D" parent="Layout/Rows/Body/Detail/PortraitPanel"]
 visible = false
 texture_filter = 1
 centered = true
-position = Vector2(120, 300)
-scale = Vector2(3, 3)
+position = Vector2(130, 300)
+scale = Vector2(4, 4)
 
-[node name="PortraitPlaceholder" type="Label" parent="Margin/HBox/PortraitPanel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="PortraitPlaceholder" type="Label" parent="Layout/Rows/Body/Detail/PortraitPanel"]
+layout_mode = 2
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
-theme_override_colors/font_color = Color(0.45, 0.42, 0.45, 1)
-text = "No portrait art yet"
+theme_type_variation = &"SmallLabel"
+text = "NO PORTRAIT"
 
-[node name="Detail" type="VBoxContainer" parent="Margin/HBox"]
+[node name="DetailPanel" type="PanelContainer" parent="Layout/Rows/Body/Detail"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/separation = 12
+theme_type_variation = &"OrnatePanel"
 
-[node name="NameLabel" type="Label" parent="Margin/HBox/Detail"]
+[node name="Inner" type="VBoxContainer" parent="Layout/Rows/Body/Detail/DetailPanel"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
+theme_override_constants/separation = 10
+
+[node name="NameLabel" type="Label" parent="Layout/Rows/Body/Detail/DetailPanel/Inner"]
+layout_mode = 2
+autowrap_mode = 3
+theme_type_variation = &"TitleLabel"
 theme_override_colors/font_color = Color(0.85, 0.78, 0.62, 1)
-text = "Select a Hunter"
+text = "SELECT A HUNTER"
 
-[node name="DifficultyLabel" type="Label" parent="Margin/HBox/Detail"]
+[node name="DifficultyLabel" type="Label" parent="Layout/Rows/Body/Detail/DetailPanel/Inner"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.6, 0.55, 0.58, 1)
+theme_type_variation = &"SmallLabel"
 text = ""
 
-[node name="LoreLabel" type="Label" parent="Margin/HBox/Detail"]
+[node name="Sep" type="HSeparator" parent="Layout/Rows/Body/Detail/DetailPanel/Inner"]
 layout_mode = 2
-autowrap_mode = 3
-theme_override_colors/font_color = Color(0.75, 0.72, 0.7, 1)
-text = ""
 
-[node name="StatsLabel" type="Label" parent="Margin/HBox/Detail"]
+[node name="LoreLabel" type="Label" parent="Layout/Rows/Body/Detail/DetailPanel/Inner"]
 layout_mode = 2
 autowrap_mode = 3
+theme_type_variation = &"SubtitleLabel"
 text = ""
 
-[node name="PassiveLabel" type="Label" parent="Margin/HBox/Detail"]
+[node name="StatsPanel" type="PanelContainer" parent="Layout/Rows/Body/Detail/DetailPanel/Inner"]
+layout_mode = 2
+theme_type_variation = &"InsetPanel"
+
+[node name="StatsLabel" type="Label" parent="Layout/Rows/Body/Detail/DetailPanel/Inner/StatsPanel"]
 layout_mode = 2
 autowrap_mode = 3
-theme_override_colors/font_color = Color(0.72, 0.4, 0.15, 1)
+theme_type_variation = &"StatLabel"
 text = ""
 
-[node name="UnlockStatusLabel" type="Label" parent="Margin/HBox/Detail"]
+[node name="PassiveLabel" type="Label" parent="Layout/Rows/Body/Detail/DetailPanel/Inner"]
 layout_mode = 2
 autowrap_mode = 3
-theme_override_colors/font_color = Color(0.7, 0.55, 0.55, 1)
+theme_type_variation = &"DangerLabel"
 text = ""
 
-[node name="Spacer" type="Control" parent="Margin/HBox/Detail"]
+[node name="Spacer" type="Control" parent="Layout/Rows/Body/Detail/DetailPanel/Inner"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="ButtonRow" type="HBoxContainer" parent="Margin/HBox/Detail"]
+[node name="UnlockStatusLabel" type="Label" parent="Layout/Rows/Body/Detail/DetailPanel/Inner"]
 layout_mode = 2
+autowrap_mode = 3
+theme_type_variation = &"SmallLabel"
+text = ""
+
+[node name="Footer" type="HBoxContainer" parent="Layout/Rows"]
+layout_mode = 2
+size_flags_vertical = 8
 alignment = 2
-theme_override_constants/separation = 16
+theme_override_constants/separation = 14
 
-[node name="UnlockButton" type="Button" parent="Margin/HBox/Detail/ButtonRow"]
-layout_mode = 2
+[node name="UnlockButton" type="Button" parent="Layout/Rows/Footer"]
 visible = false
-text = "Unlock"
-
-[node name="BackButton" type="Button" parent="Margin/HBox/Detail/ButtonRow"]
 layout_mode = 2
-text = "Back"
+theme_type_variation = &"FlatButton"
+text = "UNLOCK"
 
-[node name="BeginButton" type="Button" parent="Margin/HBox/Detail/ButtonRow"]
+[node name="BackButton" type="Button" parent="Layout/Rows/Footer"]
 layout_mode = 2
-text = "Begin the Hunt"
+theme_type_variation = &"FlatButton"
+text = "BACK"
+
+[node name="BeginButton" type="Button" parent="Layout/Rows/Footer"]
+layout_mode = 2
+text = "BEGIN THE HUNT"

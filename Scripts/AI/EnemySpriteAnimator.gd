@@ -26,7 +26,8 @@ func get_sprite() -> AnimatedSprite2D:
 func _ready() -> void:
 	_resolve_sprite()
 	if _sprite != null:
-		_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+		# Sheets are hand-sized pixel art; filtering them destroys the edges.
+		_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		_sprite.centered = true
 		_sprite.animation_finished.connect(_on_animation_finished)
 
@@ -49,7 +50,7 @@ func configure(sheet_path: String, json_path: String, attack_anim_name: String, 
 		push_error("[EnemySpriteAnimator] No AnimatedSprite2D found (Sprite child missing).")
 		return false
 
-	_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_sprite.centered = true
 	_sprite.z_index = 2
 

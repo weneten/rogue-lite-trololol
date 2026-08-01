@@ -23,7 +23,7 @@ size = Vector2(64, 1064)
 [node name="Arena" type="Node2D"]
 
 [node name="CanvasModulate" type="CanvasModulate" parent="."]
-color = Color(1.05, 1.02, 0.96, 1)
+color = Color(0.82, 0.8, 0.94, 1)
 
 [node name="World" type="Node2D" parent="."]
 
@@ -31,9 +31,9 @@ color = Color(1.05, 1.02, 0.96, 1)
 z_index = -10
 script = ExtResource("11_visuals")
 arena_size = Vector2(1600, 1000)
-tile_size = 48
-border_thickness = 56
-clutter_count = 52
+tile_size = 16
+border_thickness = 64
+prop_count = 54
 seed = 1337
 
 [node name="Ground" type="Polygon2D" parent="World"]
@@ -96,7 +96,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.05, 0.03, 0.02, 0.14)
+color = Color(0.03, 0.01, 0.04, 0.28)
 
 [node name="HUD" parent="." instance=ExtResource("4_hud")]
 
