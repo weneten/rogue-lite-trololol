@@ -73,7 +73,8 @@ func spawn_boss(data: BossData) -> void:
 	var spawn_pos: Vector2 = origin + Vector2(spawn_offset_from_player, 0.0).rotated(randf_range(0.0, TAU))
 
 	var instance: Node = data.boss_scene.instantiate()
-	var parent: Node = get_tree().current_scene if get_tree().current_scene != null else self
+	# Same y-sort root as Player/enemies so bosses depth-sort by feet.
+	var parent: Node = _resolve_entity_parent()
 	parent.add_child(instance)
 
 	if not instance is Boss:
@@ -130,3 +131,12 @@ func debug_spawn_boss_for_wave(wave_number: int) -> void:
 	var data: BossData = _find_boss_for_wave(wave_number)
 	if data != null:
 		spawn_boss(data)
+
+func _resolve_entity_parent() -> Node:
+	var scene: Node = get_tree().current_scene if get_tree() != null else null
+	if scene != null and is_instance_valid(scene):
+		var world: Node = scene.get_node_or_null("World")
+		if world != null:
+			return world
+		return scene
+	return self

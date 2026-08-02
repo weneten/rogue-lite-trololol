@@ -441,6 +441,8 @@ func on_spawn() -> void:
 	set_physics_process(true)
 	set_process(true)
 	process_mode = PROCESS_MODE_INHERIT
+	# Pooled corpses leave host z at CORPSE_Z; restore living sort layer.
+	z_index = 0
 
 	collision_layer = 4
 	if _collision_shape != null:

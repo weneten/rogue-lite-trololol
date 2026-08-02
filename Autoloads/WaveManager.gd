@@ -97,16 +97,25 @@ func _stop_gameplay() -> void:
 	print("[WaveManager] Left gameplay — wave loop idle.")
 
 func _ensure_enemy_pool() -> bool:
-	var scene: Node = get_tree().current_scene
-	if scene == null or !is_instance_valid(scene):
+	# Parent under World (same y-sort root as Player) so feet-depth sorts correctly.
+	# Parenting to Arena made every enemy draw over/under the whole World node.
+	var parent: Node = _resolve_entity_parent()
+	if parent == null or !is_instance_valid(parent):
 		return false
 
-	if _enemy_pool != null and _pool_parent == scene and is_instance_valid(_pool_parent):
+	if _enemy_pool != null and _pool_parent == parent and is_instance_valid(_pool_parent):
 		return true
 
-	_pool_parent = scene
-	_enemy_pool = ObjectPool.new(enemy_scene, scene, enemy_pool_prewarm)
+	_pool_parent = parent
+	_enemy_pool = ObjectPool.new(enemy_scene, parent, enemy_pool_prewarm)
 	return true
+
+func _resolve_entity_parent() -> Node:
+	var scene: Node = get_tree().current_scene
+	if scene == null or !is_instance_valid(scene):
+		return null
+	var world: Node = scene.get_node_or_null("World")
+	return world if world != null else scene
 
 func _process_active_wave(delta: float) -> void:
 	_wave_time_remaining -= delta

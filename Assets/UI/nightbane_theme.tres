@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=46 format=3]
+[gd_resource type="Theme" load_steps=49 format=3]
 
 [ext_resource type="FontFile" path="res://Assets/Fonts/nightbane_2x.fnt" id="font_body"]
 [ext_resource type="FontFile" path="res://Assets/Fonts/nightbane_1x.fnt" id="font_small"]
@@ -235,6 +235,54 @@ content_margin_bottom = 0
 axis_stretch_horizontal = 1
 axis_stretch_vertical = 1
 
+[sub_resource type="StyleBoxFlat" id="sb_slider"]
+bg_color = Color(0.0784, 0.0510, 0.0941, 1.0000)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.4196, 0.3725, 0.4627, 1.0000)
+content_margin_left = 4
+content_margin_top = 7
+content_margin_right = 4
+content_margin_bottom = 7
+
+[sub_resource type="StyleBoxFlat" id="sb_slider_fill"]
+bg_color = Color(0.7765, 0.1333, 0.2000, 1.0000)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1.0000, 0.3529, 0.2745, 1.0000)
+content_margin_left = 4
+content_margin_top = 7
+content_margin_right = 4
+content_margin_bottom = 7
+
+[sub_resource type="StyleBoxFlat" id="sb_slider_fill_hi"]
+bg_color = Color(1.0000, 0.3529, 0.2745, 1.0000)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1.0000, 0.9137, 0.6588, 1.0000)
+content_margin_left = 4
+content_margin_top = 7
+content_margin_right = 4
+content_margin_bottom = 7
+
 [sub_resource type="StyleBoxEmpty" id="sb_empty"]
 content_margin_left = 0
 content_margin_top = 0
@@ -379,12 +427,14 @@ ProgressBar/font_sizes/font_size = 7
 XpBar/base_type = &"ProgressBar"
 XpBar/styles/background = SubResource("sb_bar_bg")
 XpBar/styles/fill = SubResource("sb_bar_xp")
-HSlider/styles/slider = SubResource("sb_bar_bg")
-HSlider/styles/grabber_area = SubResource("sb_bar_health")
-HSlider/styles/grabber_area_highlight = SubResource("sb_bar_health")
+HSlider/styles/slider = SubResource("sb_slider")
+HSlider/styles/grabber_area = SubResource("sb_slider_fill")
+HSlider/styles/grabber_area_highlight = SubResource("sb_slider_fill_hi")
 HSlider/icons/grabber = ExtResource("tex_slider_grabber")
 HSlider/icons/grabber_highlight = ExtResource("tex_slider_grabber_hover")
+HSlider/icons/grabber_disabled = ExtResource("tex_slider_grabber")
 HSlider/constants/center_grabber = 1
+HSlider/constants/grabber_offset = 0
 CheckBox/icons/unchecked = ExtResource("tex_check_off")
 CheckBox/icons/checked = ExtResource("tex_check_on")
 CheckBox/icons/radio_unchecked = ExtResource("tex_radio_off")

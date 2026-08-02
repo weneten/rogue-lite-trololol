@@ -114,6 +114,11 @@ func _ready() -> void:
 	_load_roster()
 	_build_roster_buttons()
 
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):
+		_on_back_pressed()
+		get_viewport().set_input_as_handled()
+
 func _ensure_meta_ui() -> void:
 	# Prefer scene-wired nodes; otherwise attach a small bar under Title area.
 	if _meta_currency_label == null:
@@ -282,6 +287,12 @@ func _build_roster_buttons() -> void:
 			AudioManager.play_sfx("ui_click")
 			_select_character(captured)
 		)
+		# WASD/arrows move focus; keep detail panel in sync without an extra Space.
+		button.focus_entered.connect(func():
+			if _selected != captured:
+				_select_character(captured)
+				button.button_pressed = true
+		)
 		_roster_container.add_child(button)
 		_roster_buttons[data.character_name] = button
 
@@ -296,6 +307,8 @@ func _build_roster_buttons() -> void:
 	if initial.character_name in _roster_buttons:
 		var btn = _roster_buttons[initial.character_name] as Button
 		btn.button_pressed = true
+		# Defer so layout is ready; keyboard starts on the selected hunter.
+		btn.call_deferred("grab_focus")
 
 # Difficulty as filled/empty pips reads faster than "Diff 3/5".
 static func _difficulty_pips(rating: int) -> String:

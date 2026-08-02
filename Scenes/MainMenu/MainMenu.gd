@@ -88,8 +88,7 @@ func _play_intro() -> void:
 			if child is BaseButton:
 				UIAnim.juice_button(child)
 
-	if _start_button != null:
-		_start_button.grab_focus()
+	UIAnim.grab_focus_safe(_start_button)
 
 	var fade = _get_fade_layer()
 	UIAnim.screen_fade(fade, false, 0.45)
@@ -151,6 +150,13 @@ func _on_start_pressed() -> void:
 func _on_settings_pressed() -> void:
 	if _settings_menu != null:
 		_settings_menu.open()
+
+func _unhandled_input(event: InputEvent) -> void:
+	# ESC closes settings and returns focus to the menu buttons.
+	if _settings_menu != null and _settings_menu.is_open and event.is_action_pressed("ui_cancel"):
+		_settings_menu.close()
+		UIAnim.grab_focus_safe(_start_button)
+		get_viewport().set_input_as_handled()
 
 func _on_quit_pressed() -> void:
 	get_tree().quit()

@@ -144,6 +144,18 @@ func _open_shop() -> void:
 
 	_deal_cards()
 	get_tree().paused = true
+	_focus_default_control()
+
+func _focus_default_control() -> void:
+	for button in _weapon_buttons:
+		if button != null and button.visible and not button.disabled:
+			UIAnim.grab_focus_safe(button)
+			return
+	for button in _passive_buttons:
+		if button != null and button.visible and not button.disabled:
+			UIAnim.grab_focus_safe(button)
+			return
+	UIAnim.grab_focus_safe(_next_wave_button)
 
 # Offers pop in left to right, both on open and on every reroll, so a reroll
 # feels like new stock rather than a text swap.
@@ -169,6 +181,7 @@ func _on_next_wave_pressed() -> void:
 	if _root_panel != null:
 		_root_panel.visible = false
 
+	UIAnim.release_focus(get_tree())
 	get_tree().paused = false
 	WaveManager.start_next_wave()
 

@@ -143,16 +143,20 @@ def bars() -> dict[str, Canvas]:
 def widgets() -> dict[str, Canvas]:
     out: dict[str, Canvas] = {}
 
-    grabber = Canvas(8, 12)
-    grabber.rect(0, 0, 8, 12, P.UI_PANEL_HI)
-    grabber.rect_outline(0, 0, 8, 12, P.VOID)
-    grabber.rect_outline(1, 1, 6, 10, P.UI_BORDER_HI)
-    grabber.hline(2, 5, 5, P.AMBER)
+    # Tall enough to sit over a 12px track and still read as a handle.
+    grabber = Canvas(12, 18)
+    grabber.rect(0, 0, 12, 18, P.UI_PANEL_HI)
+    grabber.rect_outline(0, 0, 12, 18, P.VOID)
+    grabber.rect_outline(1, 1, 10, 16, P.UI_BORDER_HI)
+    grabber.rect(3, 4, 6, 10, shade(P.UI_PANEL, -0.15))
+    grabber.hline(3, 8, 7, P.AMBER)
+    grabber.hline(3, 8, 9, P.GOLD_DARK)
     out["slider_grabber"] = grabber
 
     hi = grabber.clone()
-    hi.rect_outline(1, 1, 6, 10, P.EMBER)
-    hi.hline(2, 5, 5, P.CANDLE)
+    hi.rect_outline(1, 1, 10, 16, P.EMBER)
+    hi.hline(3, 8, 7, P.CANDLE)
+    hi.hline(3, 8, 9, P.AMBER)
     out["slider_grabber_hover"] = hi
 
     for name, on in (("check_off", False), ("check_on", True)):

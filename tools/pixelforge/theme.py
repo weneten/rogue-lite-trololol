@@ -143,6 +143,32 @@ def build() -> str:
     b.stylebox_texture("sb_bar_xp", "bar_xp", margin=3, content=(0, 0, 0, 0))
     b.stylebox_texture("sb_scroll_bg", "scroll_bg", margin=3, content=(0, 0, 0, 0))
     b.stylebox_texture("sb_scroll_thumb", "scroll_thumb", margin=3, content=(0, 0, 0, 0))
+    # Dedicated flats for HSlider — ProgressBar 9-slices are nearly invisible on
+    # dark panels (only the grabber showed). High-contrast trough + crimson fill.
+    b.stylebox_flat(
+        "sb_slider",
+        P.INK,
+        radius=3,
+        border=2,
+        border_color=P.ASH,
+        content=(4, 7, 4, 7),
+    )
+    b.stylebox_flat(
+        "sb_slider_fill",
+        P.CRIMSON,
+        radius=3,
+        border=1,
+        border_color=P.EMBER,
+        content=(4, 7, 4, 7),
+    )
+    b.stylebox_flat(
+        "sb_slider_fill_hi",
+        P.EMBER,
+        radius=3,
+        border=1,
+        border_color=P.CANDLE,
+        content=(4, 7, 4, 7),
+    )
     b.stylebox_empty("sb_empty")
     b.stylebox_flat("sb_selected", P.mix(P.UI_PANEL_HI, P.BLOOD, 0.45), content=(4, 2, 4, 2))
 
@@ -231,12 +257,14 @@ def build() -> str:
     b.set("XpBar/styles/fill", 'SubResource("sb_bar_xp")')
 
     # -- Sliders / checkboxes ----------------------------------------------
-    b.set("HSlider/styles/slider", 'SubResource("sb_bar_bg")')
-    b.set("HSlider/styles/grabber_area", 'SubResource("sb_bar_health")')
-    b.set("HSlider/styles/grabber_area_highlight", 'SubResource("sb_bar_health")')
+    b.set("HSlider/styles/slider", 'SubResource("sb_slider")')
+    b.set("HSlider/styles/grabber_area", 'SubResource("sb_slider_fill")')
+    b.set("HSlider/styles/grabber_area_highlight", 'SubResource("sb_slider_fill_hi")')
     b.set("HSlider/icons/grabber", f'ExtResource("{b.texture("slider_grabber")}")')
     b.set("HSlider/icons/grabber_highlight", f'ExtResource("{b.texture("slider_grabber_hover")}")')
+    b.set("HSlider/icons/grabber_disabled", f'ExtResource("{b.texture("slider_grabber")}")')
     b.set("HSlider/constants/center_grabber", "1")
+    b.set("HSlider/constants/grabber_offset", "0")
 
     b.set("CheckBox/icons/unchecked", f'ExtResource("{b.texture("check_off")}")')
     b.set("CheckBox/icons/checked", f'ExtResource("{b.texture("check_on")}")')

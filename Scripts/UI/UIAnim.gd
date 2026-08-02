@@ -141,6 +141,24 @@ static func juice_button(button: BaseButton, lift: float = 1.08) -> void:
 	button.button_down.connect(func(): _scale_to(button, Vector2.ONE * 0.94, 0.06))
 	button.button_up.connect(func(): _scale_to(button, Vector2.ONE * lift, 0.08))
 
+# Keyboard nav: put focus on a control so WASD/arrows + Space work without a mouse.
+static func grab_focus_safe(control: Control) -> void:
+	if control == null or not is_instance_valid(control):
+		return
+	if not control.is_inside_tree() or not control.visible:
+		return
+	if control is BaseButton and (control as BaseButton).disabled:
+		return
+	control.grab_focus()
+
+# Drop UI focus when returning to gameplay so WASD only moves the player.
+static func release_focus(tree: SceneTree) -> void:
+	if tree == null:
+		return
+	var owner = tree.root.get_viewport().gui_get_focus_owner()
+	if owner != null:
+		owner.release_focus()
+
 
 static func _scale_to(control: Control, target: Vector2, duration: float) -> void:
 	if control == null or not control.is_inside_tree():
