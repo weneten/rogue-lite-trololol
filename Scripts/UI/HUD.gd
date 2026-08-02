@@ -36,7 +36,7 @@ var _level_label: Label
 var _banner: Control
 var _banner_label: Label
 var _banner_sub_label: Label
-var _damage_flash: ColorRect
+var _damage_flash: Control
 var _vitals_panel: Control
 var _last_health: int = -1
 var _last_currency: int = 0
@@ -247,9 +247,12 @@ func _flash_damage() -> void:
 	if _damage_flash == null:
 		return
 
-	_damage_flash.modulate.a = 1.0
+	# Peak well below 1.0: this fires on every hit, and in a swarm that is
+	# many times a second. It should read as a pulse at the edge of vision,
+	# not as a colour grade over the whole arena.
+	_damage_flash.modulate.a = 0.55
 	var tween = _damage_flash.create_tween()
-	tween.tween_property(_damage_flash, "modulate:a", 0.0, 0.35).set_ease(Tween.EASE_OUT)
+	tween.tween_property(_damage_flash, "modulate:a", 0.0, 0.3).set_ease(Tween.EASE_OUT)
 
 # Below a quarter health the vitals panel breathes red so you feel it in
 # peripheral vision without having to read the number.

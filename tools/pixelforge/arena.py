@@ -158,6 +158,44 @@ def _gate(c: Canvas, x: int) -> None:
 
 _PROPS = [_headstone, _cross, _dead_tree, _brazier, _bones, _rubble, _candles, _gate]
 
+PICKUP = 16
+PICKUP_FRAMES = 4
+
+
+def pickup_strip() -> Canvas:
+    """The drop every enemy leaves: a soul shard veined with gold.
+
+    One pickup carries both the experience and the coin, so the player has a
+    single thing to chase instead of two overlapping ones. Four frames of
+    bob-and-glint keep it visible against a dark, busy floor.
+    """
+    c = Canvas(PICKUP * PICKUP_FRAMES, PICKUP)
+    for i in range(PICKUP_FRAMES):
+        ox = i * PICKUP
+        lift = (0, -1, -2, -1)[i]
+        cy = 9 + lift
+
+        # Halo, so a small pickup still reads on a dark flagstone floor.
+        c.ellipse_blend(ox + 8, cy, 6.5, 6.5, with_alpha(P.SPECTRAL, 30))
+        c.ellipse(ox + 8, 13, 4, 1.5, (0, 0, 0, 80))
+
+        crystal = [(ox + 8, cy - 5), (ox + 12, cy - 1), (ox + 8, cy + 5), (ox + 4, cy - 1)]
+        c.polygon(crystal, shade(P.SPECTRAL, -0.45))
+        c.polygon([(ox + 8, cy - 4), (ox + 11, cy - 1), (ox + 8, cy + 4), (ox + 5, cy - 1)], P.SPECTRAL)
+        # Lit left facet.
+        c.polygon([(ox + 8, cy - 4), (ox + 8, cy + 4), (ox + 5, cy - 1)], shade(P.SPECTRAL, 0.3))
+
+        # Gold vein — the coin half of the reward, readable at a glance.
+        c.line((ox + 7, cy - 3), (ox + 9, cy + 2), P.AMBER)
+        c.set(ox + 9, cy + 2, P.CANDLE)
+
+        # Glint travels around the crystal across the cycle.
+        glint = ((6, -3), (7, -4), (9, -2), (6, 0))[i]
+        c.set(ox + glint[0], cy + glint[1], (255, 255, 255, 255))
+
+    c.outline_pass(P.VOID)
+    return c
+
 
 def prop_strip() -> Canvas:
     c = Canvas(PROP * PROP_COUNT, PROP)
@@ -198,3 +236,4 @@ def export(root: Path) -> None:
     floor_strip().save(out / "floor_tiles.png")
     wall_strip().save(out / "wall_tiles.png")
     prop_strip().save(out / "props.png")
+    pickup_strip().save(out / "pickup.png")

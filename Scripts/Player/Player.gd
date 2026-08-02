@@ -167,6 +167,19 @@ func _physics_process(delta: float) -> void:
 		_sprite_animator.set_facing(input_direction.x)
 		_sprite_animator.update_locomotion(input_direction.length_squared() > 0.01)
 
+# Called by Weapon whenever it actually swings or fires. The rig has an attack
+# animation per character; nothing was driving it, so the player just slid
+# around while damage happened invisibly.
+func play_attack_animation(target: Node2D = null) -> void:
+	if _sprite_animator == null:
+		return
+
+	if target != null:
+		# Face the thing being hit, overriding movement facing for the swing.
+		_sprite_animator.set_facing(target.global_position.x - global_position.x)
+
+	_sprite_animator.play_attack()
+
 func _unhandled_input(event: InputEvent) -> void:
 	if enable_debug_damage_key and event.is_action_pressed("debug_damage_test"):
 		if _health != null:

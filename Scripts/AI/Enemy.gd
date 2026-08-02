@@ -300,7 +300,7 @@ func _on_died(source: Node) -> void:
 		await _sprite_animator.play_death_async()
 
 	if _pool:
-		_pool.return_object(self)
+		_pool.return_instance(self)
 	_death_sequence_running = false
 
 func _detonate_death_explosion() -> void:

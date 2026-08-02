@@ -21,11 +21,13 @@ size = Vector2(64, 1064)
 size = Vector2(64, 1064)
 
 [node name="Arena" type="Node2D"]
+y_sort_enabled = true
 
 [node name="CanvasModulate" type="CanvasModulate" parent="."]
 color = Color(0.82, 0.8, 0.94, 1)
 
 [node name="World" type="Node2D" parent="."]
+y_sort_enabled = true
 
 [node name="ArenaVisuals" type="Node2D" parent="World"]
 z_index = -10

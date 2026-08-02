@@ -196,9 +196,11 @@ func _register_placeholder_sfx() -> void:
 		"weapon_trap",
 		"weapon_hit",
 		"ui_click",
+		"ui_confirm",
 		"ui_levelup",
 		"ui_shop_open",
-		"ui_purchase"
+		"ui_purchase",
+		"pickup_material"
 	]
 
 	for id: String in ids:

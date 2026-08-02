@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://g2h4u6d8n1r3s"]
+[gd_scene load_steps=9 format=3 uid="uid://g2h4u6d8n1r3s"]
 
 [ext_resource type="Script" path="res://Scripts/UI/HUD.gd" id="1_hud"]
 [ext_resource type="Theme" path="res://Assets/UI/nightbane_theme.tres" id="2_theme"]
@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" path="res://Assets/UI/icon_wave.png" id="5_wave"]
 [ext_resource type="Texture2D" path="res://Assets/UI/icon_time.png" id="6_time"]
 [ext_resource type="Texture2D" path="res://Assets/UI/icon_xp.png" id="7_xp"]
+[ext_resource type="Texture2D" path="res://Assets/UI/vignette.png" id="8_vignette"]
 
 [node name="HUD" type="CanvasLayer"]
 script = ExtResource("1_hud")
@@ -34,7 +35,7 @@ grow_vertical = 2
 mouse_filter = 2
 theme = ExtResource("2_theme")
 
-[node name="DamageFlash" type="ColorRect" parent="Root"]
+[node name="DamageFlash" type="TextureRect" parent="Root"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -43,7 +44,10 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 modulate = Color(1, 1, 1, 0)
-color = Color(0.6, 0.05, 0.09, 0.35)
+self_modulate = Color(0.85, 0.08, 0.12, 1)
+texture = ExtResource("8_vignette")
+expand_mode = 1
+stretch_mode = 6
 
 [node name="Margin" type="MarginContainer" parent="Root"]
 layout_mode = 1

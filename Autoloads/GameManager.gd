@@ -27,9 +27,11 @@ func _ready() -> void:
 	EventBus.player_died.connect(_on_player_died)
 
 func _on_enemy_killed(enemy: Node, currency_reward: int, experience_reward: int) -> void:
-	# XP is no longer auto-granted here: it's now owned by PlayerStats and only banked once
-	# the player actually collects the XpGem the kill drops (see XpGemSpawner/XpGem).
-	add_currency(currency_reward)
+	# Neither half of a kill's reward is banked here. Both the experience and
+	# the coin ride on the shard the kill drops, and are only credited once the
+	# player walks over it (see XpGemSpawner/XpGem). Paying out instantly made
+	# the drops decorative and removed any reason to move toward a fight.
+	pass
 
 func _on_wave_start(wave_number: int) -> void:
 	self.wave_number = wave_number

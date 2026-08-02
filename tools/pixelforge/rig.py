@@ -144,9 +144,9 @@ def build_pose(
         breath = math.sin(t * math.tau)
         bob = -0.5 - breath * 0.9
         arm_b_u = 16 + breath * 4
-        arm_f_u = -14 + breath * 4
-        arm_f_f = 34
-        weapon_angle = -38 + breath * 5
+        arm_f_u = -8 + breath * 3
+        arm_f_f = 16
+        weapon_angle = -74 + breath * 4
         cape_sway = breath * 1.6
         thigh_b, thigh_f = -4.0, 4.0
         shin_b, shin_f = 4.0, -2.0
@@ -170,7 +170,7 @@ def build_pose(
         arm_f_u = -14 + math.sin(ph + math.pi) * 26
         arm_b_f = 26
         arm_f_f = 30
-        weapon_angle = -28 + math.sin(ph + math.pi) * 18
+        weapon_angle = -62 + math.sin(ph + math.pi) * 12
         cape_sway = 3.0 + math.sin(ph) * 2.2
         if spec.hover:
             thigh_f, thigh_b = 18.0, -14.0
@@ -244,11 +244,11 @@ def build_pose(
     hip = (cx, hip_y)
     chest = (cx + lean_off * 0.75, hip_y - 12.0 * s)
     neck = (cx + lean_off, hip_y - 16.0 * s)
-    head_r = 5.4 * s
+    head_r = 3.9 * s
     head = (cx + lean_off * 1.25 + math.sin(math.radians(tilt)) * 6.0,
-            hip_y - 20.5 * s + math.cos(math.radians(tilt)) * 0.0 + abs(tilt) * 0.06)
+            hip_y - 21.5 * s + abs(tilt) * 0.06)
 
-    sh_dx = 6.6 * s
+    sh_dx = 5.8 * s
     shoulder_b = (chest[0] - sh_dx * 0.5, chest[1] + 1.0)
     shoulder_f = (chest[0] + sh_dx * 0.5, chest[1] + 1.5)
     elbow_b, hand_b = _arm(shoulder_b, arm_b_u, arm_b_f, s)
@@ -428,24 +428,27 @@ def _draw_head(c: Canvas, pose: Pose, spec: BodySpec, s: float) -> None:
     kind = spec.head
     skin = spec.skin
 
+    # Neck: a two-pixel column between collar and skull. Without it the head
+    # sits straight on the chest and the whole figure reads as a snowman.
+    c.capsule((pose.neck[0], pose.neck[1] + 1.0), (hx, hy + r * 0.7), 1.5 * s, 1.3 * s, skin.dark)
+
     if kind in ("hood", "shroud", "veil"):
         # Cowl: face is a void with two burning points. Cheapest, strongest
         # gothic read there is.
         cowl = [
-            (hx - r - 0.8, hy + r + 1.0),
-            (hx - r - 1.2, hy - r * 0.4),
-            (hx - r * 0.3, hy - r - 1.8),
-            (hx + r * 0.9, hy - r * 0.6),
-            (hx + r * 1.0, hy + r * 0.9),
+            (hx - r - 1.0, hy + r + 1.5),
+            (hx - r - 1.0, hy - r * 0.5),
+            (hx - r * 0.5, hy - r * 1.9),
+            (hx + r * 0.6, hy - r * 1.4),
+            (hx + r * 1.0, hy + r * 0.6),
+            (hx + r * 0.6, hy + r + 1.5),
         ]
         c.polygon(cowl, spec.cloth.dark)
-        c.polygon([(x + 0.6, y + 0.4) for x, y in cowl], spec.cloth.core)
-        c.line((hx - r * 0.9, hy - r - 1.0), (hx - r - 0.8, hy - r * 0.1), spec.cloth.light)
-        c.ellipse(hx + r * 0.25, hy + r * 0.1, r * 0.8, r * 0.72, P.VOID)
-        c.set(round(hx + r * 0.55), round(hy), spec.eye)
-        c.set(round(hx + r * 0.55), round(hy - 1), with_alpha(spec.eye, 170))
-        c.set(round(hx - r * 0.1), round(hy + 0.5), spec.eye)
-        c.line((hx - r - 1.0, hy - r * 0.2), (hx - r * 0.2, hy - r - 1.6), spec.cloth.core)
+        c.polygon([(x + 0.6, y + 0.5) for x, y in cowl], spec.cloth.core)
+        c.line((hx - r * 0.6, hy - r * 1.7), (hx - r - 0.8, hy - r * 0.2), spec.cloth.light)
+        c.ellipse(hx + r * 0.1, hy + r * 0.15, r * 0.72, r * 0.78, P.VOID)
+        c.set(round(hx + r * 0.4), round(hy), spec.eye)
+        c.set(round(hx - r * 0.25), round(hy), spec.eye)
         return
 
     # Skull / flesh base.
@@ -590,9 +593,12 @@ def draw_figure(
 
     _draw_head(layer, pose, spec, s)
 
+    # Sleeve down to the wrist, then a small gloved hand. A full forearm in
+    # skin tone reads as a pale smear across a dark torso.
     _limb(layer, pose.shoulder_f, pose.elbow_f, 2.4 * s * spec.build, 2.0 * s, spec.cloth)
-    _limb(layer, pose.elbow_f, pose.hand_f, 2.0 * s, 1.6 * s, spec.skin)
-    layer.circle(pose.hand_f[0], pose.hand_f[1], 1.7 * s, spec.skin.dark)
+    _limb(layer, pose.elbow_f, pose.hand_f, 1.9 * s, 1.5 * s, spec.cloth)
+    layer.circle(pose.hand_f[0], pose.hand_f[1], 1.5 * s, spec.skin.dark)
+    layer.circle(pose.hand_f[0] - 0.4, pose.hand_f[1] - 0.5, 0.9 * s, spec.skin.core)
 
     # Weapon last: it is held in the near hand, so nothing may occlude it.
     # Grip sits at the weapon canvas centre, which is the rotation pivot too.

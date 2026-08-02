@@ -103,6 +103,11 @@ func _find_nearest_target() -> Node2D:
 func _attack(target: Node2D) -> void:
 	AudioManager.play_sfx(_resolve_weapon_hit_sfx_id())
 
+	# Let the wielder play its swing. Duck-typed so this works for the player
+	# and for anything else that ends up holding a weapon.
+	if _owner_body != null and _owner_body.has_method("play_attack_animation"):
+		_owner_body.play_attack_animation(target)
+
 	# Order matters: Trap pre-empts everything (it never attacks directly), Melee handles its
 	# own cleave via the hitbox overlap even when also flagged AoE (War Cleaver), and pure AoE
 	# (no Melee) gets the radius-burst path; anything left over fires a projectile.

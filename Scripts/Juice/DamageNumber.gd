@@ -54,7 +54,7 @@ func _process(delta: float) -> void:
 	if _remaining <= 0.0:
 		_active = false
 		if _pool:
-			_pool.return_object(self)
+			_pool.return_instance(self)
 
 func on_spawn() -> void:
 	visible = true

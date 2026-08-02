@@ -53,7 +53,7 @@ script = ExtResource("5_stats")
 health_component_path = NodePath("../HealthComponent")
 
 [node name="Camera2D" type="Camera2D" parent="."]
-zoom = Vector2(1.5, 1.5)
+zoom = Vector2(1, 1)
 
 [node name="WeaponInventory" type="Node" parent="."]
 script = ExtResource("6_weaponinv")
