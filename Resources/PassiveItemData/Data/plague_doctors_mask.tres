@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="PassiveItemData" load_steps=3 format=3 uid="uid://nz0pc2552m6pu"]
+
+[ext_resource type="Script" path="res://Resources/PassiveItemData/PassiveItemData.gd" id="1_pid"]
+[ext_resource type="Texture2D" path="res://Assets/sprites/items/plague_doctors_mask.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_pid")
+id = "plague_doctors_mask"
+display_name = "Plague Doctor's Mask"
+description = "Beaked, stuffed with herbs, still smells awful."
+icon = ExtResource("2_icon")
+effect_type = 7
+value = 6.0
+rarity_tier = 2
+shop_cost = 4

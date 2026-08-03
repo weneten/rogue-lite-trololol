@@ -36,6 +36,8 @@ func _ready() -> void:
 		if child is Weapon:
 			_equipped_weapons.append(child)
 
+	_reslot_weapons()
+
 func _exit_tree() -> void:
 	if instance == self:
 		instance = null
@@ -52,6 +54,7 @@ func try_add_weapon(data: WeaponData) -> bool:
 	weapon.owner_body_path = NodePath("..")
 	_owner_body.add_child(weapon)
 	_equipped_weapons.append(weapon)
+	_reslot_weapons()
 	return true
 
 # Removes and frees the first equipped weapon using this exact WeaponData resource.
@@ -68,6 +71,7 @@ func remove_weapon_at(index: int) -> bool:
 	var weapon: Weapon = _equipped_weapons[index]
 	_equipped_weapons.remove_at(index)
 	weapon.queue_free()
+	_reslot_weapons()
 	return true
 
 # Frees every equipped weapon (including whatever was pre-wired in the scene). Used by
@@ -76,3 +80,18 @@ func remove_weapon_at(index: int) -> bool:
 func clear_all_weapons() -> void:
 	for i in range(_equipped_weapons.size() - 1, -1, -1):
 		remove_weapon_at(i)
+
+# Spreads the carried weapons evenly around the Hunter so a full loadout reads
+# as six distinct things rather than one smear. Purely where they rest when
+# idle — the moment a target is in range each weapon aims independently.
+func _reslot_weapons() -> void:
+	var count: int = _equipped_weapons.size()
+	if count == 0:
+		return
+
+	# Fanned across the lower arc, centred on "pointing down", which keeps the
+	# weapons clear of the Hunter's head and their own health bar.
+	var spread: float = minf(TAU * 0.75, 0.7 * count)
+	for i in range(count):
+		var t: float = 0.0 if count == 1 else float(i) / float(count - 1) - 0.5
+		_equipped_weapons[i].idle_angle = PI * 0.5 + t * spread

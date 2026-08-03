@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="PassiveItemData" load_steps=3 format=3 uid="uid://yzosyqsd4rdpu"]
+
+[ext_resource type="Script" path="res://Resources/PassiveItemData/PassiveItemData.gd" id="1_pid"]
+[ext_resource type="Texture2D" path="res://Assets/sprites/items/widows_lens.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_pid")
+id = "widows_lens"
+display_name = "Widow's Lens"
+description = "Ground for finding the gap in a ribcage."
+icon = ExtResource("2_icon")
+effect_type = 5
+value = 0.5
+rarity_tier = 2
+shop_cost = 4

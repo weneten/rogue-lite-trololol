@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://c3g8t6qk1n0wp"]
+[gd_scene load_steps=10 format=3 uid="uid://c3g8t6qk1n0wp"]
 
 [ext_resource type="Script" path="res://Scripts/Player/Player.gd" id="1_player"]
 [ext_resource type="Script" path="res://Scripts/Combat/HealthComponent.gd" id="2_health"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://Scripts/Player/PlayerStats.gd" id="5_stats"]
 [ext_resource type="Script" path="res://Scripts/Player/WeaponInventory.gd" id="6_weaponinv"]
 [ext_resource type="Script" path="res://Scripts/AI/EnemySpriteAnimator.gd" id="7_anim"]
+[ext_resource type="Script" path="res://Scripts/Player/HunterCosmetics.gd" id="8_cosmetics"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_player"]
 radius = 16.0
@@ -24,12 +25,10 @@ fallback_polygon_path = NodePath("FallbackPolygon")
 
 [node name="Sprite" type="AnimatedSprite2D" parent="."]
 visible = false
-z_index = 2
-texture_filter = 2
+texture_filter = 1
 centered = true
 
 [node name="FallbackPolygon" type="Polygon2D" parent="."]
-z_index = 1
 color = Color(0.62, 0.09, 0.13, 1)
 polygon = PackedVector2Array(0, -18, 14, 12, 0, 20, -14, 12)
 
@@ -58,6 +57,9 @@ zoom = Vector2(1, 1)
 [node name="WeaponInventory" type="Node" parent="."]
 script = ExtResource("6_weaponinv")
 
+[node name="Cosmetics" type="Node2D" parent="."]
+script = ExtResource("8_cosmetics")
+
 [node name="Weapon" parent="." instance=ExtResource("3_weapon")]
-Data = ExtResource("4_rusty_scythe")
-OwnerBodyPath = NodePath("..")
+data = ExtResource("4_rusty_scythe")
+owner_body_path = NodePath("..")

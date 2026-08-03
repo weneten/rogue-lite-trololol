@@ -14,9 +14,12 @@ var _one_shot_playing: bool = false
 var _dead: bool = false
 var _base_scale: float = 1.0
 
-# Living entities share one root z so Y-sorting decides who is in front.
-# Corpses drop the host root below every living unit (still above floor/props).
-# Sprite-local z only orders visuals inside one entity.
+# Every living entity — player included — must sit on the SAME z layer, because
+# z_index outranks Y-sorting: a body one layer up draws over everything below it
+# no matter where its feet are. Zero is that shared layer, and it goes on the
+# CharacterBody2D root, because Y-sort draws each root as one unit — a z set on
+# the child sprite can only order visuals *inside* one entity, never across two.
+# Corpses drop the root below every living unit, still above floor and props.
 const LIVING_Z := 0
 const SPRITE_Z := 2
 const CORPSE_Z := -1

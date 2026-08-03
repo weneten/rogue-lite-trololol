@@ -97,8 +97,10 @@ func _stop_gameplay() -> void:
 	print("[WaveManager] Left gameplay — wave loop idle.")
 
 func _ensure_enemy_pool() -> bool:
-	# Parent under World (same y-sort root as Player) so feet-depth sorts correctly.
-	# Parenting to Arena made every enemy draw over/under the whole World node.
+	# Parent under the same y-sort root as the Player so feet-depth sorts
+	# correctly. Parenting to the Arena root put enemies in a different sorting
+	# branch entirely, and Y-sort only orders siblings — so no depth comparison
+	# between an enemy and the Player ever happened.
 	var parent: Node = _resolve_entity_parent()
 	if parent == null or !is_instance_valid(parent):
 		return false
@@ -110,10 +112,20 @@ func _ensure_enemy_pool() -> bool:
 	_enemy_pool = ObjectPool.new(enemy_scene, parent, enemy_pool_prewarm)
 	return true
 
+# The Player's own parent is the authority — that is the node enemies have to
+# be siblings of. The "World" lookup is the fallback for spawning before a
+# Player exists, and the scene root the last resort.
 func _resolve_entity_parent() -> Node:
 	var scene: Node = get_tree().current_scene
 	if scene == null or !is_instance_valid(scene):
 		return null
+
+	var player: Node = get_tree().get_first_node_in_group("Player")
+	if player != null and is_instance_valid(player):
+		var host: Node = player.get_parent()
+		if host != null and is_instance_valid(host):
+			return host
+
 	var world: Node = scene.get_node_or_null("World")
 	return world if world != null else scene
 

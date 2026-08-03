@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="PassiveItemData" load_steps=3 format=3 uid="uid://qkrimwwrwmatb"]
+
+[ext_resource type="Script" path="res://Resources/PassiveItemData/PassiveItemData.gd" id="1_pid"]
+[ext_resource type="Texture2D" path="res://Assets/sprites/items/ossuary_key.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_pid")
+id = "ossuary_key"
+display_name = "Ossuary Key"
+description = "Opens the vaults nobody was meant to bank in."
+icon = ExtResource("2_icon")
+effect_type = 14
+value = 0.5
+rarity_tier = 3
+shop_cost = 5

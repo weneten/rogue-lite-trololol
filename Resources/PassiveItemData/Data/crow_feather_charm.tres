@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="PassiveItemData" load_steps=3 format=3 uid="uid://odkv7pkag0on0"]
+
+[ext_resource type="Script" path="res://Resources/PassiveItemData/PassiveItemData.gd" id="1_pid"]
+[ext_resource type="Texture2D" path="res://Assets/sprites/items/crow_feather_charm.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_pid")
+id = "crow_feather_charm"
+display_name = "Crow Feather Charm"
+description = "Crows know where the soft parts are."
+icon = ExtResource("2_icon")
+effect_type = 4
+value = 0.05
+rarity_tier = 1
+shop_cost = 3

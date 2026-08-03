@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="PassiveItemData" load_steps=3 format=3 uid="uid://mfslyvniaoepq"]
+
+[ext_resource type="Script" path="res://Resources/PassiveItemData/PassiveItemData.gd" id="1_pid"]
+[ext_resource type="Texture2D" path="res://Assets/sprites/items/whetstone_of_saints.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_pid")
+id = "whetstone_of_saints"
+display_name = "Whetstone of Saints"
+description = "Blessed grit. Everything cuts faster."
+icon = ExtResource("2_icon")
+effect_type = 3
+value = 0.12
+rarity_tier = 0
+shop_cost = 3

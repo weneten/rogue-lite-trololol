@@ -419,6 +419,27 @@ def held(kind: str, style: WeaponStyle = DEFAULT, scale: float = 0.75, cell: int
     return c
 
 
+def mount(kind: str, style: WeaponStyle = DEFAULT, scale: float = 0.85, cell: int = 44) -> Canvas:
+    """The copy the player actually carries in the arena, pointing RIGHT.
+
+    Shapes are authored pointing up with the grip on the canvas centre, so a
+    single -90 degree turn both aims the weapon along +x and leaves the grip
+    exactly on the centre pixel. That matters: the Godot sprite is `centered`
+    and rotates about its origin, so the grip stays welded to the hand no
+    matter which way the weapon is aimed.
+    """
+    from PIL import Image as _Image
+
+    c = Canvas(cell, cell)
+    fn = _SHAPES.get(kind)
+    if fn is None:
+        return c
+    fn(c, cell / 2, cell / 2, style, scale)
+    c.outline_pass(P.VOID)
+    c.rim_light(P.PARCHMENT, -1, -1, 40)
+    return Canvas.wrap(c.img.rotate(-90, resample=_Image.NEAREST, expand=False))
+
+
 # Per-shape icon tilt. Long guns read better nearly level; round things
 # (books, orbs, traps) look wrong tilted at all.
 _ICON_TILT = {

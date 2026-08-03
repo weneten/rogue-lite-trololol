@@ -42,6 +42,17 @@ var magic_damage_multiplier: float = 1.0
 # Multiplies incoming damage before Armor is applied; mirrored onto HealthComponent so
 # the reduction actually takes effect regardless of who calls TakeDamage. Starts at 1 (no change).
 var damage_taken_multiplier: float = 1.0
+# HP restored per second out of combat and in it alike; ticked in _process and
+# only ever applied in whole points so HealthComponent never sees a fraction.
+var health_regen_per_second: float = 0.0
+# Added to every pickup's attract radius, so relics that "vacuum" shards do it
+# through one number instead of each XpGem carrying its own copy.
+var pickup_radius_bonus: float = 0.0
+# Multiplies XP and Grave Coin taken from pickups. Deliberately NOT applied in
+# GameManager.add_currency: that path also carries shop refunds, which must not
+# grow just because the player owns a gold relic.
+var xp_gain_multiplier: float = 1.0
+var currency_gain_multiplier: float = 1.0
 
 # The selected Hunter's unique passive, if any (set by Player.ApplyCharacterData right
 # after spawning it). Hooked here rather than in Player so Weapon can reach OnDamageDealt via
@@ -55,6 +66,8 @@ var _health: HealthComponent
 # Tracks how much of DamageMultiplier currently comes from CurseLiftScalingPassive's
 # ramp so each frame's SetCurseDamageBonus call can apply just the delta instead of stacking.
 var _curse_damage_bonus_applied: float = 0.0
+# Fractional HP banked between regen ticks.
+var _regen_carry: float = 0.0
 
 var xp_to_next_level: int:
 	get:
@@ -84,10 +97,21 @@ static func calculate_xp_requirement(level: int, base_xp: int, growth_rate: floa
 	return maxi(1, roundi(base_xp * pow(maxf(1, level), growth_rate)))
 
 # Called by XpGem on pickup. Banks XP and triggers a level-up (pausing the run) once enough has been earned.
+func _process(delta: float) -> void:
+	if health_regen_per_second <= 0.0 or _health == null or _health.is_dead:
+		return
+
+	_regen_carry += health_regen_per_second * delta
+	var whole: int = int(_regen_carry)
+	if whole > 0:
+		_regen_carry -= whole
+		_health.heal(whole)
+
 func add_xp(amount: int) -> void:
 	if amount <= 0:
 		return
 
+	amount = maxi(1, roundi(amount * xp_gain_multiplier))
 	current_xp += amount
 	EventBus.xp_changed.emit(current_xp, xp_to_next_level, level)
 	try_level_up()
@@ -137,6 +161,33 @@ func apply_lifesteal(fraction_increase: float) -> void:
 
 func apply_undead_damage_bonus(multiplier_increase: float) -> void:
 	undead_damage_multiplier += multiplier_increase
+
+func apply_magic_damage_bonus(multiplier_increase: float) -> void:
+	magic_damage_multiplier += multiplier_increase
+
+# Flat post-multiplier damage reduction on HealthComponent. A hit always lands
+# for at least 1, so armour relics can never make the player unkillable.
+func apply_armor(points: int) -> void:
+	if _health != null:
+		_health.armor = maxi(0, _health.armor + points)
+
+func apply_dodge(chance_increase: float) -> void:
+	if _health != null:
+		# Capped well short of 1.0: a build that literally cannot be hit stops
+		# being a game.
+		_health.dodge_chance = clampf(_health.dodge_chance + chance_increase, 0.0, 0.6)
+
+func apply_health_regen(per_second_increase: float) -> void:
+	health_regen_per_second += per_second_increase
+
+func apply_pickup_radius(radius_increase: float) -> void:
+	pickup_radius_bonus += radius_increase
+
+func apply_xp_gain_bonus(multiplier_increase: float) -> void:
+	xp_gain_multiplier += multiplier_increase
+
+func apply_currency_gain_bonus(multiplier_increase: float) -> void:
+	currency_gain_multiplier += multiplier_increase
 
 func set_magic_damage_multiplier(value: float) -> void:
 	magic_damage_multiplier = value

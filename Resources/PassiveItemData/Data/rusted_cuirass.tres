@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="PassiveItemData" load_steps=3 format=3 uid="uid://r6k62fx6rieie"]
+
+[ext_resource type="Script" path="res://Resources/PassiveItemData/PassiveItemData.gd" id="1_pid"]
+[ext_resource type="Texture2D" path="res://Assets/sprites/items/rusted_cuirass.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_pid")
+id = "rusted_cuirass"
+display_name = "Rusted Cuirass"
+description = "Ugly, heavy, and it has already saved one life."
+icon = ExtResource("2_icon")
+effect_type = 7
+value = 3.0
+rarity_tier = 1
+shop_cost = 3
