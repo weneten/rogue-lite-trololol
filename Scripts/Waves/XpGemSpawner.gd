@@ -22,9 +22,20 @@ var _pool
 func _ready() -> void:
 	if gem_scene == null:
 		gem_scene = load("res://Scenes/Items/XpGem.tscn")
-	_pool = ObjectPool.new(gem_scene, get_tree().current_scene if get_tree().current_scene != null else self, pool_prewarm)
+
+	# Deferred because prewarming parents instances under the scene root, and
+	# during _ready that root is still building its own children — every
+	# add_child in the prewarm was being rejected, so the pool started empty
+	# and the hitch it exists to avoid happened on the first kill anyway.
+	_build_pool.call_deferred()
 
 	EventBus.enemy_killed.connect(_on_enemy_killed)
+
+func _build_pool() -> void:
+	var host: Node = get_tree().current_scene
+	if host == null or not is_instance_valid(host):
+		host = self
+	_pool = ObjectPool.new(gem_scene, host, pool_prewarm)
 
 
 func _on_enemy_killed(enemy: Node, currency_reward: int, experience_reward: int) -> void:
@@ -35,6 +46,10 @@ func _on_enemy_killed(enemy: Node, currency_reward: int, experience_reward: int)
 	var gold = maxi(0, currency_reward)
 	if xp <= 0 and gold <= 0:
 		return
+
+	# A kill on the very first frame can beat the deferred pool build.
+	if _pool == null:
+		_build_pool()
 
 	var origin = (enemy as Node2D).global_position
 	var shards = clampi(

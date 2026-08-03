@@ -375,7 +375,6 @@ func _show_procedural_skin(enemy_data: EnemyData, tint: Color) -> void:
 		_procedural_sprite = Sprite2D.new()
 		_procedural_sprite.name = "ProceduralSkin"
 		_procedural_sprite.centered = true
-		_procedural_sprite.z_index = 1
 		_procedural_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		add_child(_procedural_sprite)
 

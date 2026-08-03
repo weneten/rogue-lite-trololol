@@ -31,6 +31,12 @@ var _owner_health: HealthComponent
 
 var _cooldown_remaining: float = 0.0
 
+# Where this weapon rests around the wielder when nothing is in range. Set by
+# WeaponInventory so a six-weapon loadout fans out instead of stacking into one
+# blurry pile. Radians, 0 = pointing right.
+var idle_angle: float = -PI * 0.5
+var _visual: WeaponVisual
+
 func _ready() -> void:
 	_owner_body = get_node_or_null(owner_body_path) as Node2D if owner_body_path else get_parent() as Node2D
 	_melee_hitbox = get_node_or_null(melee_hitbox_path) as Area2D
@@ -41,6 +47,8 @@ func _ready() -> void:
 	if data == null:
 		push_warning("[Weapon] No WeaponData assigned; weapon is inert.")
 		return
+
+	_build_visual()
 
 	var is_melee = (data.weapon_class & WeaponData.WeaponClass.MELEE) != 0
 	var is_summon = (data.weapon_class & WeaponData.WeaponClass.SUMMON) != 0
@@ -68,16 +76,51 @@ func _process(delta: float) -> void:
 
 	var target = _find_nearest_target()
 	if target == null:
+		# Drift back to the resting slot instead of freezing wherever the last
+		# target happened to die — six weapons all locked at odd angles looked
+		# like debris stuck to the player.
+		rotation = lerp_angle(rotation, idle_angle, minf(1.0, delta * 6.0))
+		_update_visual_facing()
 		return
 
 	# Face the target regardless of cooldown so the weapon visibly tracks its target.
 	global_rotation = (target.global_position - _owner_body.global_position).angle()
+	_update_visual_facing()
 
 	if _cooldown_remaining > 0:
 		return
 
 	_attack(target)
 	_cooldown_remaining = 1.0 / maxf(0.01, data.attack_speed * (_owner_stats.attack_speed_multiplier if _owner_stats else 1.0))
+
+# Summon weapons have no carried copy — the Familiar IS the visible thing, and
+# drawing a whistle in the player's hand as well just added clutter.
+func _build_visual() -> void:
+	if (data.weapon_class & WeaponData.WeaponClass.SUMMON) != 0:
+		return
+
+	# Parented to the wielder, not to this node: this node sits at the body
+	# origin (the feet), so anything hanging off it orbited their ankles.
+	if _owner_body == null:
+		return
+
+	_visual = WeaponVisual.new()
+	_visual.name = "WeaponVisual_" + data.name
+	_owner_body.add_child(_visual)
+	_visual.setup(data)
+	rotation = idle_angle
+	_update_visual_facing()
+
+func _update_visual_facing() -> void:
+	if _visual != null:
+		_visual.set_aim(rotation)
+
+# The visual lives on the wielder, so it has to be torn down with the weapon
+# rather than left behind when a slot is sold.
+func _exit_tree() -> void:
+	if _visual != null and is_instance_valid(_visual):
+		_visual.queue_free()
+		_visual = null
 
 # Nearest live TargetGroup member within Data.Range, or null if none in range.
 func _find_nearest_target() -> Node2D:
@@ -107,6 +150,9 @@ func _attack(target: Node2D) -> void:
 	# and for anything else that ends up holding a weapon.
 	if _owner_body != null and _owner_body.has_method("play_attack_animation"):
 		_owner_body.play_attack_animation(target)
+
+	if _visual != null:
+		_visual.play_swing((data.weapon_class & WeaponData.WeaponClass.MELEE) != 0)
 
 	# Order matters: Trap pre-empts everything (it never attacks directly), Melee handles its
 	# own cleave via the hitbox overlap even when also flagged AoE (War Cleaver), and pure AoE

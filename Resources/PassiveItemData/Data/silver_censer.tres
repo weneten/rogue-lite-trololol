@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="PassiveItemData" load_steps=3 format=3 uid="uid://h6j5iyfq5v7pz"]
+
+[ext_resource type="Script" path="res://Resources/PassiveItemData/PassiveItemData.gd" id="1_pid"]
+[ext_resource type="Texture2D" path="res://Assets/sprites/items/silver_censer.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_pid")
+id = "silver_censer"
+display_name = "Silver Censer"
+description = "The smoke burns what should not walk."
+icon = ExtResource("2_icon")
+effect_type = 11
+value = 0.2
+rarity_tier = 1
+shop_cost = 3

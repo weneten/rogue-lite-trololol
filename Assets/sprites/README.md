@@ -20,6 +20,9 @@ produces identical files.
 | `enemies/<id>/` | Enemy sheet + atlas JSON + portrait |
 | `bosses/<id>/` | Boss sheet + atlas JSON + portrait |
 | `weapons/<name>.png` | 32×32 inventory icons |
+| `weapons/mounted/<name>.png` | The copy carried on the character, pointing right |
+| `items/<id>.png` | 32×32 shop relic icons |
+| `cosmetics/` | Loadout aura and charm chrome worn by the Hunter |
 | `arena/` | Floor tiles, wall tiles, prop strip |
 | `../UI/` | Nine-slice panels, buttons, bars, HUD icons, theme |
 | `../Fonts/` | Bitmap font atlases + `.fnt` descriptors |
@@ -46,6 +49,17 @@ produces identical files.
 (`attack_slash`, `attack_whip`, `shield_bash`, …) so a weapon class can never
 fall through to `idle`.
 
+## Depth
+
+Every living fighter — player and enemies alike — draws at `z_index` 0 and is
+ordered purely by Y-sorting, and enemies are parented into the same node as the
+Player so that sorting can actually compare them. Both halves matter: Y-sort
+only orders siblings, and `z_index` outranks Y-sort entirely, so a single
+sprite left one layer up draws over everyone regardless of where its feet are.
+
+Corpses drop to -1, pickups to -2, the aura to -3; the arena floor and props
+sit at -10 to -5.
+
 ## Scale
 
 Sheets are authored at 1:1 and every entity uses `sprite_scale = 2.0`. With
@@ -66,8 +80,24 @@ destroys it; if something looks soft, that filter is the first thing to check.
 3. Point the `.tres` at `Assets/sprites/<group>/<id>/<id>.png` and `.json`.
 
 New weapon shapes go in `tools/pixelforge/weapons.py` and are registered in
-`CATALOG`; the same shape code draws both the inventory icon and the copy the
-character holds, so the two can never disagree.
+`CATALOG`; the same shape code draws the inventory icon, the copy baked into
+the character sheet, and the mounted copy carried in the arena, so the three
+can never disagree.
+
+## Adding a relic
+
+1. Draw it in `tools/pixelforge/items.py` and register it in `ICONS` under the
+   id you intend to use — the key IS the `PassiveItemData.id`, so a missing
+   icon is a build-time `KeyError` rather than a blank square in the shop.
+2. `python3 tools/build_art.py items`
+3. Add `Resources/PassiveItemData/Data/<id>.tres` pointing at
+   `Assets/sprites/items/<id>.png`, and list it in `StandardShopPool.tres`.
+
+If the relic needs a stat nothing else grants, add a case to
+`PassiveItemData.PassiveEffectType` (append only — the .tres files store the
+numeric value), a label in `EFFECT_LABEL`, an `apply_*` on `PlayerStats`, and a
+branch in `ShopUI._apply_passive_effect`. An unhandled type pushes a warning
+instead of silently doing nothing.
 
 ## The toolkit
 

@@ -14,9 +14,12 @@ var _one_shot_playing: bool = false
 var _dead: bool = false
 var _base_scale: float = 1.0
 
-# Living entities share one z so Y-sorting decides who is in front; corpses
-# sit below all of them but still above the floor and props.
-const LIVING_Z := 2
+# Every living entity — player included — must sit on the SAME z layer, because
+# z_index outranks Y-sorting: a sprite one layer up draws over everything below
+# it no matter where its feet are. Zero is that shared layer. Corpses drop one
+# layer down so a body never covers a fighter, and still land above the floor
+# (-10) and props (-6).
+const LIVING_Z := 0
 const CORPSE_Z := -1
 
 func get_is_death_playing() -> bool:

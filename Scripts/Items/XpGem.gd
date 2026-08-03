@@ -54,6 +54,9 @@ func _build_sprite() -> void:
 	_sprite.name = "Shard"
 	_sprite.texture = _atlas
 	_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	# Pickups lie on the ground, so they belong under every fighter rather than
+	# in the Y-sorted layer where they could briefly cover the player.
+	_sprite.z_index = -2
 	_sprite.scale = Vector2.ONE * 2.0
 	add_child(_sprite)
 
@@ -105,8 +108,14 @@ func _physics_process(delta: float) -> void:
 		_collect()
 		return
 
-	if distance <= attract_radius:
-		var pull = attract_speed * (1.0 + (1.0 - distance / attract_radius) * 1.5)
+	# Relics widen the vacuum through one shared number on PlayerStats rather
+	# than each shard carrying its own copy.
+	var radius = attract_radius
+	if PlayerStats.instance != null:
+		radius += PlayerStats.instance.pickup_radius_bonus
+
+	if distance <= radius:
+		var pull = attract_speed * (1.0 + (1.0 - distance / radius) * 1.5)
 		global_position = global_position.move_toward(player.global_position, pull * delta)
 
 func _on_body_entered(body: Node2D) -> void:
@@ -123,7 +132,12 @@ func _collect() -> void:
 		PlayerStats.instance.add_xp(_xp_value)
 
 	if _currency_value > 0 and GameManager != null:
-		GameManager.add_currency(_currency_value)
+		# Gold relics scale what drops pay, not what the shop refunds, so the
+		# multiplier is applied here rather than inside add_currency.
+		var payout = _currency_value
+		if PlayerStats.instance != null:
+			payout = maxi(1, roundi(payout * PlayerStats.instance.currency_gain_multiplier))
+		GameManager.add_currency(payout)
 
 	AudioManager.play_sfx("pickup_material")
 	_despawn()

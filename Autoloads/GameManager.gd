@@ -15,8 +15,14 @@ var run_seed: int
 # not something a fresh run should silently clear).
 var selected_character: CharacterData
 
-# Ids of PassiveItemData already purchased this run, so ShopUI doesn't re-offer them.
-var _owned_passive_item_ids: Array[String] = []
+# PassiveItemData already purchased this run. Kept as the resources rather than
+# bare ids because the shop tray and the Hunter's cosmetic layer both need the
+# icon and effect, not just "do I own this".
+var _owned_passive_items: Array[PassiveItemData] = []
+
+var owned_passive_items: Array[PassiveItemData]:
+	get:
+		return _owned_passive_items
 
 func _ready() -> void:
 	run_seed = randi()
@@ -41,11 +47,19 @@ func _on_wave_end(wave_number: int) -> void:
 	add_currency(ShopEconomy.get_wave_end_bonus(wave_number))
 
 func is_passive_item_owned(passive_id: String) -> bool:
-	return _owned_passive_item_ids.has(passive_id)
+	for item in _owned_passive_items:
+		if item != null and item.id == passive_id:
+			return true
+	return false
 
-func register_passive_item_owned(passive_id: String) -> void:
-	if !passive_id.is_empty() and !_owned_passive_item_ids.has(passive_id):
-		_owned_passive_item_ids.append(passive_id)
+func register_passive_item(item: PassiveItemData) -> void:
+	if item == null or is_passive_item_owned(item.id):
+		return
+
+	_owned_passive_items.append(item)
+	# Everything that reacts to the loadout — the Hunter's cosmetic layer, the
+	# shop's owned tray — listens for this rather than polling the array.
+	EventBus.item_picked_up.emit(item.id)
 
 func _on_player_died() -> void:
 	# Stage stub: full run-end / game-over flow (stats screen, meta-currency payout)
@@ -69,5 +83,5 @@ func start_new_run(seed: int = 0) -> void:
 	currency = 0
 	wave_number = 1
 	run_seed = seed if seed != 0 else randi()
-	_owned_passive_item_ids.clear()
+	_owned_passive_items.clear()
 	EventBus.currency_changed.emit(currency)

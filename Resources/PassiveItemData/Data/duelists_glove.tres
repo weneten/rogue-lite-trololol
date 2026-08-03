@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="PassiveItemData" load_steps=3 format=3 uid="uid://r1ogb8cg4ms0g"]
+
+[ext_resource type="Script" path="res://Resources/PassiveItemData/PassiveItemData.gd" id="1_pid"]
+[ext_resource type="Texture2D" path="res://Assets/sprites/items/duelists_glove.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_pid")
+id = "duelists_glove"
+display_name = "Duelist's Glove"
+description = "The hand remembers the tempo."
+icon = ExtResource("2_icon")
+effect_type = 3
+value = 0.22
+rarity_tier = 3
+shop_cost = 5
