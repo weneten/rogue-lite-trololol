@@ -20,7 +20,7 @@ produces identical files.
 | `enemies/<id>/` | Enemy sheet + atlas JSON + portrait |
 | `bosses/<id>/` | Boss sheet + atlas JSON + portrait |
 | `weapons/<name>.png` | 32×32 inventory icons |
-| `weapons/mounted/<name>.png` | The copy carried on the character, pointing right |
+| `weapons/mounted/<name>.png` | 60x60, the copy that orbits the character, pointing right |
 | `items/<id>.png` | 32×32 shop relic icons |
 | `cosmetics/` | Loadout aura and charm chrome worn by the Hunter |
 | `arena/` | Floor tiles, wall tiles, prop strip |
