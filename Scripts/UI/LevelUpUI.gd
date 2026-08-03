@@ -74,6 +74,14 @@ func _on_player_level_up(new_level: int) -> void:
 	if _choices_container != null:
 		UIAnim.cascade(_choices_container, 0.09, true)
 
+	_focus_first_choice()
+
+func _focus_first_choice() -> void:
+	for button in _choice_buttons:
+		if button != null and button.visible and not button.disabled:
+			UIAnim.grab_focus_safe(button)
+			return
+
 # Weighted, non-repeating draw of ChoiceCount upgrades from the pool, then pushes the result into the choice cards.
 func _roll_choices() -> void:
 	_current_choices.clear()
@@ -132,6 +140,8 @@ func _on_choice_selected(index: int) -> void:
 
 	if _root_panel != null:
 		UIAnim.fade_out(_root_panel, 0.16)
+
+	UIAnim.release_focus(get_tree())
 
 	if PlayerStats.instance != null:
 		PlayerStats.instance.confirm_upgrade_selected()

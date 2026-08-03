@@ -97,22 +97,25 @@ func _stop_gameplay() -> void:
 	print("[WaveManager] Left gameplay — wave loop idle.")
 
 func _ensure_enemy_pool() -> bool:
-	var host: Node = _get_spawn_parent()
-	if host == null or !is_instance_valid(host):
+	# Parent under the same y-sort root as the Player so feet-depth sorts
+	# correctly. Parenting to the Arena root put enemies in a different sorting
+	# branch entirely, and Y-sort only orders siblings — so no depth comparison
+	# between an enemy and the Player ever happened.
+	var parent: Node = _resolve_entity_parent()
+	if parent == null or !is_instance_valid(parent):
 		return false
 
-	if _enemy_pool != null and _pool_parent == host and is_instance_valid(_pool_parent):
+	if _enemy_pool != null and _pool_parent == parent and is_instance_valid(_pool_parent):
 		return true
 
-	_pool_parent = host
-	_enemy_pool = ObjectPool.new(enemy_scene, host, enemy_pool_prewarm)
+	_pool_parent = parent
+	_enemy_pool = ObjectPool.new(enemy_scene, parent, enemy_pool_prewarm)
 	return true
 
-# Enemies must share a parent with the Player, because Y-sorting only orders
-# siblings. Parenting them to the scene root instead put them in a different
-# sorting branch from the Player (who lives under World), so no depth
-# comparison between the two ever happened and enemies simply drew last.
-func _get_spawn_parent() -> Node:
+# The Player's own parent is the authority — that is the node enemies have to
+# be siblings of. The "World" lookup is the fallback for spawning before a
+# Player exists, and the scene root the last resort.
+func _resolve_entity_parent() -> Node:
 	var scene: Node = get_tree().current_scene
 	if scene == null or !is_instance_valid(scene):
 		return null
@@ -123,7 +126,8 @@ func _get_spawn_parent() -> Node:
 		if host != null and is_instance_valid(host):
 			return host
 
-	return scene
+	var world: Node = scene.get_node_or_null("World")
+	return world if world != null else scene
 
 func _process_active_wave(delta: float) -> void:
 	_wave_time_remaining -= delta

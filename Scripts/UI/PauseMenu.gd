@@ -57,6 +57,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		if _settings_menu != null and _settings_menu.is_open:
 			_settings_menu.close()
+			UIAnim.grab_focus_safe(_resume_button)
 			get_viewport().set_input_as_handled()
 			return
 
@@ -79,8 +80,7 @@ func open() -> void:
 		tween.tween_property(_root_panel, "modulate:a", 1.0, 0.14)
 
 	UIAnim.pop_in(_card)
-	if _resume_button != null:
-		_resume_button.grab_focus()
+	UIAnim.grab_focus_safe(_resume_button)
 
 	get_tree().paused = true
 
@@ -94,6 +94,7 @@ func close() -> void:
 
 	if _settings_menu != null:
 		_settings_menu.close()
+	UIAnim.release_focus(get_tree())
 	get_tree().paused = false
 
 func _on_settings_pressed() -> void:

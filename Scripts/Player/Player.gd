@@ -143,6 +143,9 @@ func _show_procedural_skin(character_name: String) -> void:
 		_procedural_sprite = Sprite2D.new()
 		_procedural_sprite.name = "ProceduralSkin"
 		_procedural_sprite.centered = true
+		# Matches EnemySpriteAnimator.SPRITE_Z so carried weapons and charms
+		# layer the same whether the sheet loaded or the fallback is showing.
+		_procedural_sprite.z_index = EnemySpriteAnimator.SPRITE_Z
 		_procedural_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		add_child(_procedural_sprite)
 

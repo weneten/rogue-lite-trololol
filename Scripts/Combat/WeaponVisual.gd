@@ -24,6 +24,10 @@ const ORBIT_RADIUS := 15.0
 # Chest height above the body origin. The rig draws its characters standing on
 # the origin, so everything carried has to be lifted to meet them.
 const CARRY_HEIGHT := -24.0
+
+# Sits above EnemySpriteAnimator.SPRITE_Z so the weapon reads as held in front
+# of the body rather than buried behind it.
+const CARRY_Z := 3
 const BOB_AMPLITUDE := 1.4
 const BOB_SPEED := 3.4
 
@@ -58,9 +62,11 @@ func setup(data: WeaponData, scale_factor: float = 1.0) -> void:
 	_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_sprite.position = Vector2(ORBIT_RADIUS, 0.0)
 	_sprite.scale = Vector2.ONE * scale_factor
-	# Same layer as the wielder so the weapon Y-sorts with them instead of
-	# floating over every other fighter on the screen.
-	_sprite.z_index = 0
+	# One layer in front of the wielder's own sprite (EnemySpriteAnimator's
+	# SPRITE_Z). This orders visuals *inside* one entity only — the whole
+	# character still Y-sorts against everyone else as a single unit, so a
+	# carried weapon can never float over another fighter.
+	_sprite.z_index = CARRY_Z
 	_pivot.add_child(_sprite)
 
 

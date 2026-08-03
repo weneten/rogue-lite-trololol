@@ -27,6 +27,8 @@ const ORBIT_RADIUS_Y := 11.0
 const ORBIT_HEIGHT := -26.0
 const ORBIT_SPEED := 0.55
 const CHARM_SCALE := 0.75
+const CHARM_Z_FRONT := 3
+const CHARM_Z_BACK := -1
 
 # Where the aura sits relative to the body origin (the Hunter's feet).
 const AURA_OFFSET := Vector2(0.0, -2.0)
@@ -70,7 +72,6 @@ func _ready() -> void:
 
 	_charm_root = Node2D.new()
 	_charm_root.name = "Charms"
-	_charm_root.z_index = -1
 	add_child(_charm_root)
 
 	EventBus.item_picked_up.connect(_on_item_picked_up)
@@ -162,7 +163,10 @@ func _process(delta: float) -> void:
 		# Charms on the far side of the orbit sit behind the Hunter and dim, so
 		# the ring reads as going around them rather than across them.
 		var front: float = (sin(phase) + 1.0) * 0.5
-		charm.z_index = 1 if front > 0.5 else -1
+		# Straddles the Hunter's own sprite layer (EnemySpriteAnimator.SPRITE_Z,
+		# which is 2), so the near half of the ring passes in front of them and
+		# the far half behind — that is what makes it read as an orbit.
+		charm.z_index = CHARM_Z_FRONT if front > 0.5 else CHARM_Z_BACK
 		charm.modulate.a = 0.55 + 0.45 * front
 		charm.scale = Vector2.ONE * CHARM_SCALE * (0.85 + 0.15 * front)
 

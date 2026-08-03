@@ -320,7 +320,13 @@ func spawn_minion(global_position: Vector2, name: String, color: Color, max_heal
 	data_obj.is_undead = true
 
 	var enemy = enemy_scene.instantiate()
-	var parent = get_tree().current_scene if get_tree() else get_parent()
+	# Parent under World with Player/enemies so minions y-sort correctly.
+	var parent = get_parent()
+	if parent == null or not is_instance_valid(parent):
+		var scene = get_tree().current_scene if get_tree() else null
+		parent = scene.get_node_or_null("World") if scene != null else null
+		if parent == null:
+			parent = scene
 	parent.add_child(enemy)
 	enemy.global_position = global_position
 	enemy.initialize(data_obj, null)

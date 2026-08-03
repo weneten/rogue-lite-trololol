@@ -131,9 +131,19 @@ func _open_shop(wave_number: int) -> void:
 
 	_deal_cards()
 	get_tree().paused = true
+	_focus_default_control()
 
-	if _next_wave_button != null:
-		_next_wave_button.grab_focus()
+# Opens on the leftmost card the player can actually buy, so the keyboard
+# lands somewhere useful. Falls through to NEXT WAVE when nothing is
+# affordable — focusing a disabled button would leave the screen unnavigable.
+func _focus_default_control() -> void:
+	for card in _cards:
+		if card.offer != null and card.buy_button != null:
+			UIAnim.grab_focus_safe(card.buy_button)
+			if card.buy_button.has_focus():
+				return
+
+	UIAnim.grab_focus_safe(_next_wave_button)
 
 func _on_next_wave_pressed() -> void:
 	if not _open:
@@ -145,6 +155,7 @@ func _on_next_wave_pressed() -> void:
 	if _root_panel != null:
 		_root_panel.visible = false
 
+	UIAnim.release_focus(get_tree())
 	get_tree().paused = false
 	WaveManager.start_next_wave()
 

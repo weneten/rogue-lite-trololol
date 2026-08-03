@@ -36,9 +36,11 @@ var _name_label: Label
 var _kind_label: Label
 var _stats_label: Label
 var _flavour_label: Label
-var _buy_button: Button
 var _lock_button: Button
 var _locked: bool = false
+
+# The purchase control, exposed so the shop can hand it keyboard focus.
+var buy_button: Button
 
 # What this card is currently offering. null once the offer has been bought.
 var offer = null
@@ -111,11 +113,11 @@ func _build() -> void:
 	_flavour_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(_flavour_label)
 
-	_buy_button = Button.new()
-	_buy_button.icon = _load(COIN_PATH)
-	_buy_button.pressed.connect(func(): buy_requested.emit())
-	root.add_child(_buy_button)
-	UIAnim.juice_button(_buy_button)
+	buy_button = Button.new()
+	buy_button.icon = _load(COIN_PATH)
+	buy_button.pressed.connect(func(): buy_requested.emit())
+	root.add_child(buy_button)
+	UIAnim.juice_button(buy_button)
 
 
 # -------------------------------------------------------------------- content
@@ -130,7 +132,7 @@ func show_weapon(data: WeaponData, price: int) -> void:
 	_icon.texture = data.icon
 	_stats_label.text = _weapon_stats(data)
 	_flavour_label.text = _class_line(data.weapon_class)
-	_buy_button.text = "%dg" % price
+	buy_button.text = "%dg" % price
 	_apply_rarity(data.rarity_tier)
 
 
@@ -144,7 +146,7 @@ func show_relic(data: PassiveItemData, price: int) -> void:
 	_icon.texture = data.icon
 	_stats_label.text = data.stat_line()
 	_flavour_label.text = data.description
-	_buy_button.text = "%dg" % price
+	buy_button.text = "%dg" % price
 	_apply_rarity(data.rarity_tier)
 
 
@@ -158,8 +160,8 @@ func clear() -> void:
 	_stats_label.text = ""
 	_flavour_label.text = "Sold"
 	_icon.texture = null
-	_buy_button.text = "-"
-	_buy_button.disabled = true
+	buy_button.text = "-"
+	buy_button.disabled = true
 	modulate.a = 0.35
 
 
@@ -167,7 +169,7 @@ func set_affordable(affordable: bool) -> void:
 	if offer == null:
 		return
 
-	_buy_button.disabled = not affordable
+	buy_button.disabled = not affordable
 	# Dim the whole card, not just the button: at a glance the player should
 	# see what they can afford without reading five prices.
 	modulate.a = 1.0 if affordable else 0.55

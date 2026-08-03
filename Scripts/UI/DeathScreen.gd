@@ -112,6 +112,7 @@ func _show_summary(run_complete: bool) -> void:
 		tween.tween_property(_root_panel, "modulate:a", 1.0, 0.5)
 
 	UIAnim.pop_in(_card, 0.35)
+	UIAnim.grab_focus_safe(_continue_button)
 
 	if _crest != null:
 		UIAnim.pulse(_crest, 0.55, 1.0, 2.6)
@@ -123,6 +124,8 @@ func _show_summary(run_complete: bool) -> void:
 		if is_instance_valid(_meta_label):
 			_meta_label.text = "+%d Blood Marks\nTotal: %d" % [meta_granted, MetaSave.get_meta_currency()]
 			UIAnim.punch(_meta_label, 1.2)
+		# Re-assert focus after the await in case something stole it.
+		UIAnim.grab_focus_safe(_continue_button)
 
 func _on_continue_pressed() -> void:
 	is_showing = false

@@ -9,6 +9,9 @@ class_name SettingsMenu
 @export var master_slider_path: NodePath
 @export var music_slider_path: NodePath
 @export var sfx_slider_path: NodePath
+@export var master_value_path: NodePath
+@export var music_value_path: NodePath
+@export var sfx_value_path: NodePath
 @export var close_button_path: NodePath
 @export var rebind_stub_button_path: NodePath
 @export var rebind_status_label_path: NodePath
@@ -18,6 +21,9 @@ var _root_panel: Control
 var _master_slider: HSlider
 var _music_slider: HSlider
 var _sfx_slider: HSlider
+var _master_value: Label
+var _music_value: Label
+var _sfx_value: Label
 var _close_button: Button
 var _rebind_stub_button: Button
 var _rebind_status_label: Label
@@ -33,14 +39,17 @@ func _ready() -> void:
 	_master_slider = get_node_or_null(master_slider_path)
 	_music_slider = get_node_or_null(music_slider_path)
 	_sfx_slider = get_node_or_null(sfx_slider_path)
+	_master_value = get_node_or_null(master_value_path)
+	_music_value = get_node_or_null(music_value_path)
+	_sfx_value = get_node_or_null(sfx_value_path)
 	_close_button = get_node_or_null(close_button_path)
 	_rebind_stub_button = get_node_or_null(rebind_stub_button_path)
 	_rebind_status_label = get_node_or_null(rebind_status_label_path)
 	_card = get_node_or_null(card_path)
 
-	_configure_slider(_master_slider, _get_audio_volume("Master"), _on_master_changed)
-	_configure_slider(_music_slider, _get_audio_volume("Music"), _on_music_changed)
-	_configure_slider(_sfx_slider, _get_audio_volume("Sfx"), _on_sfx_changed)
+	_configure_slider(_master_slider, _master_value, _get_audio_volume("Master"), _on_master_changed)
+	_configure_slider(_music_slider, _music_value, _get_audio_volume("Music"), _on_music_changed)
+	_configure_slider(_sfx_slider, _sfx_value, _get_audio_volume("Sfx"), _on_sfx_changed)
 
 	if _close_button != null:
 		_close_button.pressed.connect(close)
@@ -68,16 +77,22 @@ func open() -> void:
 	_sync_sliders_from_audio()
 	is_open = true
 
-	if _close_button != null:
-		_close_button.grab_focus()
+	# Prefer first slider so A/D adjusts volume; fall back to Close.
+	if _master_slider != null:
+		UIAnim.grab_focus_safe(_master_slider)
+	else:
+		UIAnim.grab_focus_safe(_close_button)
 
 func close() -> void:
+	if not is_open:
+		return
+
 	if _root_panel != null:
 		UIAnim.fade_out(_root_panel, 0.14)
 
 	is_open = false
 
-func _configure_slider(slider: HSlider, value: float, on_changed: Callable) -> void:
+func _configure_slider(slider: HSlider, value_label: Label, value: float, on_changed: Callable) -> void:
 	if slider == null:
 		return
 
@@ -85,15 +100,26 @@ func _configure_slider(slider: HSlider, value: float, on_changed: Callable) -> v
 	slider.max_value = 1.0
 	slider.step = 0.01
 	slider.value = value
-	slider.value_changed.connect(func(v): on_changed.call(float(v)))
+	_set_value_label(value_label, value)
+	slider.value_changed.connect(func(v: float):
+		on_changed.call(v)
+		_set_value_label(value_label, v)
+	)
 
 func _sync_sliders_from_audio() -> void:
 	if _master_slider != null:
 		_master_slider.value = _get_audio_volume("Master")
+		_set_value_label(_master_value, _master_slider.value)
 	if _music_slider != null:
 		_music_slider.value = _get_audio_volume("Music")
+		_set_value_label(_music_value, _music_slider.value)
 	if _sfx_slider != null:
 		_sfx_slider.value = _get_audio_volume("Sfx")
+		_set_value_label(_sfx_value, _sfx_slider.value)
+
+static func _set_value_label(label: Label, value: float) -> void:
+	if label != null:
+		label.text = "%d%%" % roundi(clampf(value, 0.0, 1.0) * 100.0)
 
 func _on_master_changed(value: float) -> void:
 	_set_audio_volume("Master", value)

@@ -375,6 +375,9 @@ func _show_procedural_skin(enemy_data: EnemyData, tint: Color) -> void:
 		_procedural_sprite = Sprite2D.new()
 		_procedural_sprite.name = "ProceduralSkin"
 		_procedural_sprite.centered = true
+		# Matches EnemySpriteAnimator.SPRITE_Z so carried weapons and charms
+		# layer the same whether the sheet loaded or the fallback is showing.
+		_procedural_sprite.z_index = EnemySpriteAnimator.SPRITE_Z
 		_procedural_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		add_child(_procedural_sprite)
 
@@ -440,6 +443,8 @@ func on_spawn() -> void:
 	set_physics_process(true)
 	set_process(true)
 	process_mode = PROCESS_MODE_INHERIT
+	# Pooled corpses leave host z at CORPSE_Z; restore living sort layer.
+	z_index = 0
 
 	collision_layer = 4
 	if _collision_shape != null:

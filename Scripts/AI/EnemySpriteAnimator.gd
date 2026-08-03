@@ -15,11 +15,13 @@ var _dead: bool = false
 var _base_scale: float = 1.0
 
 # Every living entity — player included — must sit on the SAME z layer, because
-# z_index outranks Y-sorting: a sprite one layer up draws over everything below
-# it no matter where its feet are. Zero is that shared layer. Corpses drop one
-# layer down so a body never covers a fighter, and still land above the floor
-# (-10) and props (-6).
+# z_index outranks Y-sorting: a body one layer up draws over everything below it
+# no matter where its feet are. Zero is that shared layer, and it goes on the
+# CharacterBody2D root, because Y-sort draws each root as one unit — a z set on
+# the child sprite can only order visuals *inside* one entity, never across two.
+# Corpses drop the root below every living unit, still above floor and props.
 const LIVING_Z := 0
+const SPRITE_Z := 2
 const CORPSE_Z := -1
 
 func get_is_death_playing() -> bool:
@@ -60,7 +62,8 @@ func configure(sheet_path: String, json_path: String, attack_anim_name: String, 
 
 	_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_sprite.centered = true
-	_sprite.z_index = LIVING_Z
+	_sprite.z_index = SPRITE_Z
+	_set_host_z(LIVING_Z)
 
 	var loaded = false
 	if not sheet_path.is_empty() or preloaded_texture != null:
@@ -94,8 +97,9 @@ func configure(sheet_path: String, json_path: String, attack_anim_name: String, 
 func reset_visual() -> void:
 	_dead = false
 	_one_shot_playing = false
+	_set_host_z(LIVING_Z)
 	if _sprite != null:
-		_sprite.z_index = LIVING_Z
+		_sprite.z_index = SPRITE_Z
 		_sprite.visible = get_has_frames()
 		_sprite.modulate = Color.WHITE
 		_sprite.scale = Vector2.ONE * _base_scale
@@ -133,8 +137,10 @@ func play_attack() -> void:
 # Plays death and returns when finished (or immediately if no sprite/anim).
 func play_death_async() -> void:
 	_dead = true
-	# Drop the corpse below every living entity. Y-sorting alone can't help
-	# here: a body that fell south of the player would still draw over them.
+	# Drop host root below every living entity. Child sprite z_index alone
+	# cannot interleave with the player — y-sort draws each CharacterBody2D
+	# as a unit, so a body south of the player would still draw over them.
+	_set_host_z(CORPSE_Z)
 	if _sprite != null:
 		_sprite.z_index = CORPSE_Z
 	if _sprite == null or _sprite.sprite_frames == null or not _sprite.sprite_frames.has_animation("death"):
@@ -167,6 +173,13 @@ func _resolve_sprite() -> void:
 
 	if _sprite == null:
 		_sprite = get_parent().find_child("Sprite", true, false) as AnimatedSprite2D
+
+# z_index must live on the CharacterBody2D root (sibling of Player under World)
+# for corpse layering; child-only z never crosses entity boundaries.
+func _set_host_z(z: int) -> void:
+	var host := get_parent() as CanvasItem
+	if host != null:
+		host.z_index = z
 
 func _play_locomotion(name: String, force: bool = false) -> void:
 	if _sprite == null or _sprite.sprite_frames == null:
