@@ -419,7 +419,7 @@ def held(kind: str, style: WeaponStyle = DEFAULT, scale: float = 0.75, cell: int
     return c
 
 
-def mount(kind: str, style: WeaponStyle = DEFAULT, scale: float = 0.85, cell: int = 44) -> Canvas:
+def mount(kind: str, style: WeaponStyle = DEFAULT, scale: float = 1.2, cell: int = 60) -> Canvas:
     """The copy the player actually carries in the arena, pointing RIGHT.
 
     Shapes are authored pointing up with the grip on the canvas centre, so a

@@ -31,10 +31,15 @@ var _owner_health: HealthComponent
 
 var _cooldown_remaining: float = 0.0
 
-# Where this weapon rests around the wielder when nothing is in range. Set by
-# WeaponInventory so a six-weapon loadout fans out instead of stacking into one
-# blurry pile. Radians, 0 = pointing right.
-var idle_angle: float = -PI * 0.5
+# Where this weapon sits on the orbit it flies around the wielder. Set by
+# WeaponInventory so a six-weapon loadout spreads around the circle instead of
+# stacking into one blurry pile. Radians, 0 = to the wielder's right.
+var orbit_phase: float = 0.0:
+	set(value):
+		orbit_phase = value
+		if _visual != null:
+			_visual.orbit_phase = value
+
 var _visual: WeaponVisual
 
 func _ready() -> void:
@@ -76,16 +81,15 @@ func _process(delta: float) -> void:
 
 	var target = _find_nearest_target()
 	if target == null:
-		# Drift back to the resting slot instead of freezing wherever the last
-		# target happened to die — six weapons all locked at odd angles looked
-		# like debris stuck to the player.
-		rotation = lerp_angle(rotation, idle_angle, minf(1.0, delta * 6.0))
-		_update_visual_facing()
+		# Nothing in range: the visual points itself along the orbit, which reads
+		# as the weapon flying rather than freezing at whatever angle the last
+		# target happened to die at.
+		_update_visual_facing(false)
 		return
 
 	# Face the target regardless of cooldown so the weapon visibly tracks its target.
 	global_rotation = (target.global_position - _owner_body.global_position).angle()
-	_update_visual_facing()
+	_update_visual_facing(true)
 
 	if _cooldown_remaining > 0:
 		return
@@ -106,14 +110,14 @@ func _build_visual() -> void:
 
 	_visual = WeaponVisual.new()
 	_visual.name = "WeaponVisual_" + data.name
+	_visual.orbit_phase = orbit_phase
 	_owner_body.add_child(_visual)
 	_visual.setup(data)
-	rotation = idle_angle
-	_update_visual_facing()
+	_update_visual_facing(false)
 
-func _update_visual_facing() -> void:
+func _update_visual_facing(has_target: bool) -> void:
 	if _visual != null:
-		_visual.set_aim(rotation)
+		_visual.set_aim(rotation, has_target)
 
 # The visual lives on the wielder, so it has to be torn down with the weapon
 # rather than left behind when a slot is sold.

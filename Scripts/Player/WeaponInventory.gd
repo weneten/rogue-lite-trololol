@@ -81,17 +81,15 @@ func clear_all_weapons() -> void:
 	for i in range(_equipped_weapons.size() - 1, -1, -1):
 		remove_weapon_at(i)
 
-# Spreads the carried weapons evenly around the Hunter so a full loadout reads
-# as six distinct things rather than one smear. Purely where they rest when
-# idle — the moment a target is in range each weapon aims independently.
+# Spaces the carried weapons evenly around the orbit they fly, so a full loadout
+# reads as six distinct things rather than one smear. This is position only —
+# the moment a target is in range each weapon aims at it independently.
 func _reslot_weapons() -> void:
 	var count: int = _equipped_weapons.size()
 	if count == 0:
 		return
 
-	# Fanned across the lower arc, centred on "pointing down", which keeps the
-	# weapons clear of the Hunter's head and their own health bar.
-	var spread: float = minf(TAU * 0.75, 0.7 * count)
+	# Phases start at "in front of the Hunter" so a single weapon is never
+	# parked behind them where it cannot be seen.
 	for i in range(count):
-		var t: float = 0.0 if count == 1 else float(i) / float(count - 1) - 0.5
-		_equipped_weapons[i].idle_angle = PI * 0.5 + t * spread
+		_equipped_weapons[i].orbit_phase = PI * 0.5 + TAU * float(i) / float(count)
