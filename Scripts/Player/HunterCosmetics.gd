@@ -25,7 +25,11 @@ const ORBIT_RADIUS_Y := 11.0
 # Charms ride at chest height, matching the carried weapons. The rig stands its
 # characters on the body origin, so anything at y=0 orbits their ankles.
 const ORBIT_HEIGHT := -26.0
-const ORBIT_SPEED := 0.55
+# Charms hold fixed stations for the same reason the weapons do: a Hunter with a
+# full loadout plus eight charms all sweeping past each other is a blur. They
+# breathe in place instead of circling.
+const BOB_SPEED := 1.6
+const BOB_AMPLITUDE := 1.5
 const CHARM_SCALE := 0.75
 const CHARM_Z_FRONT := 3
 const CHARM_Z_BACK := -1
@@ -157,15 +161,17 @@ func _process(delta: float) -> void:
 	_time += delta
 	var count := _charms.size()
 	for i in range(count):
-		var phase: float = _time * ORBIT_SPEED * TAU + TAU * float(i) / float(count)
+		var phase: float = TAU * float(i) / float(count)
 		var charm := _charms[i]
-		charm.position = Vector2(cos(phase) * ORBIT_RADIUS_X, sin(phase) * ORBIT_RADIUS_Y + ORBIT_HEIGHT)
-		# Charms on the far side of the orbit sit behind the Hunter and dim, so
+		var bob: float = sin(_time * BOB_SPEED + phase) * BOB_AMPLITUDE
+		charm.position = Vector2(cos(phase) * ORBIT_RADIUS_X, sin(phase) * ORBIT_RADIUS_Y + ORBIT_HEIGHT + bob)
+		# Charms on the far side of the ring sit behind the Hunter and dim, so
 		# the ring reads as going around them rather than across them.
 		var front: float = (sin(phase) + 1.0) * 0.5
 		# Straddles the Hunter's own sprite layer (EnemySpriteAnimator.SPRITE_Z,
 		# which is 2), so the near half of the ring passes in front of them and
-		# the far half behind — that is what makes it read as an orbit.
+		# the far half behind — that is what makes it read as a ring around the
+		# body rather than a decal painted on it.
 		charm.z_index = CHARM_Z_FRONT if front > 0.5 else CHARM_Z_BACK
 		charm.modulate.a = 0.55 + 0.45 * front
 		charm.scale = Vector2.ONE * CHARM_SCALE * (0.85 + 0.15 * front)

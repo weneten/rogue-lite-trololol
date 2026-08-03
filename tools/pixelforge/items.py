@@ -418,6 +418,226 @@ def _ossuary_key(c: Canvas) -> None:
     c.set(11, 9, P.INK)
 
 
+def _gravebell_toll(c: Canvas) -> None:
+    metal = P.R_IRON
+    # Bell body: a flared trapezoid, cracked down one side, clapper swinging
+    # clear of the lip so the "it rings" read survives at this size.
+    c.polygon([(11, 6), (21, 6), (25, 22), (7, 22)], metal.dark)
+    c.polygon([(12, 7), (20, 7), (23, 20), (9, 20)], metal.core)
+    c.hline(7, 25, 21, metal.outline)
+    c.line((16, 3), (16, 6), metal.dark)
+    c.circle(16, 3, 1.6, metal.core)
+    c.line((17, 9), (15, 15), metal.outline)
+    c.line((15, 15), (17, 19), metal.outline)
+    c.line((16, 20), (20, 26), metal.dark)
+    c.circle(20, 27, 2.0, metal.core)
+    c.set(11, 9, metal.hi)
+
+
+def _carrion_horn(c: Canvas) -> None:
+    horn = Ramp(P.rgb("241f2b"), outline=P.VOID)
+    # A curved taper built from chained capsules — the curl is what says
+    # "horn" rather than "stick", so the arc matters more than any surface
+    # detail.
+    pts = [(8, 27), (7, 21), (9, 15), (14, 10), (20, 7), (27, 5)]
+    radii = [6.0, 5.2, 4.4, 3.6, 2.6, 1.6]
+    for i in range(len(pts) - 1):
+        c.capsule(pts[i], pts[i + 1], radii[i], radii[i + 1], horn.dark)
+    for i in range(len(pts) - 1):
+        c.capsule(pts[i], pts[i + 1], radii[i] - 1.2, radii[i + 1] - 1.0, horn.core)
+    c.set(27, 5, P.R_BONE.core)
+    for y in (16, 19, 22):
+        c.line((6, y), (12, y - 2), P.R_LEATHER.dark)
+        c.line((6, y + 1), (12, y - 1), P.R_LEATHER.core)
+    c.line((7, 21), (9, 15), horn.light)
+
+
+def _black_cat_knucklebone(c: Canvas) -> None:
+    bone = P.R_BONE
+    # An irregular knuckle silhouette — two lobes and a waist — reads as
+    # "bone" where a smooth oval would just read as an egg.
+    c.polygon([(10, 6), (16, 4), (22, 7), (23, 13), (19, 16), (21, 21),
+               (17, 27), (11, 26), (9, 20), (12, 16), (8, 12)], bone.dark)
+    c.polygon([(11, 8), (16, 6), (20, 8), (21, 13), (18, 15), (19, 20),
+               (16, 25), (12, 24), (11, 19), (13, 16), (10, 12)], bone.core)
+    c.set(13, 9, bone.hi)
+    c.set(17, 19, bone.light)
+    # A scratch of black cat fur knotted around the waist as a ribbon — a
+    # thick band plus a tail flag is what sells "tied on", not a stray line.
+    c.rect(7, 14, 17, 3, P.INK)
+    c.hline(7, 23, 14, P.COAL)
+    c.polygon([(7, 14), (3, 12), (3, 18), (7, 17)], P.INK)
+    c.set(4, 14, P.COAL)
+
+
+def _tarot_of_the_hanged(c: Canvas) -> None:
+    card = P.R_BONE
+    c.rect(6, 3, 20, 27, P.INK)
+    c.rect(7, 4, 18, 25, card.core)
+    c.rect(9, 6, 14, 21, with_alpha(P.PARCHMENT, 235))
+    c.rect_outline(9, 6, 14, 21, P.rgb("6a5a40"))
+    # Gallows beam and the hanged figure, upside down from the rope, drawn
+    # big enough inside the card to read as a person rather than a smear.
+    c.hline(11, 21, 9, P.R_WOOD.dark)
+    c.vline(16, 9, 12, P.R_WOOD.dark)
+    figure = P.STONE
+    c.circle(16, 17, 3.0, figure)
+    c.vline(16, 14, 21, figure)
+    c.line((16, 15), (11, 19), figure)
+    c.line((16, 15), (21, 19), figure)
+    c.line((16, 21), (12, 25), figure)
+    c.line((16, 21), (20, 25), figure)
+    c.set(15, 16, P.SMOKE)
+    c.set(16, 26, P.CRIMSON)
+
+
+def _sanguine_chalice(c: Canvas) -> None:
+    metal = P.R_GOLD
+    # Cup, stem and flared foot, brimming over — the fluid has to spill past
+    # the rim or the icon just reads as "gold cup".
+    c.polygon([(9, 8), (23, 8), (21, 16), (11, 16)], metal.dark)
+    c.polygon([(10, 9), (22, 9), (20, 15), (12, 15)], metal.core)
+    c.rect(15, 16, 2, 8, metal.dark)
+    c.polygon([(10, 24), (22, 24), (24, 28), (8, 28)], metal.dark)
+    c.polygon([(11, 25), (21, 25), (22, 27), (10, 27)], metal.core)
+    c.polygon([(9, 7), (23, 7), (22, 10), (10, 10)], P.BLOOD)
+    c.hline(9, 23, 7, P.CRIMSON)
+    c.set(11, 8, P.ROSE)
+    c.set(14, 20, metal.hi)
+
+
+def _crimson_leech_jar(c: Canvas) -> None:
+    glass = P.R_STEEL
+    c.rect(9, 10, 14, 16, glass.dark)
+    c.rect(10, 11, 12, 14, with_alpha(P.MOONLIGHT, 60))
+    c.rect(8, 6, 16, 5, P.R_IRON.dark)
+    c.rect(9, 7, 14, 3, P.R_IRON.core)
+    c.vline(10, 12, 24, glass.light)
+    # Leech curled at the bottom of the jar — the coil is the whole read.
+    c.polygon([(13, 20), (18, 18), (21, 21), (19, 24), (14, 24), (12, 22)], P.BLOOD_DARK)
+    c.polygon([(14, 20), (18, 19), (19, 21), (17, 23), (14, 23)], P.BLOOD)
+    c.set(15, 19, P.CRIMSON)
+
+
+def _sisters_poultice(c: Canvas) -> None:
+    cloth = P.R_CLOTH_BONE
+    _cloth_folds(c, [(8, 14), (16, 9), (24, 14), (23, 23), (16, 27), (9, 23)], cloth)
+    c.line((9, 15), (23, 15), P.R_LEATHER.dark)
+    c.line((8, 20), (24, 20), P.R_LEATHER.dark)
+    c.line((16, 9), (16, 27), P.R_LEATHER.core)
+    # Herb sprigs poking from the twine-bound top.
+    for x, col in ((12, P.R_ROT.core), (16, P.BILE), (20, P.R_ROT.core)):
+        c.line((x, 9), (x - 1, 4), col)
+        c.set(x - 1, 4, P.TOXIC)
+
+
+def _ever_burning_wick(c: Canvas) -> None:
+    wax = P.R_BONE
+    c.rect(12, 22, 8, 8, wax.dark)
+    c.rect(13, 23, 6, 6, wax.core)
+    c.hline(13, 18, 22, wax.light)
+    c.line((16, 22), (16, 19), P.INK)
+    # A flame far too tall for the stub it burns on, pale at the core.
+    c.polygon([(16, 2), (20, 12), (18, 20), (14, 20), (12, 12)], P.rgb("6fc9c2"))
+    c.polygon([(16, 5), (19, 13), (17, 19), (15, 19), (13, 13)], P.SPECTRAL)
+    c.polygon([(16, 8), (18, 14), (16, 18), (14, 14)], P.CANDLE)
+    c.set(16, 8, P.PARCHMENT)
+
+
+def _pallbearers_oath(c: Canvas) -> None:
+    band = Ramp(P.rgb("15111c"), outline=P.VOID)
+    # A cloth mourning cuff, drawn straight-on like a napkin ring — angled it
+    # would read as a belt rather than something worn round an arm.
+    c.rect(4, 11, 24, 12, band.dark)
+    c.rect(5, 12, 22, 10, band.core)
+    c.hline(5, 26, 13, band.light)
+    c.hline(5, 26, 20, band.outline)
+    # Silver mourning pin driven through the band, gem catching the light.
+    c.rect(15, 4, 2, 24, P.R_SILVER.dark)
+    c.rect(16, 4, 1, 24, P.R_SILVER.core)
+    _gem(c, 16, 17, 2.6, P.rgb("cfd6e0"))
+
+
+def _grave_moss_cloak(c: Canvas) -> None:
+    moss = Ramp(P.rgb("3a4a2c"), outline=P.rgb("10160a"))
+    _cloth_folds(c, [(16, 4), (24, 9), (26, 22), (21, 28), (11, 28), (6, 22), (8, 9)], moss)
+    for y in (13, 18, 23):
+        c.hline(9, 23, y, shade(moss.core, -0.25))
+    c.vline(9, 9, 24, moss.light)
+    c.vline(23, 9, 24, moss.light)
+    # Clasp holding the folds shut at the collar.
+    c.circle(16, 8, 2.4, P.R_GOLD.dark)
+    c.circle(16, 8, 1.4, P.R_GOLD.core)
+    c.set(15, 7, P.R_GOLD.hi)
+    for x, y in ((11, 16), (20, 12), (14, 22), (18, 20)):
+        c.set(x, y, P.BILE)
+
+
+def _thief_of_hours(c: Canvas) -> None:
+    metal = P.R_GOLD
+    c.circle(16, 17, 10, metal.dark)
+    c.circle(16, 17, 8.4, metal.core)
+    c.circle(16, 17, 7, with_alpha(P.PARCHMENT, 235))
+    c.ring(16, 17, 10, metal.outline, 1)
+    c.rect(15, 4, 2, 3, metal.dark)
+    c.circle(16, 3, 1.6, metal.core)
+    c.line((6, 8), (2, 5), metal.dark)
+    # Hour marks at the cardinal points, but the hands themselves are gone —
+    # only a bare pin and a crack across the glass remain, which is the joke.
+    for x, y in ((16, 11), (21, 17), (16, 23), (11, 17)):
+        c.set(x, y, P.INK)
+    c.line((13, 20), (19, 14), with_alpha(P.CRIMSON, 140))
+    c.set(16, 17, P.INK)
+    c.set(17, 16, P.STONE)
+
+
+def _moonwell_shard(c: Canvas) -> None:
+    glass = Ramp(P.rgb("6fa8c9"), outline=P.rgb("0e2430"))
+    c.polygon([(16, 2), (21, 13), (18, 29), (14, 29), (11, 13)], glass.dark)
+    c.polygon([(16, 5), (19, 13), (17, 26), (15, 26), (13, 13)], glass.core)
+    c.polygon([(16, 5), (13, 13), (15, 26)], glass.light)
+    c.line((16, 4), (16, 25), P.MOONLIGHT)
+    c.set(15, 8, P.PARCHMENT)
+    c.set(17, 18, with_alpha(P.MOONLIGHT, 180))
+
+
+def _gilded_fang(c: Canvas) -> None:
+    bone = P.R_BONE
+    c.polygon([(12, 5), (20, 5), (18, 24), (16, 29), (14, 24)], bone.core)
+    c.polygon([(13, 6), (19, 6), (17, 23), (16, 27), (15, 23)], bone.light)
+    c.line((16, 8), (16, 24), bone.dark)
+    # Gold cap at the root — the piece that says "trophy", not just "tooth".
+    c.rect(11, 3, 10, 5, P.R_GOLD.dark)
+    c.rect(12, 4, 8, 3, P.R_GOLD.core)
+    c.hline(12, 19, 4, P.R_GOLD.hi)
+    c.set(15, 10, P.PARCHMENT)
+
+
+def _pilgrims_compass(c: Canvas) -> None:
+    metal = P.R_GOLD
+    c.circle(16, 16, 11, metal.dark)
+    c.circle(16, 16, 9.2, metal.core)
+    c.circle(16, 16, 7.6, with_alpha(P.PARCHMENT, 230))
+    c.ring(16, 16, 11, metal.outline, 1)
+    c.ring(16, 16, 9.2, metal.core, 1)
+    c.set(24, 9, metal.outline)      # a battered dent in the case
+    c.set(25, 10, metal.outline)
+    # Needle spinning off true north — half crimson, half steel.
+    c.line((16, 16), (20, 10), P.CRIMSON)
+    c.line((16, 16), (12, 22), P.R_SILVER.core)
+    c.circle(16, 16, 1.2, P.INK)
+    c.set(14, 12, metal.hi)
+
+
+def _wolfsbane_draught(c: Canvas) -> None:
+    _bottle(c, 16, 7, 27, 6, P.R_SILVER, P.VIOLET)
+    # A purple-flowered sprig tucked into the cork.
+    c.line((16, 5), (16, 2), P.R_ROT.core)
+    for dx, dy in ((-2, -1), (2, -1), (0, -3)):
+        c.circle(16 + dx, 3 + dy, 1.4, P.VIOLET)
+    c.set(16, 0, P.rgb("d8b6f5"))
+
+
 # id -> drawing routine. The keys are the PassiveItemData ids, so a missing
 # icon is a KeyError at build time rather than a blank square in the shop.
 ICONS = {
@@ -445,6 +665,21 @@ ICONS = {
     "reapers_hourglass": _reapers_hourglass,
     "crown_of_thorns": _crown_of_thorns,
     "ossuary_key": _ossuary_key,
+    "gravebell_toll": _gravebell_toll,
+    "carrion_horn": _carrion_horn,
+    "black_cat_knucklebone": _black_cat_knucklebone,
+    "tarot_of_the_hanged": _tarot_of_the_hanged,
+    "sanguine_chalice": _sanguine_chalice,
+    "crimson_leech_jar": _crimson_leech_jar,
+    "sisters_poultice": _sisters_poultice,
+    "ever_burning_wick": _ever_burning_wick,
+    "pallbearers_oath": _pallbearers_oath,
+    "grave_moss_cloak": _grave_moss_cloak,
+    "thief_of_hours": _thief_of_hours,
+    "moonwell_shard": _moonwell_shard,
+    "gilded_fang": _gilded_fang,
+    "pilgrims_compass": _pilgrims_compass,
+    "wolfsbane_draught": _wolfsbane_draught,
 }
 
 

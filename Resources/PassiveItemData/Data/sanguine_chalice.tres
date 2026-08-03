@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="PassiveItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Resources/PassiveItemData/PassiveItemData.gd" id="1_pid"]
+[ext_resource type="Texture2D" path="res://Assets/sprites/items/sanguine_chalice.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_pid")
+id = "sanguine_chalice"
+display_name = "Sanguine Chalice"
+description = "It refills faster than you can drink from it."
+icon = ExtResource("2_icon")
+effect_type = 6
+value = 0.06
+rarity_tier = 3
+shop_cost = 5

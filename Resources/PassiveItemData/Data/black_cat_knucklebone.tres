@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="PassiveItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Resources/PassiveItemData/PassiveItemData.gd" id="1_pid"]
+[ext_resource type="Texture2D" path="res://Assets/sprites/items/black_cat_knucklebone.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_pid")
+id = "black_cat_knucklebone"
+display_name = "Black Cat Knucklebone"
+description = "Bad luck for the cat. Rather good luck for you."
+icon = ExtResource("2_icon")
+effect_type = 15
+value = 2.0
+rarity_tier = 1
+shop_cost = 3

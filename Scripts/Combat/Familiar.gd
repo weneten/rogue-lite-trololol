@@ -22,16 +22,20 @@ var _spawn_point: Node2D
 var _projectile_pool: ObjectPool
 
 var _cooldown_remaining: float = 0.0
+# Reports damage back to the Weapon slot that summoned this familiar, so the
+# HUD's per-weapon scoreboard credits the summon rather than showing a zero.
+var _report_damage: Callable = Callable()
 
 func _ready() -> void:
 	_spawn_point = get_node_or_null(projectile_spawn_point_path) as Node2D if projectile_spawn_point_path else self
 
 # Wires this familiar to fight on behalf of owner using data's stats. Called once by
 # Weapon.spawn_familiar right after instantiation.
-func setup(owner: Node2D, data: WeaponData, owner_stats: PlayerStats) -> void:
+func setup(owner: Node2D, data: WeaponData, owner_stats: PlayerStats, report_damage: Callable = Callable()) -> void:
 	_owner = owner
 	_data = data
 	_owner_stats = owner_stats
+	_report_damage = report_damage
 
 	if data.projectile_scene != null:
 		_projectile_pool = ObjectPool.new(data.projectile_scene, get_tree().current_scene if get_tree().current_scene else get_parent(), projectile_pool_prewarm)
@@ -103,5 +107,9 @@ func _fire_at(target: Node2D) -> void:
 		crit_multiplier,
 		_data.knockback,
 		target_group,
-		func(dealt: int, hit_body: Node2D): _owner_stats.notify_damage_dealt(dealt, hit_body) if _owner_stats else null
+		func(dealt: int, hit_body: Node2D):
+			if _report_damage.is_valid():
+				_report_damage.call(dealt)
+			if _owner_stats:
+				_owner_stats.notify_damage_dealt(dealt, hit_body)
 	)

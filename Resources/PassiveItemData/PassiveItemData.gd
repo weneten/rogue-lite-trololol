@@ -22,6 +22,9 @@ enum PassiveEffectType {
 	MAGIC_DAMAGE_BOOST,
 	XP_GAIN_BOOST,
 	CURRENCY_GAIN_BOOST,
+	LUCK_BOOST,
+	ENEMY_DENSITY_BOOST,
+	DAMAGE_TAKEN_REDUCTION,
 }
 
 # Short stat label shown on the shop card, keyed by effect type. Kept next to
@@ -42,6 +45,9 @@ const EFFECT_LABEL := {
 	PassiveEffectType.MAGIC_DAMAGE_BOOST: "Magic Damage",
 	PassiveEffectType.XP_GAIN_BOOST: "XP Gain",
 	PassiveEffectType.CURRENCY_GAIN_BOOST: "Gold Gain",
+	PassiveEffectType.LUCK_BOOST: "Luck",
+	PassiveEffectType.ENEMY_DENSITY_BOOST: "Horde Size",
+	PassiveEffectType.DAMAGE_TAKEN_REDUCTION: "Damage Taken",
 }
 
 # Effects whose value is a flat amount rather than a fraction, so the card can
@@ -50,6 +56,7 @@ const FLAT_EFFECTS := [
 	PassiveEffectType.MAX_HEALTH_BOOST,
 	PassiveEffectType.ARMOR_BOOST,
 	PassiveEffectType.PICKUP_RANGE_BOOST,
+	PassiveEffectType.LUCK_BOOST,
 ]
 
 # One line of "+X Stat" for the shop card, derived from the data rather than
@@ -62,6 +69,10 @@ func stat_line() -> String:
 		return "+%d %s" % [roundi(value), label]
 	if effect_type == PassiveEffectType.CRIT_DAMAGE_BOOST:
 		return "+%.1fx %s" % [value, label]
+	# The only stat where the good direction is down, so it prints its own sign
+	# rather than reading as a drawback.
+	if effect_type == PassiveEffectType.DAMAGE_TAKEN_REDUCTION:
+		return "-%d%% %s" % [roundi(value * 100.0), label]
 	return "+%d%% %s" % [roundi(value * 100.0), label]
 
 # Data-driven definition of a shop passive item (a permanent relic-style trinket, as opposed to

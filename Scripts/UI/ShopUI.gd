@@ -50,6 +50,9 @@ var _relic_tray: Container
 var _stats_list: VBoxContainer
 var _empty_relics_label: Label
 
+# The grid the next _add_stat call writes into; swapped out by _begin_section.
+var _stat_grid: GridContainer
+
 var _cards: Array[ShopCard] = []
 var _rerolls_this_visit: int = 0
 var _open: bool = false
@@ -207,11 +210,11 @@ func _roll_offers(fresh: bool) -> void:
 
 		var pick_weapon := _should_pick_weapon(weapons, relics)
 		if pick_weapon and not weapons.is_empty():
-			var weapon = weapons[randi_range(0, weapons.size() - 1)]
+			var weapon = _draw_by_rarity(weapons)
 			weapons.erase(weapon)
 			card.show_weapon(weapon, ShopEconomy.get_weapon_price(weapon))
 		elif not relics.is_empty():
-			var relic = relics[randi_range(0, relics.size() - 1)]
+			var relic = _draw_by_rarity(relics)
 			relics.erase(relic)
 			card.show_relic(relic, ShopEconomy.get_passive_price(relic))
 		else:
@@ -226,6 +229,36 @@ func _should_pick_weapon(weapons: Array, relics: Array) -> bool:
 	if relics.is_empty():
 		return true
 	return randf() < 0.6
+
+# Weighted draw from a pool of offers (weapons or relics alike — both carry a
+# rarity_tier). Commons are the baseline; every point of Luck makes each step up
+# the rarity ladder that much less punishing, which is the entire point of the
+# stat. A run with no Luck still sees Legendaries, just rarely.
+func _draw_by_rarity(pool: Array):
+	if pool.size() <= 1:
+		return pool[0] if not pool.is_empty() else null
+
+	var luck: float = PlayerStats.instance.luck if PlayerStats.instance != null else 0.0
+	# Each tier is ~2.2x rarer than the one below it at zero Luck; Luck shrinks
+	# that falloff, and is capped so a hoarder never gets a shelf of guaranteed
+	# Legendaries.
+	var falloff := 2.2 - clampf(luck * 0.08, 0.0, 1.1)
+
+	var weights: Array[float] = []
+	var total := 0.0
+	for entry in pool:
+		var tier: int = clampi(entry.rarity_tier, 0, 4)
+		var weight: float = pow(falloff, -float(tier))
+		weights.append(weight)
+		total += weight
+
+	var roll := randf() * total
+	for i in range(pool.size()):
+		roll -= weights[i]
+		if roll <= 0.0:
+			return pool[i]
+
+	return pool[pool.size() - 1]
 
 # ------------------------------------------------------------------- purchases
 
@@ -327,7 +360,7 @@ func _refresh_weapon_tray() -> void:
 
 		var icon := TextureRect.new()
 		icon.texture = data.icon
-		icon.custom_minimum_size = Vector2(48, 48)
+		icon.custom_minimum_size = Vector2(40, 40)
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
@@ -350,7 +383,7 @@ func _refresh_weapon_tray() -> void:
 	for i in range(equipped.size(), inventory.max_weapon_slots):
 		var blank := Panel.new()
 		blank.theme_type_variation = &"InsetPanel"
-		blank.custom_minimum_size = Vector2(48, 78)
+		blank.custom_minimum_size = Vector2(40, 50)
 		blank.modulate.a = 0.4
 		_weapon_tray.add_child(blank)
 
@@ -372,7 +405,7 @@ func _refresh_relic_tray() -> void:
 
 		var icon := TextureRect.new()
 		icon.texture = item.icon
-		icon.custom_minimum_size = Vector2(36, 36)
+		icon.custom_minimum_size = Vector2(30, 30)
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
@@ -389,6 +422,7 @@ func _refresh_stats() -> void:
 
 	for child in _stats_list.get_children():
 		child.queue_free()
+	_stat_grid = null
 
 	var stats := PlayerStats.instance
 	if stats == null:
@@ -396,44 +430,85 @@ func _refresh_stats() -> void:
 
 	var health := stats.get_node_or_null("../HealthComponent") as HealthComponent
 
+	# The core block is unconditional, even at its starting value. A stat that
+	# only appears once you own a relic for it is a stat you cannot plan a
+	# purchase around — you have to already own the thing to learn it exists.
+	# Conditional rows are only for the genuinely exotic, which would otherwise
+	# be a column of "0%" crowding out what matters.
+	_begin_section("OFFENCE")
 	_add_stat("Damage", "%d%%" % roundi(stats.damage_multiplier * 100.0))
-	_add_stat("Attack Speed", "%d%%" % roundi(stats.attack_speed_multiplier * 100.0))
-	_add_stat("Move Speed", "%d%%" % roundi(stats.move_speed_multiplier * 100.0))
-
-	if health != null:
-		_add_stat("Health", "%d / %d" % [health.current_health, health.max_health])
-		if health.armor > 0:
-			_add_stat("Armour", str(health.armor))
-		if health.dodge_chance > 0.0:
-			_add_stat("Dodge", "%d%%" % roundi(health.dodge_chance * 100.0))
-
-	if stats.extra_crit_chance > 0.0:
-		_add_stat("Crit Chance", "+%d%%" % roundi(stats.extra_crit_chance * 100.0))
+	_add_stat("Atk Speed", "%d%%" % roundi(stats.attack_speed_multiplier * 100.0))
+	_add_stat("Crit", "+%d%%" % roundi(stats.extra_crit_chance * 100.0))
 	if stats.extra_crit_multiplier > 0.0:
-		_add_stat("Crit Damage", "+%.1fx" % stats.extra_crit_multiplier)
-	if stats.lifesteal_fraction > 0.0:
-		_add_stat("Lifesteal", "%d%%" % roundi(stats.lifesteal_fraction * 100.0))
-	if stats.health_regen_per_second > 0.0:
-		_add_stat("Regen", "%.1f/s" % stats.health_regen_per_second)
-	if stats.currency_gain_multiplier > 1.0:
-		_add_stat("Gold Gain", "%d%%" % roundi(stats.currency_gain_multiplier * 100.0))
-	if stats.xp_gain_multiplier > 1.0:
-		_add_stat("XP Gain", "%d%%" % roundi(stats.xp_gain_multiplier * 100.0))
+		_add_stat("Crit Dmg", "+%.1fx" % stats.extra_crit_multiplier)
+	if stats.magic_damage_multiplier != 1.0:
+		_add_stat("Magic", "%d%%" % roundi(stats.magic_damage_multiplier * 100.0))
+	if stats.undead_damage_multiplier != 1.0:
+		_add_stat("vs Undead", "%d%%" % roundi(stats.undead_damage_multiplier * 100.0))
+
+	_begin_section("SURVIVAL")
+	if health != null:
+		_add_stat("Health", "%d/%d" % [health.current_health, health.max_health])
+		_add_stat("Armour", str(health.armor))
+		_add_stat("Dodge", "%d%%" % roundi(health.dodge_chance * 100.0))
+	_add_stat("Regen", "%.1f/s" % stats.health_regen_per_second)
+	_add_stat("Lifesteal", "%d%%" % roundi(stats.lifesteal_fraction * 100.0))
+	if stats.damage_taken_multiplier != 1.0:
+		_add_stat("Dmg Taken", "%d%%" % roundi(stats.damage_taken_multiplier * 100.0))
+
+	_begin_section("UTILITY")
+	_add_stat("Speed", "%d%%" % roundi(stats.move_speed_multiplier * 100.0))
+	_add_stat("Luck", "%d" % roundi(stats.luck))
+	_add_stat("Gold", "%d%%" % roundi(stats.currency_gain_multiplier * 100.0))
+	_add_stat("XP", "%d%%" % roundi(stats.xp_gain_multiplier * 100.0))
+	if stats.pickup_radius_bonus > 0.0:
+		_add_stat("Pickup", "+%d" % roundi(stats.pickup_radius_bonus))
+	if stats.enemy_density_multiplier != 1.0:
+		_add_stat("Horde", "%d%%" % roundi(stats.enemy_density_multiplier * 100.0))
+
+	var inventory := WeaponInventory.instance
+	if inventory != null:
+		_add_stat("Slots", "%d/%d" % [inventory.equipped_weapons.size(), inventory.max_weapon_slots])
+
+# Stats are laid out two to a row. One column of twenty rows does not fit the
+# panel, and a panel you have to scroll to see your own build in is a panel that
+# does not answer the question it exists to answer.
+func _begin_section(title: String) -> void:
+	if _stats_list.get_child_count() > 0:
+		var spacer := Control.new()
+		spacer.custom_minimum_size = Vector2(0, 4)
+		_stats_list.add_child(spacer)
+
+	var heading := Label.new()
+	heading.text = title
+	heading.theme_type_variation = &"StatLabel"
+	heading.modulate = Color(1.0, 0.82, 0.45, 0.75)
+	_stats_list.add_child(heading)
+
+	_stat_grid = GridContainer.new()
+	_stat_grid.columns = 2
+	_stat_grid.add_theme_constant_override("h_separation", 12)
+	_stat_grid.add_theme_constant_override("v_separation", 0)
+	_stats_list.add_child(_stat_grid)
 
 func _add_stat(label: String, value: String) -> void:
-	var row := HBoxContainer.new()
-	_stats_list.add_child(row)
+	if _stat_grid == null:
+		_begin_section("HUNTER")
+
+	var cell := HBoxContainer.new()
+	cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_stat_grid.add_child(cell)
 
 	var name_label := Label.new()
 	name_label.text = label
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_label.theme_type_variation = &"StatLabel"
-	row.add_child(name_label)
+	cell.add_child(name_label)
 
 	var value_label := Label.new()
 	value_label.text = value
 	value_label.theme_type_variation = &"GoldLabel"
-	row.add_child(value_label)
+	cell.add_child(value_label)
 
 # ----------------------------------------------------------------- affordability
 
@@ -461,7 +536,11 @@ func _update_affordability() -> void:
 			continue
 
 		if card.is_weapon:
-			card.set_affordable(not slots_full and currency >= ShopEconomy.get_weapon_price(card.offer))
+			var price := ShopEconomy.get_weapon_price(card.offer)
+			if slots_full:
+				card.set_slots_full()
+			else:
+				card.set_affordable(currency >= price, price)
 		else:
 			card.set_affordable(currency >= ShopEconomy.get_passive_price(card.offer))
 
@@ -506,5 +585,11 @@ static func _apply_passive_effect(item: PassiveItemData) -> void:
 			stats.apply_xp_gain_bonus(item.value)
 		PassiveItemData.PassiveEffectType.CURRENCY_GAIN_BOOST:
 			stats.apply_currency_gain_bonus(item.value)
+		PassiveItemData.PassiveEffectType.LUCK_BOOST:
+			stats.apply_luck(item.value)
+		PassiveItemData.PassiveEffectType.ENEMY_DENSITY_BOOST:
+			stats.apply_enemy_density(item.value)
+		PassiveItemData.PassiveEffectType.DAMAGE_TAKEN_REDUCTION:
+			stats.apply_damage_taken_reduction(item.value)
 		_:
 			push_warning("[ShopUI] Relic '%s' has no effect wired for type %d." % [item.id, item.effect_type])

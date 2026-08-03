@@ -31,16 +31,22 @@ var _owner_health: HealthComponent
 
 var _cooldown_remaining: float = 0.0
 
-# Where this weapon sits on the orbit it flies around the wielder. Set by
-# WeaponInventory so a six-weapon loadout spreads around the circle instead of
-# stacking into one blurry pile. Radians, 0 = to the wielder's right.
-var orbit_phase: float = 0.0:
+# This weapon's station on the ring around the wielder. Set by WeaponInventory
+# from the slot index so a full loadout spreads around the body instead of
+# stacking into one pile. Radians, 0 = to the wielder's right.
+var station_angle: float = 0.0:
 	set(value):
-		orbit_phase = value
+		station_angle = value
 		if _visual != null:
-			_visual.orbit_phase = value
+			_visual.station_angle = value
 
 var _visual: WeaponVisual
+
+# Damage this weapon has dealt since the current wave started, so the HUD can
+# show which of six slots is actually carrying the run. Reset by WaveManager's
+# wave_start, not by the shop: a weapon bought mid-shop starts the next wave at
+# zero like everything else.
+var damage_this_wave: int = 0
 
 func _ready() -> void:
 	_owner_body = get_node_or_null(owner_body_path) as Node2D if owner_body_path else get_parent() as Node2D
@@ -48,6 +54,10 @@ func _ready() -> void:
 	_spawn_point = get_node_or_null(projectile_spawn_point_path) as Node2D if projectile_spawn_point_path else self
 	_owner_stats = _owner_body.get_node_or_null("PlayerStats") as PlayerStats if _owner_body else null
 	_owner_health = _owner_body.get_node_or_null("HealthComponent") as HealthComponent if _owner_body else null
+
+	# Per-wave damage is a scoreboard, so it starts over with the wave. Connected
+	# even for Summon weapons, whose Familiar reports through the same counter.
+	EventBus.wave_start.connect(_on_wave_start)
 
 	if data == null:
 		push_warning("[Weapon] No WeaponData assigned; weapon is inert.")
@@ -81,9 +91,8 @@ func _process(delta: float) -> void:
 
 	var target = _find_nearest_target()
 	if target == null:
-		# Nothing in range: the visual points itself along the orbit, which reads
-		# as the weapon flying rather than freezing at whatever angle the last
-		# target happened to die at.
+		# Nothing in range: the visual falls back to its resting pose rather than
+		# freezing at whatever angle the last target happened to die at.
 		_update_visual_facing(false)
 		return
 
@@ -110,14 +119,26 @@ func _build_visual() -> void:
 
 	_visual = WeaponVisual.new()
 	_visual.name = "WeaponVisual_" + data.name
-	_visual.orbit_phase = orbit_phase
-	_owner_body.add_child(_visual)
+	_visual.station_angle = station_angle
 	_visual.setup(data)
 	_update_visual_facing(false)
+	# Deferred: a weapon whose wielder is itself mid-_ready (spawned at runtime
+	# rather than authored into the scene) cannot take a new child yet, and the
+	# failed add left that slot permanently invisible.
+	_owner_body.add_child.call_deferred(_visual)
 
 func _update_visual_facing(has_target: bool) -> void:
 	if _visual != null:
 		_visual.set_aim(rotation, has_target)
+
+func _on_wave_start(_wave_number: int) -> void:
+	damage_this_wave = 0
+
+# Single funnel for the per-wave scoreboard. Every path that lands damage — melee
+# cleave, projectile hit, AoE pulse, trap trigger — routes through here so a new
+# attack type cannot silently go uncounted.
+func _record_damage(amount: int) -> void:
+	damage_this_wave += maxi(0, amount)
 
 # The visual lives on the wielder, so it has to be torn down with the weapon
 # rather than left behind when a slot is sold.
@@ -235,6 +256,7 @@ func _try_damage_target(body: Node2D) -> bool:
 		data.damage * damage_multiplier * (crit_multiplier if is_crit else 1.0)))
 
 	health.take_damage(final_damage, _owner_body)
+	_record_damage(final_damage)
 	if _owner_stats:
 		_owner_stats.notify_damage_dealt(final_damage, body)
 	_apply_on_hit_lifesteal(final_damage)
@@ -280,6 +302,7 @@ func _fire_projectiles(target: Node2D) -> void:
 			data.knockback,
 			target_group,
 			func(dealt: int, hit_body: Node2D):
+				_record_damage(dealt)
 				if _owner_stats:
 					_owner_stats.notify_damage_dealt(dealt, hit_body)
 				_apply_on_hit_lifesteal(dealt)
@@ -311,6 +334,7 @@ func _perform_area_attack(primary_target: Node2D) -> void:
 		var damage_multiplier = _compute_damage_multiplier(body)
 		var final_damage = roundi(data.damage * damage_multiplier * (crit_multiplier if is_crit else 1.0))
 		health.take_damage(final_damage, _owner_body)
+		_record_damage(final_damage)
 		if _owner_stats:
 			_owner_stats.notify_damage_dealt(final_damage, body)
 		_apply_on_hit_lifesteal(final_damage)
@@ -346,6 +370,7 @@ func _place_trap() -> void:
 		data.trap_root_duration_seconds,
 		data.trap_lifetime_seconds,
 		func(dealt: int, hit_body: Node2D):
+			_record_damage(dealt)
 			if _owner_stats:
 				_owner_stats.notify_damage_dealt(dealt, hit_body)
 			_apply_on_hit_lifesteal(dealt)
@@ -362,7 +387,7 @@ func _spawn_familiar() -> void:
 
 	if familiar is Familiar:
 		var familiar_script = familiar as Familiar
-		familiar_script.setup(_owner_body, data, _owner_stats)
+		familiar_script.setup(_owner_body, data, _owner_stats, _record_damage)
 
 # Heals the wielder for Data.OnHitLifestealFraction of a landed hit (Vampiric Claws).
 # Stacks additively with PlayerStats.LifestealFraction, which notify_damage_dealt already applies.

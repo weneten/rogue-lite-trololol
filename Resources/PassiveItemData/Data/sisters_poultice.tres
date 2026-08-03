@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="PassiveItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Resources/PassiveItemData/PassiveItemData.gd" id="1_pid"]
+[ext_resource type="Texture2D" path="res://Assets/sprites/items/sisters_poultice.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_pid")
+id = "sisters_poultice"
+display_name = "Sister's Poultice"
+description = "Herbs, wax and something the convent will not name."
+icon = ExtResource("2_icon")
+effect_type = 9
+value = 1.0
+rarity_tier = 1
+shop_cost = 3
