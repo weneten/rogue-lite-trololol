@@ -85,13 +85,17 @@ func _despawn() -> void:
 
 func on_spawn() -> void:
 	visible = true
-	monitoring = true
-	monitorable = true
+	set_deferred("monitoring", true)
+	set_deferred("monitorable", true)
 	set_physics_process(true)
 
 func on_despawn() -> void:
 	_active = false
 	visible = false
-	monitoring = false
-	monitorable = false
+	# Deferred: these are released from inside a collision callback, and Godot
+	# forbids changing an Area2D's monitoring flags mid physics-signal flush.
+	# The _active/_armed guard already stops any further processing, so the
+	# one-frame lag on the flag itself changes no behaviour.
+	set_deferred("monitoring", false)
+	set_deferred("monitorable", false)
 	set_physics_process(false)

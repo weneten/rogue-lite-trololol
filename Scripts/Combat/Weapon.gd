@@ -125,7 +125,22 @@ func _build_visual() -> void:
 	# Deferred: a weapon whose wielder is itself mid-_ready (spawned at runtime
 	# rather than authored into the scene) cannot take a new child yet, and the
 	# failed add left that slot permanently invisible.
-	_owner_body.add_child.call_deferred(_visual)
+	_attach_visual.call_deferred()
+
+# Runs a frame after _build_visual. By then the weapon may already be gone —
+# Player.apply_character_data clears the scene-authored loadout on the very
+# frame it is built — so this re-checks everything rather than handing add_child
+# a reference that was freed in between.
+func _attach_visual() -> void:
+	if _visual == null or not is_instance_valid(_visual) or _visual.get_parent() != null:
+		return
+
+	if _owner_body == null or not is_instance_valid(_owner_body):
+		_visual.queue_free()
+		_visual = null
+		return
+
+	_owner_body.add_child(_visual)
 
 func _update_visual_facing(has_target: bool) -> void:
 	if _visual != null:

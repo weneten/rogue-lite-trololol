@@ -286,10 +286,14 @@ func _on_died(source: Node) -> void:
 	set_physics_process(false)
 
 	if _collision_shape != null:
-		_collision_shape.disabled = true
+		_collision_shape.set_deferred("disabled", true)
 
 	if _contact_hitbox != null:
-		_contact_hitbox.monitoring = false
+		# Deferred: pooled actors are released from inside collision callbacks,
+		# and Godot forbids toggling an Area2D's monitoring flags while it is
+		# flushing physics signals. Every path here already guards on its own
+		# active/dead flag, so the one-frame lag changes no behaviour.
+		_contact_hitbox.set_deferred("monitoring", false)
 
 	if data != null and data.explode_on_death:
 		_detonate_death_explosion()
@@ -448,12 +452,11 @@ func on_spawn() -> void:
 
 	collision_layer = 4
 	if _collision_shape != null:
-		_collision_shape.disabled = false
 		_collision_shape.set_deferred("disabled", false)
 
 	if _contact_hitbox != null:
-		_contact_hitbox.monitoring = true
-		_contact_hitbox.monitorable = true
+		_contact_hitbox.set_deferred("monitoring", true)
+		_contact_hitbox.set_deferred("monitorable", true)
 
 func on_despawn() -> void:
 	visible = false
@@ -470,8 +473,8 @@ func on_despawn() -> void:
 		_sprite_animator.reset_visual()
 
 	if _collision_shape != null:
-		_collision_shape.disabled = true
+		_collision_shape.set_deferred("disabled", true)
 
 	if _contact_hitbox != null:
-		_contact_hitbox.monitoring = false
-		_contact_hitbox.monitorable = false
+		_contact_hitbox.set_deferred("monitoring", false)
+		_contact_hitbox.set_deferred("monitorable", false)
