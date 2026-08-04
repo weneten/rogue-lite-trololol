@@ -26,6 +26,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     python3 \
     scons \
+    xz-utils \
     && rm -rf /var/lib/apt/lists/*
 
 # Matches the editor/template version baked into barichello/godot-ci:4.7.
