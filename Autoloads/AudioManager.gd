@@ -58,6 +58,7 @@ var _intensity: float = 0.0  # 0..1, drives percussion layer
 var _target_intensity: float = 0.0
 var _boss_active: bool = false
 var _current_wave: int = 0
+var _web_audio_unlocked: bool = false
 
 func _ready() -> void:
 	_ensure_buses()
@@ -74,6 +75,23 @@ func _process(delta: float) -> void:
 	_update_intensity(delta)
 	_update_crossfade(delta)
 	_apply_percussion_volume()
+
+# Browsers block AudioContext until a user gesture; restart the active bed once.
+func _input(event: InputEvent) -> void:
+	if _web_audio_unlocked or not OS.has_feature("web"):
+		return
+	if not (
+		event is InputEventMouseButton
+		or event is InputEventKey
+		or event is InputEventScreenTouch
+		or event is InputEventJoypadButton
+	):
+		return
+	if not event.is_pressed():
+		return
+
+	_web_audio_unlocked = true
+	_ensure_mode_playing(_target_mode if _target_mode != MusicMode.NONE else _mode)
 
 # -------------------------------------------------------------------------
 # Public API (stable)
@@ -144,10 +162,19 @@ func set_sfx_volume(linear01: float) -> void:
 # -------------------------------------------------------------------------
 
 func _ensure_buses() -> void:
-	# Master always exists. Music + SFX are created if missing so SettingsMenu can drive them
-	# without a hand-authored default_bus_layout.tres.
+	# Prefer project default_bus_layout.tres (Music/SFX). Runtime add_bus works on
+	# desktop but is silently broken on Godot 4.x web — HTML5 needs the layout.
+	var had_layout: bool = (
+		AudioServer.get_bus_index(BUS_MUSIC) >= 0
+		and AudioServer.get_bus_index(BUS_SFX) >= 0
+	)
 	_ensure_bus(BUS_MUSIC, BUS_MASTER)
 	_ensure_bus(BUS_SFX, BUS_MASTER)
+	if not had_layout:
+		push_warning(
+			"[AudioManager] Music/SFX buses missing from default_bus_layout.tres; "
+			+ "runtime-created buses are silent on web export."
+		)
 
 static func _ensure_bus(name: String, send_to: String) -> void:
 	if AudioServer.get_bus_index(name) >= 0:
@@ -170,6 +197,7 @@ func _build_players() -> void:
 		sfx.name = "SfxPool_%d" % i
 		sfx.bus = BUS_SFX
 		sfx.volume_db = 0.0
+		_configure_web_playback(sfx)
 		add_child(sfx)
 		_sfx_pool.append(sfx)
 
@@ -181,9 +209,15 @@ func _make_music_player(name: String, stream: AudioStream) -> AudioStreamPlayer:
 	player.bus = BUS_MUSIC
 	player.stream = stream  # may be null — silence-safe until assets assigned
 	player.volume_db = -80.0
-	player.bus = BUS_MUSIC
+	_configure_web_playback(player)
 	add_child(player)
 	return player
+
+# playback_type hint: 0=Default, 1=Stream, 2=Sample. Sample (web default) can
+# ignore custom Music/SFX bus routing; force Stream on HTML5.
+static func _configure_web_playback(player: AudioStreamPlayer) -> void:
+	if OS.has_feature("web"):
+		player.playback_type = 1
 
 # Music beds are generated WAVs with no authored loop points, so the loop is
 # set here in code rather than relying on editor import settings.
@@ -220,7 +254,14 @@ func _register_placeholder_sfx() -> void:
 
 	for id: String in ids:
 		var path := SFX_DIR + id + ".wav"
-		_sfx_streams[id] = load(path) if ResourceLoader.exists(path) else null
+		if ResourceLoader.exists(path):
+			var stream: AudioStream = load(path) as AudioStream
+			_sfx_streams[id] = stream
+			if stream == null:
+				push_warning("[AudioManager] Failed to load SFX '%s' at %s" % [id, path])
+		else:
+			_sfx_streams[id] = null
+			push_warning("[AudioManager] Missing SFX '%s' at %s" % [id, path])
 
 func _apply_all_volumes() -> void:
 	set_master_volume(master_volume)

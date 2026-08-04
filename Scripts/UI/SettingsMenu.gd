@@ -134,25 +134,21 @@ func _on_rebind_stub_pressed() -> void:
 	if _rebind_status_label != null:
 		_rebind_status_label.text = "Key rebinding coming soon."
 
-# Prefer SetXVolume(float) if present; else assign XVolume property. Silent no-op if neither.
+# Drive AudioManager public setters so bus volume actually changes (raw property
+# writes only update the export field and leave AudioServer muted/stale).
 static func _set_audio_volume(channel: String, value: float) -> void:
 	var audio = AudioManager
 	if audio == null:
 		return
 
 	value = clampf(value, 0.0, 1.0)
-	var method = "Set%sVolume" % channel
-	if audio.has_method(method):
-		audio.call(method, value)
-		return
-
 	match channel:
 		"Master":
-			audio.master_volume = value
+			audio.set_master_volume(value)
 		"Music":
-			audio.music_volume = value
+			audio.set_music_volume(value)
 		"Sfx":
-			audio.sfx_volume = value
+			audio.set_sfx_volume(value)
 
 static func _get_audio_volume(channel: String) -> float:
 	var audio = AudioManager

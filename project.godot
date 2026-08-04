@@ -28,6 +28,13 @@ WaveManager="*res://Autoloads/WaveManager.gd"
 BossManager="*res://Autoloads/BossManager.gd"
 AudioManager="*res://Autoloads/AudioManager.gd"
 
+[audio]
+
+buses/default_bus_layout="res://default_bus_layout.tres"
+; Web: Stream playback so custom Music/SFX buses actually output (Sample mode
+; is lower-latency but silently drops bus routing on HTML5 in Godot 4.3+).
+general/default_playback_type.web=1
+
 [display]
 
 window/size/viewport_width=1280
