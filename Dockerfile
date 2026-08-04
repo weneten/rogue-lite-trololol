@@ -57,10 +57,10 @@ WORKDIR /project
 COPY . .
 
 COPY --from=web-template-builder \
-    /opt/godot-src/bin/godot.web.template_release.wasm32.zip \
+    /opt/godot-src/bin/godot.web.template_release.wasm32.nothreads.zip \
     /root/.local/share/godot/export_templates/4.7.stable/web_nothreads_release.zip
 COPY --from=web-template-builder \
-    /opt/godot-src/bin/godot.web.template_debug.wasm32.zip \
+    /opt/godot-src/bin/godot.web.template_debug.wasm32.nothreads.zip \
     /root/.local/share/godot/export_templates/4.7.stable/web_nothreads_debug.zip
 
 RUN mkdir -p build/web \
