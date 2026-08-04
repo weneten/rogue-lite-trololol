@@ -108,11 +108,11 @@ def _leg(hip: Vec2, thigh_deg: float, shin_deg: float, s: float) -> tuple[Vec2, 
 # Weapon-arm angle curves, one entry per attack frame. Sharp acceleration
 # between frames 1 and 3 is what sells the impact.
 _SWING = {
-    "slash": [-55, -95, -30, 55, 85, 45],
-    "thrust": [-25, -60, -10, 45, 30, 5],
+    "slash": [-35, -60, -10, 40, 55, 20],
+    "thrust": [-20, -50, -8, 38, 25, 5],
     "cast": [-30, -70, -80, -60, -30, -5],
     "shoot": [-15, -35, -8, -8, -14, -10],
-    "smash": [-70, -110, -40, 70, 95, 60],
+    "smash": [-55, -85, -25, 55, 75, 40],
 }
 
 
@@ -158,19 +158,22 @@ def build_pose(
 
     elif anim == "run":
         ph = t * math.tau
-        swing_amt = 34.0
+        swing_amt = 19.0
         thigh_f = math.sin(ph) * swing_amt
         thigh_b = math.sin(ph + math.pi) * swing_amt
         # Knees only bend on the recovery half of the stride.
-        shin_f = max(0.0, -math.sin(ph - 0.6)) * 46.0
-        shin_b = max(0.0, -math.sin(ph + math.pi - 0.6)) * 46.0
+        shin_f = max(0.0, -math.sin(ph - 0.6)) * 22.0
+        shin_b = max(0.0, -math.sin(ph + math.pi - 0.6)) * 22.0
         bob = -abs(math.sin(ph * 2.0)) * 2.2 - 0.5
         lean += 9.0
         arm_b_u = 18 + math.sin(ph) * 30
         arm_f_u = -14 + math.sin(ph + math.pi) * 26
         arm_b_f = 26
         arm_f_f = 30
-        weapon_angle = -62 + math.sin(ph + math.pi) * 12
+        # Held close over the back/shoulder rather than swinging wide with
+        # the arm: a long weapon (scythe, cleaver) tracking the full arm
+        # swing reads as a streamer trailing off the silhouette.
+        weapon_angle = -72 + math.sin(ph + math.pi) * 5
         cape_sway = 3.0 + math.sin(ph) * 2.2
         if spec.hover:
             thigh_f, thigh_b = 18.0, -14.0
@@ -190,7 +193,7 @@ def build_pose(
         lean += -6.0 if t < 0.35 else 12.0 * ease_out(min(1.0, (t - 0.35) / 0.4))
         bob = -1.0 if t < 0.35 else -2.0
         arm_b_u = 24 - arm_f_u * 0.25
-        arm_f_f = 22 if t < 0.4 else 8
+        arm_f_f = 22 if t < 0.4 else 16
         thigh_f = 16 if t > 0.35 else 6
         thigh_b = -14 if t > 0.35 else -6
         shin_f, shin_b = 4, 10
@@ -209,17 +212,21 @@ def build_pose(
         cape_sway = -5.0
 
     elif anim == "death":
+        # A collapse: sink toward the ground and slump forward. The knees
+        # buckle and the feet stay planted (foot-pin correction, enabled for
+        # this anim below), so the silhouette contracts as the hip drops
+        # instead of the legs stretching out into a horizontal streak.
         k = ease_in_out(min(1.0, t * 1.15))
-        tilt = -80.0 * k
-        drop = 12.0 * k
+        tilt = -32.0 * k
+        drop = 15.0 * k
         lean += -25.0 * k
-        arm_b_u = lerp(40, 95, k)
-        arm_f_u = lerp(-40, -95, k)
-        weapon_angle = lerp(-70, -140, k)
-        thigh_b = lerp(-18, -55, k)
-        thigh_f = lerp(14, 48, k)
-        shin_b = lerp(20, 55, k)
-        shin_f = lerp(8, 40, k)
+        arm_b_u = lerp(40, 80, k)
+        arm_f_u = lerp(-40, -80, k)
+        weapon_angle = lerp(-70, -120, k)
+        thigh_b = lerp(-18, -22, k)
+        thigh_f = lerp(14, 18, k)
+        shin_b = lerp(20, 26, k)
+        shin_f = lerp(8, 14, k)
         alpha = 1.0 if t < 0.6 else lerp(1.0, 0.25, (t - 0.6) / 0.4)
         cape_sway = -8.0 * k
 
@@ -227,10 +234,10 @@ def build_pose(
         k = ease_out(t)
         lean += 26.0 * math.sin(min(1.0, t * 1.4) * math.pi)
         bob = -3.5 * math.sin(min(1.0, t * 1.3) * math.pi)
-        thigh_f = lerp(45, 10, k)
-        thigh_b = lerp(-40, -6, k)
-        shin_f = lerp(30, 8, k)
-        shin_b = lerp(50, 14, k)
+        thigh_f = lerp(16, 8, k)
+        thigh_b = lerp(-14, -6, k)
+        shin_f = lerp(8, 6, k)
+        shin_b = lerp(14, 10, k)
         arm_b_u = lerp(60, 20, k)
         arm_f_u = lerp(-50, -14, k)
         weapon_angle = lerp(-70, -25, k)
@@ -259,14 +266,16 @@ def build_pose(
     knee_b, foot_b = _leg(hip_b, thigh_b, shin_b, s)
     knee_f, foot_f = _leg(hip_f, thigh_f, shin_f, s)
 
-    if not airborne and anim not in ("death",):
-        # Pin whichever foot is lower to the ground so runs don't skate.
+    if not airborne:
+        # Pin whichever foot is lower to the ground (which sinks with
+        # `drop` during death) so runs don't skate and a collapse pulls the
+        # legs in as the hip drops rather than stretching them out.
         lowest = max(foot_b[1], foot_f[1])
         correction = feet - lowest
         if correction < 0:
             correction = 0.0
-        foot_b = (foot_b[0], foot_b[1] + correction * 0.6)
-        foot_f = (foot_f[0], foot_f[1] + correction * 0.6)
+        foot_b = (foot_b[0], foot_b[1] + correction * 0.85)
+        foot_f = (foot_f[0], foot_f[1] + correction * 0.85)
 
     return Pose(
         hip=hip, chest=chest, neck=neck, head=head, head_r=head_r,

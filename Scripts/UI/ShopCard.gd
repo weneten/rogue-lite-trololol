@@ -165,14 +165,29 @@ func clear() -> void:
 	modulate.a = 0.35
 
 
-func set_affordable(affordable: bool) -> void:
+func set_affordable(affordable: bool, price: int = -1) -> void:
 	if offer == null:
 		return
 
 	buy_button.disabled = not affordable
+	if price >= 0:
+		buy_button.text = "%dg" % price
 	# Dim the whole card, not just the button: at a glance the player should
 	# see what they can afford without reading five prices.
 	modulate.a = 1.0 if affordable else 0.55
+
+
+# A weapon you cannot buy because every slot is taken looks identical to one you
+# cannot afford, and the fix is completely different — sell something, not earn
+# more. So it says which.
+func set_slots_full() -> void:
+	if offer == null:
+		return
+
+	buy_button.disabled = true
+	buy_button.text = "SLOTS FULL"
+	buy_button.tooltip_text = "Sell a weapon first"
+	modulate.a = 0.55
 
 
 func set_locked(value: bool) -> void:

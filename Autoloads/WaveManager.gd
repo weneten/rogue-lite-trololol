@@ -175,7 +175,7 @@ func _get_max_alive_for_wave(wave: int) -> int:
 
 	var growth: float = wave_definition.enemy_count_growth_per_wave * maxi(0, wave - 1)
 	# BaseEnemyCount now means "starting concurrent pressure", not total quota.
-	var cap: int = roundi(wave_definition.base_enemy_count + 3.0 + growth * 2.0)
+	var cap: int = roundi((wave_definition.base_enemy_count + 3.0 + growth * 2.0) * _density_multiplier())
 	return clampi(cap, 6, 45)
 
 func _get_spawn_interval_for_wave(wave: int) -> float:
@@ -184,7 +184,14 @@ func _get_spawn_interval_for_wave(wave: int) -> float:
 
 	# Slightly faster each wave; floor so it never becomes a spawn-storm.
 	var interval: float = wave_definition.spawn_interval - 0.06 * maxi(0, wave - 1)
-	return clampf(interval, 0.4, 3.0)
+	# Density relics shorten the gap as well as raising the ceiling: a higher cap
+	# alone just fills more slowly and never actually feels denser.
+	return clampf(interval / maxf(0.5, _density_multiplier()), 0.25, 3.0)
+
+# Risk/reward relics (see PlayerStats.enemy_density_multiplier). Reads 1.0 when
+# no player is in the tree, so menus and standalone scenes are unaffected.
+func _density_multiplier() -> float:
+	return PlayerStats.instance.enemy_density_multiplier if PlayerStats.instance != null else 1.0
 
 func _count_alive_enemies() -> int:
 	var tree: SceneTree = get_tree()

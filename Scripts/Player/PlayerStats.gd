@@ -53,6 +53,14 @@ var pickup_radius_bonus: float = 0.0
 # grow just because the player owns a gold relic.
 var xp_gain_multiplier: float = 1.0
 var currency_gain_multiplier: float = 1.0
+# Biases the shop toward rarer stock and nudges enemy drops upward. Zero is
+# "no luck at all", which is where every run starts; ShopUI reads it when it
+# picks what to put on the shelf.
+var luck: float = 0.0
+# Deliberate risk/reward: relics that raise this make waves denser, so there is
+# more to kill and more to loot, and more that can kill you. WaveManager reads it
+# when it sizes a wave. 1.0 = the wave the designer authored.
+var enemy_density_multiplier: float = 1.0
 
 # The selected Hunter's unique passive, if any (set by Player.ApplyCharacterData right
 # after spawning it). Hooked here rather than in Player so Weapon can reach OnDamageDealt via
@@ -188,6 +196,22 @@ func apply_xp_gain_bonus(multiplier_increase: float) -> void:
 
 func apply_currency_gain_bonus(multiplier_increase: float) -> void:
 	currency_gain_multiplier += multiplier_increase
+
+func apply_luck(amount: float) -> void:
+	luck = maxf(0.0, luck + amount)
+
+# Capped: past roughly triple density the arena stops being a fight and becomes
+# a wall, and no relic should be able to hand the player an unwinnable run.
+func apply_enemy_density(multiplier_increase: float) -> void:
+	enemy_density_multiplier = clampf(enemy_density_multiplier + multiplier_increase, 0.5, 3.0)
+
+# Flat percentage off everything that hits the player, mirrored onto
+# HealthComponent the same way apply_incoming_damage_multiplier does. Floored at
+# 25% of the original so stacked mitigation relics cannot reach invulnerability.
+func apply_damage_taken_reduction(fraction: float) -> void:
+	damage_taken_multiplier = clampf(damage_taken_multiplier - fraction, 0.25, 10.0)
+	if _health != null:
+		_health.incoming_damage_multiplier = damage_taken_multiplier
 
 func set_magic_damage_multiplier(value: float) -> void:
 	magic_damage_multiplier = value

@@ -14,6 +14,12 @@ static var instance: WeaponInventory
 # Scene instantiated for weapons purchased at runtime. Falls back to Weapon.tscn if unassigned.
 @export var weapon_scene: PackedScene
 
+# Hard ceiling the exported dial is clamped to. Six weapons is what the ring
+# around the Hunter can hold and still be read at a glance, and it is what the
+# shop tray draws — a designer raising the export past this would quietly break
+# both, so the cap is enforced in code rather than trusted to the .tscn.
+const SLOT_CEILING := 6
+
 var _owner_body: Node2D
 var _equipped_weapons: Array[Weapon] = []
 
@@ -27,14 +33,21 @@ var has_free_slot: bool:
 
 func _ready() -> void:
 	instance = self
+	max_weapon_slots = clampi(max_weapon_slots, 1, SLOT_CEILING)
 	weapon_scene = weapon_scene if weapon_scene != null else load("res://Scenes/Weapons/Weapon.tscn")
 	_owner_body = get_parent() as Node2D
 
 	# Register whatever Weapon nodes are already wired as children in the scene (e.g. the
 	# starting RustyScythe on Player.tscn) so they count against MaxWeaponSlots from the start.
+	# Anything past the cap is freed rather than left fighting off-book: the shop
+	# and the carry ring both size themselves off max_weapon_slots.
 	for child in _owner_body.get_children():
 		if child is Weapon:
-			_equipped_weapons.append(child)
+			if _equipped_weapons.size() < max_weapon_slots:
+				_equipped_weapons.append(child)
+			else:
+				push_warning("[WeaponInventory] Scene wires more than %d weapons; dropping the extras." % max_weapon_slots)
+				child.queue_free()
 
 	_reslot_weapons()
 
@@ -81,15 +94,16 @@ func clear_all_weapons() -> void:
 	for i in range(_equipped_weapons.size() - 1, -1, -1):
 		remove_weapon_at(i)
 
-# Spaces the carried weapons evenly around the orbit they fly, so a full loadout
-# reads as six distinct things rather than one smear. This is position only —
-# the moment a target is in range each weapon aims at it independently.
+# Gives every carried weapon a fixed station on the ring around the Hunter, so a
+# full loadout reads as six distinct things you can learn the positions of. This
+# is position only — the moment a target is in range each weapon leans out of
+# its station toward it independently.
 func _reslot_weapons() -> void:
 	var count: int = _equipped_weapons.size()
 	if count == 0:
 		return
 
-	# Phases start at "in front of the Hunter" so a single weapon is never
-	# parked behind them where it cannot be seen.
+	# Stations start in front of the Hunter and spread outward from there, so a
+	# single weapon is never parked behind them where it cannot be seen.
 	for i in range(count):
-		_equipped_weapons[i].orbit_phase = PI * 0.5 + TAU * float(i) / float(count)
+		_equipped_weapons[i].station_angle = PI * 0.5 + TAU * float(i) / float(count)

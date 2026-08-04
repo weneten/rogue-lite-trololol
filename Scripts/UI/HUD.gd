@@ -18,6 +18,14 @@ class_name HUD
 @export var banner_sub_label_path: NodePath
 @export var damage_flash_path: NodePath
 @export var vitals_panel_path: NodePath
+@export var weapon_bar_path: NodePath
+@export var weapon_slots_path: NodePath
+
+@export_group("Weapon Bar")
+# The counters climb constantly during a fight; refreshing them every frame is
+# both wasted work and unreadable. Four times a second is fast enough to feel
+# live and slow enough to actually read.
+@export var weapon_bar_refresh_seconds: float = 0.25
 
 @export_group("Offscreen Arrows")
 @export var max_offscreen_arrows: int = 12
@@ -43,6 +51,12 @@ var _last_currency: int = 0
 var _last_level: int = 1
 var _arrow_texture: Texture2D
 var _pulse_time: float = 0.0
+var _weapon_bar: Control
+var _weapon_slots: HBoxContainer
+# One entry per equipped weapon, in slot order: the Weapon it reads and the
+# Label it writes. Rebuilt only when the loadout itself changes.
+var _weapon_rows: Array = []
+var _weapon_bar_cooldown: float = 0.0
 
 func _ready() -> void:
 	_health_bar = get_node_or_null(health_bar_path)
@@ -58,6 +72,8 @@ func _ready() -> void:
 	_banner_sub_label = get_node_or_null(banner_sub_label_path)
 	_damage_flash = get_node_or_null(damage_flash_path)
 	_vitals_panel = get_node_or_null(vitals_panel_path)
+	_weapon_bar = get_node_or_null(weapon_bar_path)
+	_weapon_slots = get_node_or_null(weapon_slots_path)
 	_arrow_texture = load("res://Assets/UI/icon_skull.png") as Texture2D
 
 	if _banner != null:
@@ -78,6 +94,11 @@ func _process(delta: float) -> void:
 	_update_wave_timer()
 	_update_offscreen_arrows()
 	_update_low_health_pulse()
+
+	_weapon_bar_cooldown -= delta
+	if _weapon_bar_cooldown <= 0.0:
+		_weapon_bar_cooldown = weapon_bar_refresh_seconds
+		_update_weapon_bar()
 
 func _ensure_arrow_layer() -> void:
 	if _arrow_layer != null:
@@ -222,6 +243,95 @@ static func _clamp_to_rect_edge(center: Vector2, dir: Vector2, rect: Rect2) -> V
 		return center + dir * 100.0
 
 	return center + dir * t_min
+
+# --------------------------------------------------------------- weapon bar
+
+# A strip along the bottom of the screen: every equipped weapon, and what it has
+# actually done this wave. Which of six slots is carrying the run — and which is
+# dead weight worth selling — is otherwise invisible, because damage numbers in
+# a swarm are unattributable.
+func _update_weapon_bar() -> void:
+	if _weapon_slots == null:
+		return
+
+	var inventory := WeaponInventory.instance
+	if inventory == null:
+		if _weapon_bar != null:
+			_weapon_bar.visible = false
+		return
+
+	var equipped := inventory.equipped_weapons
+	if _weapon_bar != null:
+		# Nothing equipped means an empty panel floating at the bottom of the
+		# screen, which reads as a bug rather than as information.
+		_weapon_bar.visible = not equipped.is_empty()
+
+	if not _weapon_rows_match(equipped):
+		_rebuild_weapon_rows(equipped)
+
+	# Share of the wave's damage, so the bar answers "which weapon is pulling its
+	# weight" and not just "which weapon has the biggest number", which is
+	# already obvious from the numbers themselves.
+	var total: int = 0
+	for weapon in equipped:
+		total += weapon.damage_this_wave
+
+	for row in _weapon_rows:
+		var weapon: Weapon = row["weapon"]
+		if not is_instance_valid(weapon):
+			continue
+
+		var label: Label = row["label"]
+		label.text = str(weapon.damage_this_wave)
+
+		var share: float = float(weapon.damage_this_wave) / float(total) if total > 0 else 0.0
+		# Top contributor burns gold, the rest fade toward grey by contribution.
+		label.modulate = Color(0.62, 0.62, 0.66).lerp(Color(1.0, 0.82, 0.35), minf(1.0, share * 2.0))
+
+# Cheap identity check so the strip is only rebuilt when the loadout actually
+# changed — buying, selling, or a fresh run — rather than four times a second.
+func _weapon_rows_match(equipped: Array) -> bool:
+	if _weapon_rows.size() != equipped.size():
+		return false
+
+	for i in range(equipped.size()):
+		if _weapon_rows[i]["weapon"] != equipped[i]:
+			return false
+
+	return true
+
+func _rebuild_weapon_rows(equipped: Array) -> void:
+	for child in _weapon_slots.get_children():
+		child.queue_free()
+	_weapon_rows.clear()
+
+	for weapon in equipped:
+		var data: WeaponData = weapon.data
+		if data == null:
+			continue
+
+		var slot := VBoxContainer.new()
+		slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		slot.add_theme_constant_override("separation", 1)
+		_weapon_slots.add_child(slot)
+
+		var icon := TextureRect.new()
+		icon.texture = data.icon
+		icon.custom_minimum_size = Vector2(32, 32)
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		slot.add_child(icon)
+
+		var label := Label.new()
+		label.text = "0"
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		label.theme_type_variation = &"StatLabel"
+		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		slot.add_child(label)
+
+		_weapon_rows.append({"weapon": weapon, "label": label})
 
 func _on_player_health_changed(current_health: int, max_health: int) -> void:
 	if _health_bar == null:

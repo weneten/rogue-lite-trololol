@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ShopPoolData" load_steps=50 format=3 uid="uid://a7k2n5q8t1w4y"]
+[gd_resource type="Resource" script_class="ShopPoolData" load_steps=65 format=3 uid="uid://a7k2n5q8t1w4y"]
 
 [ext_resource type="Script" path="res://Resources/ShopData/ShopPoolData.gd" id="1_spd"]
 [ext_resource type="Resource" uid="uid://cx3v9m2k7q1n8" path="res://Resources/WeaponData/Data/RustyScythe.tres" id="2_scythe"]
@@ -50,8 +50,23 @@
 [ext_resource type="Resource" uid="uid://dx8tj3c5g9y7h" path="res://Resources/PassiveItemData/Data/reapers_hourglass.tres" id="121_reapers_hourglass"]
 [ext_resource type="Resource" uid="uid://qkrimwwrwmatb" path="res://Resources/PassiveItemData/Data/ossuary_key.tres" id="122_ossuary_key"]
 [ext_resource type="Resource" uid="uid://lfgczja2r3f3c" path="res://Resources/PassiveItemData/Data/crown_of_thorns.tres" id="123_crown_of_thorns"]
+[ext_resource type="Resource" path="res://Resources/PassiveItemData/Data/gravebell_toll.tres" id="124_gravebell_toll"]
+[ext_resource type="Resource" path="res://Resources/PassiveItemData/Data/carrion_horn.tres" id="125_carrion_horn"]
+[ext_resource type="Resource" path="res://Resources/PassiveItemData/Data/black_cat_knucklebone.tres" id="126_black_cat_knucklebone"]
+[ext_resource type="Resource" path="res://Resources/PassiveItemData/Data/tarot_of_the_hanged.tres" id="127_tarot_of_the_hanged"]
+[ext_resource type="Resource" path="res://Resources/PassiveItemData/Data/sanguine_chalice.tres" id="128_sanguine_chalice"]
+[ext_resource type="Resource" path="res://Resources/PassiveItemData/Data/crimson_leech_jar.tres" id="129_crimson_leech_jar"]
+[ext_resource type="Resource" path="res://Resources/PassiveItemData/Data/sisters_poultice.tres" id="130_sisters_poultice"]
+[ext_resource type="Resource" path="res://Resources/PassiveItemData/Data/ever_burning_wick.tres" id="131_ever_burning_wick"]
+[ext_resource type="Resource" path="res://Resources/PassiveItemData/Data/pallbearers_oath.tres" id="132_pallbearers_oath"]
+[ext_resource type="Resource" path="res://Resources/PassiveItemData/Data/grave_moss_cloak.tres" id="133_grave_moss_cloak"]
+[ext_resource type="Resource" path="res://Resources/PassiveItemData/Data/thief_of_hours.tres" id="134_thief_of_hours"]
+[ext_resource type="Resource" path="res://Resources/PassiveItemData/Data/moonwell_shard.tres" id="135_moonwell_shard"]
+[ext_resource type="Resource" path="res://Resources/PassiveItemData/Data/gilded_fang.tres" id="136_gilded_fang"]
+[ext_resource type="Resource" path="res://Resources/PassiveItemData/Data/pilgrims_compass.tres" id="137_pilgrims_compass"]
+[ext_resource type="Resource" path="res://Resources/PassiveItemData/Data/wolfsbane_draught.tres" id="138_wolfsbane_draught"]
 
 [resource]
 script = ExtResource("1_spd")
 weapon_pool = Array[Resource]([ExtResource("2_scythe"), ExtResource("3_revolver"), ExtResource("4_cleaver"), ExtResource("5_familiarbolt"), ExtResource("6_dagger"), ExtResource("7_crossbow"), ExtResource("8_bonebow"), ExtResource("9_flintlock"), ExtResource("10_blunderbuss"), ExtResource("11_hexedrevolver"), ExtResource("12_cathedralrifle"), ExtResource("13_spellblade"), ExtResource("14_wraithstaff"), ExtResource("15_grimoire"), ExtResource("16_holywater"), ExtResource("17_chainwhip"), ExtResource("18_warcleaver"), ExtResource("19_twinstiletto"), ExtResource("20_stakelauncher"), ExtResource("21_vampiricclaws"), ExtResource("22_firebomb"), ExtResource("23_frostlantern"), ExtResource("24_beartrap"), ExtResource("25_houndwhistle"), ExtResource("26_bell")])
-passive_pool = Array[Resource]([ExtResource("100_hunters_tonic"), ExtResource("101_grave_runner_boots"), ExtResource("102_whetstone_of_saints"), ExtResource("103_gravedirt_pendant"), ExtResource("104_vial_of_vigor"), ExtResource("105_crow_feather_charm"), ExtResource("106_rusted_cuirass"), ExtResource("107_silver_censer"), ExtResource("108_runed_thimble"), ExtResource("109_scholars_spectacles"), ExtResource("110_coin_purse_of_the_drowned"), ExtResource("111_widows_lens"), ExtResource("112_leech_sigil"), ExtResource("113_embalmers_salve"), ExtResource("114_shroud_of_mist"), ExtResource("115_iron_maiden_pin"), ExtResource("116_plague_doctors_mask"), ExtResource("117_quicksilver_flask"), ExtResource("118_martyrs_heart"), ExtResource("119_bloodmoon_amulet"), ExtResource("120_duelists_glove"), ExtResource("121_reapers_hourglass"), ExtResource("122_ossuary_key"), ExtResource("123_crown_of_thorns")])
+passive_pool = Array[Resource]([ExtResource("100_hunters_tonic"), ExtResource("101_grave_runner_boots"), ExtResource("102_whetstone_of_saints"), ExtResource("103_gravedirt_pendant"), ExtResource("104_vial_of_vigor"), ExtResource("105_crow_feather_charm"), ExtResource("106_rusted_cuirass"), ExtResource("107_silver_censer"), ExtResource("108_runed_thimble"), ExtResource("109_scholars_spectacles"), ExtResource("110_coin_purse_of_the_drowned"), ExtResource("111_widows_lens"), ExtResource("112_leech_sigil"), ExtResource("113_embalmers_salve"), ExtResource("114_shroud_of_mist"), ExtResource("115_iron_maiden_pin"), ExtResource("116_plague_doctors_mask"), ExtResource("117_quicksilver_flask"), ExtResource("118_martyrs_heart"), ExtResource("119_bloodmoon_amulet"), ExtResource("120_duelists_glove"), ExtResource("121_reapers_hourglass"), ExtResource("122_ossuary_key"), ExtResource("123_crown_of_thorns"), ExtResource("124_gravebell_toll"), ExtResource("125_carrion_horn"), ExtResource("126_black_cat_knucklebone"), ExtResource("127_tarot_of_the_hanged"), ExtResource("128_sanguine_chalice"), ExtResource("129_crimson_leech_jar"), ExtResource("130_sisters_poultice"), ExtResource("131_ever_burning_wick"), ExtResource("132_pallbearers_oath"), ExtResource("133_grave_moss_cloak"), ExtResource("134_thief_of_hours"), ExtResource("135_moonwell_shard"), ExtResource("136_gilded_fang"), ExtResource("137_pilgrims_compass"), ExtResource("138_wolfsbane_draught")])

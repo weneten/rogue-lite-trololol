@@ -8,11 +8,15 @@ class_name WeaponVisual
 # character's feet, so a visual hanging off it orbited their ankles. This rides
 # at chest height instead.
 #
-# Weapons circle the Hunter continuously rather than resting at a fixed angle.
-# That means orbit position and aim direction are two separate things: the
-# weapon can be over the Hunter's left shoulder while pointing right at whatever
-# it is shooting. Coupling them (one pivot doing both) is what pinned every
-# weapon to the side it was firing at.
+# Each weapon keeps its OWN station on a ring around the Hunter — it does not
+# circle them. A loadout you cannot read is a loadout you cannot plan around,
+# and six weapons sliding continuously past each other is unreadable. So the
+# station is fixed, and the weapon leans out of it toward whatever it is
+# currently shooting: recognisably in the same place every time you look, while
+# still visibly pointing at the fight.
+#
+# Position and aim stay two separate things. Coupling them (one pivot doing
+# both) is what pinned every weapon to the side it was firing at.
 #
 # The art is the same shape the shop card shows
 # (Assets/sprites/weapons/mounted/), drawn pointing right with the grip on the
@@ -23,21 +27,26 @@ class_name WeaponVisual
 
 const MOUNT_DIR := "res://Assets/sprites/weapons/mounted/"
 
-# The orbit is an ellipse, not a circle: the arena is viewed at a slight angle,
-# so a circular path reads as a weapon sliding up and down rather than passing
+# The ring is an ellipse, not a circle: the arena is viewed at a slight angle,
+# so a circular ring reads as weapons sliding up and down rather than sitting
 # around the body.
-const ORBIT_RADIUS_X := 40.0
-const ORBIT_RADIUS_Y := 17.0
+const RING_RADIUS_X := 46.0
+const RING_RADIUS_Y := 21.0
 
 # Chest height above the body origin. The rig draws its characters standing on
 # the origin, so everything carried has to be lifted to meet them.
-const CARRY_HEIGHT := -32.0
+const CARRY_HEIGHT := -28.0
 
-# Radians per second. Slow enough to read as hovering escorts rather than a
-# spinning fan.
-const ORBIT_SPEED := 1.1
+# How far off its station a weapon may lean toward its target, in radians.
+# Roughly 50 degrees: enough that the weapon visibly commits to the side the
+# fight is on, short of enough to let two neighbours trade places.
+const MAX_LEAN := 0.9
 
-# The near half of the orbit passes in front of the wielder, the far half
+# How fast the lean tracks, in radians per second. Snapping straight to the
+# target angle makes the whole loadout twitch every time an enemy dies.
+const LEAN_SPEED := 7.0
+
+# The near half of the ring sits in front of the wielder, the far half
 # behind. Both are relative to the wielder's own root, so a carried weapon still
 # Y-sorts against other fighters as part of one character.
 const CARRY_Z := 3
@@ -51,9 +60,15 @@ const BOB_SPEED := 3.4
 const TRAIL_LAG := [2, 4, 7]
 const TRAIL_ALPHA := [0.42, 0.26, 0.14]
 
-# Where this weapon sits on the shared orbit. Set by Weapon from the slot index
-# so a six-weapon loadout spreads out instead of stacking into one blur.
-var orbit_phase: float = 0.0
+# This weapon's station on the ring, in radians. Set by Weapon from the slot
+# index so a six-weapon loadout spreads out instead of stacking into one pile.
+# It never changes on its own — that is the whole point.
+var station_angle: float = 0.0:
+	set(value):
+		station_angle = value
+		# A weapon that just changed slots (something was sold) belongs at its
+		# new station immediately, not sliding across the body to reach it.
+		_ring_angle = value
 
 var _sprite: Sprite2D
 var _ghosts: Array[Sprite2D] = []
@@ -62,6 +77,12 @@ var _base_scale: float = 1.0
 var _aim: float = 0.0
 var _has_target: bool = false
 var _time: float = 0.0
+# Where the weapon currently sits on the ring, chasing the station (plus lean)
+# rather than jumping to it.
+var _ring_angle: float = 0.0
+# Where it currently points. Also smoothed — an idle weapon snapping to face a
+# newly spawned enemy across the arena reads as a glitch.
+var _facing: float = 0.0
 var _swing: Tween
 
 # Driven by the swing tween and composed into the sprite transform every frame.
@@ -107,8 +128,10 @@ func setup(data: WeaponData, scale_factor: float = 1.0) -> void:
 	_sprite.z_index = CARRY_Z
 	add_child(_sprite)
 
-	# Start somewhere on the orbit rather than snapping into place on the first
-	# frame after being bought.
+	# Start at the station rather than sliding into place from the origin on the
+	# first frame after being bought.
+	_ring_angle = station_angle
+	_facing = _rest_facing()
 	_apply_transform()
 
 
@@ -139,24 +162,46 @@ func _process(delta: float) -> void:
 		return
 
 	_time += delta
+	_track(delta)
 	_apply_transform()
 	_update_trail()
 
 
-# One place composes the final transform out of orbit + bob + swing, so the
-# tween and the idle motion can never overwrite each other.
+# Eases the ring position and the facing toward where the fight is. Both are
+# rate-limited rather than assigned, so a weapon never teleports when its target
+# dies or a new one spawns behind the Hunter.
+func _track(delta: float) -> void:
+	var step := minf(1.0, LEAN_SPEED * delta)
+
+	var desired_ring := station_angle
+	if _has_target:
+		# Lean out of the station toward the target, but only so far — past this
+		# the loadout stops being readable, which is the thing the station is
+		# there to protect.
+		desired_ring += clampf(angle_difference(station_angle, _aim), -MAX_LEAN, MAX_LEAN)
+
+	_ring_angle = lerp_angle(_ring_angle, desired_ring, step)
+	_facing = lerp_angle(_facing, _aim if _has_target else _rest_facing(), step)
+
+
+# With nothing to shoot, a weapon points away from the Hunter along its own
+# station — outward and slightly raised, the way you would hold one waiting.
+func _rest_facing() -> float:
+	return station_angle - 0.35
+
+
+# One place composes the final transform out of ring + bob + swing, so the tween
+# and the idle motion can never overwrite each other.
 func _apply_transform() -> void:
-	var angle := _orbit_angle()
-	var outward := Vector2(cos(angle), sin(angle))
+	var outward := Vector2(cos(_ring_angle), sin(_ring_angle))
 
 	# The reach pushes the weapon along the direction it points, not along the
-	# orbit, so a thrust reads as a thrust wherever on the circle it happens.
-	var aim := _aim if _has_target else angle + PI * 0.5
-	var lunge := Vector2(cos(aim), sin(aim)) * _swing_reach
+	# ring, so a thrust reads as a thrust wherever around the body it happens.
+	var lunge := Vector2(cos(_facing), sin(_facing)) * _swing_reach
 
-	_sprite.position = Vector2(outward.x * ORBIT_RADIUS_X, outward.y * ORBIT_RADIUS_Y) \
-		+ Vector2(0.0, sin(_time * BOB_SPEED) * BOB_AMPLITUDE) + lunge
-	_sprite.rotation = aim + _swing_rotation
+	_sprite.position = Vector2(outward.x * RING_RADIUS_X, outward.y * RING_RADIUS_Y) \
+		+ Vector2(0.0, sin(_time * BOB_SPEED + station_angle) * BOB_AMPLITUDE) + lunge
+	_sprite.rotation = _facing + _swing_rotation
 
 	# Weapons aimed left arrive upside down, so they are mirrored vertically —
 	# which is what a person holding one would do.
@@ -164,17 +209,11 @@ func _apply_transform() -> void:
 	var magnitude := _base_scale * _swing_scale
 	_sprite.scale = Vector2(magnitude, -magnitude if flipped else magnitude)
 
-	# Front half of the orbit (below the body's midline) draws over the Hunter,
+	# Front half of the ring (below the body's midline) draws over the Hunter,
 	# far half behind them.
 	_sprite.z_index = CARRY_Z if outward.y >= 0.0 else BEHIND_Z
 
 	_sprite.modulate = Color(1.0, 1.0, 1.0).lerp(Color(2.2, 2.1, 1.7), _swing_flash)
-
-
-# All weapons share one clock so their spacing on the orbit stays fixed instead
-# of drifting apart over a long run.
-func _orbit_angle() -> float:
-	return orbit_phase + Time.get_ticks_msec() * 0.001 * ORBIT_SPEED
 
 
 # A short history of where the weapon has been, replayed at a lag. Only visible
@@ -264,9 +303,8 @@ func play_swing(melee: bool) -> void:
 		_swing.tween_property(self, "_swing_scale", 1.0, 0.22)
 
 
-# Points the weapon along `angle`. With no target it aims along its direction of
-# travel instead, so an idle weapon looks like it is flying rather than drifting
-# sideways.
+# Points the weapon along `angle`. With no target it falls back to its resting
+# outward pose rather than freezing wherever the last target happened to die.
 func set_aim(angle: float, has_target: bool) -> void:
 	_aim = angle
 	_has_target = has_target
