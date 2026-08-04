@@ -158,13 +158,15 @@ def build_pose(
 
     elif anim == "run":
         ph = t * math.tau
-        swing_amt = 19.0
+        swing_amt = 24.0
         thigh_f = math.sin(ph) * swing_amt
         thigh_b = math.sin(ph + math.pi) * swing_amt
         # Knees only bend on the recovery half of the stride.
-        shin_f = max(0.0, -math.sin(ph - 0.6)) * 22.0
-        shin_b = max(0.0, -math.sin(ph + math.pi - 0.6)) * 22.0
-        bob = -abs(math.sin(ph * 2.0)) * 2.2 - 0.5
+        shin_f = max(0.0, -math.sin(ph - 0.6)) * 28.0
+        shin_b = max(0.0, -math.sin(ph + math.pi - 0.6)) * 28.0
+        # Two bounces per stride, one per footfall. This is most of what makes
+        # a run read as a run rather than a slide.
+        bob = -abs(math.sin(ph * 2.0)) * 3.0 - 0.5
         lean += 9.0
         arm_b_u = 18 + math.sin(ph) * 30
         arm_f_u = -14 + math.sin(ph + math.pi) * 26
@@ -217,12 +219,19 @@ def build_pose(
         # this anim below), so the silhouette contracts as the hip drops
         # instead of the legs stretching out into a horizontal streak.
         k = ease_in_out(min(1.0, t * 1.15))
-        tilt = -32.0 * k
-        drop = 15.0 * k
-        lean += -25.0 * k
-        arm_b_u = lerp(40, 80, k)
-        arm_f_u = lerp(-40, -80, k)
-        weapon_angle = lerp(-70, -120, k)
+        tilt = -26.0 * k
+        # The hips sink toward planted feet rather than the whole body sliding
+        # down the cell: `drop` moves the feet too, and at any useful amount it
+        # pushed the legs clean off the bottom of the 64px frame.
+        drop = 3.0 * k
+        bob = 9.0 * k
+        lean += -18.0 * k
+        # Arms fold toward the body rather than flying out behind it, and the
+        # weapon rotates down to hang from the hand. Both were widening the
+        # silhouette exactly as it should have been getting smaller.
+        arm_b_u = lerp(40, 62, k)
+        arm_f_u = lerp(-40, -6, k)
+        weapon_angle = lerp(-70, -18, k)
         thigh_b = lerp(-18, -22, k)
         thigh_f = lerp(14, 18, k)
         shin_b = lerp(20, 26, k)
@@ -576,23 +585,40 @@ def draw_figure(
     s = spec.stature
     layer = Canvas(canvas.w, canvas.h)
 
-    # Contact shadow first, on the ground plane rather than under the hips.
-    shadow_w = 7.0 * s * (0.6 if pose.airborne else 1.0)
-    layer.ellipse(pose.hip[0], pose.ground_y + 1, shadow_w, 2.4 * s, (0, 0, 0, 90))
+    # Contact shadow first, on the ground plane rather than under the hips, and
+    # tied to how high the hips actually are. A shadow that tightens on the
+    # bounce is what sells weight; a fixed ellipse makes any bob read as the
+    # sprite sliding up and down a wall.
+    lift = (pose.ground_y - pose.hip[1]) - 18.0 * s
+    shadow_scale = max(0.55, min(1.15, 1.0 - lift * 0.09))
+    if pose.airborne:
+        shadow_scale *= 0.7
+    layer.ellipse(pose.hip[0], pose.ground_y + 1, 7.0 * s * shadow_scale,
+                  2.4 * s * shadow_scale, (0, 0, 0, 90))
 
     _draw_cape(layer, pose, spec, s)
 
-    back = spec.cloth.tinted(P.VOID, 0.35)
-    _limb(layer, pose.hip_b, pose.knee_b, 2.5 * s * spec.build, 2.1 * s, back)
-    _limb(layer, pose.knee_b, pose.foot_b, 2.1 * s, 1.7 * s, back)
+    # Four separate tones, and the reason is legibility rather than realism.
+    # Everything used to be drawn in spec.cloth, so the legs, the sleeves and
+    # the coat were one undifferentiated blob — which meant every pose change
+    # in the rig was invisible and the whole cast read as a shuffling mass.
+    # Depth now maps to value: far limbs darkest, trousers below the coat,
+    # near sleeve lifted off it.
+    back = spec.cloth.tinted(P.VOID, 0.52)
+    trouser = spec.cloth.tinted(P.VOID, 0.26)
+    back_trouser = spec.cloth.tinted(P.VOID, 0.62)
+    sleeve = spec.cloth.tinted(P.SMOKE, 0.16)
+
+    _limb(layer, pose.hip_b, pose.knee_b, 2.5 * s * spec.build, 2.1 * s, back_trouser)
+    _limb(layer, pose.knee_b, pose.foot_b, 2.1 * s, 1.7 * s, back_trouser)
     _boot(layer, pose.foot_b, s, back)
     _limb(layer, pose.shoulder_b, pose.elbow_b, 2.2 * s * spec.build, 1.9 * s, back)
     _limb(layer, pose.elbow_b, pose.hand_b, 1.9 * s, 1.5 * s, back)
 
     _draw_torso(layer, pose, spec, s)
 
-    _limb(layer, pose.hip_f, pose.knee_f, 2.7 * s * spec.build, 2.2 * s, spec.cloth)
-    _limb(layer, pose.knee_f, pose.foot_f, 2.2 * s, 1.8 * s, spec.cloth)
+    _limb(layer, pose.hip_f, pose.knee_f, 2.7 * s * spec.build, 2.2 * s, trouser)
+    _limb(layer, pose.knee_f, pose.foot_f, 2.2 * s, 1.8 * s, trouser)
     _boot(layer, pose.foot_f, s, P.R_LEATHER)
 
     if spec.tail:
@@ -604,8 +630,8 @@ def draw_figure(
 
     # Sleeve down to the wrist, then a small gloved hand. A full forearm in
     # skin tone reads as a pale smear across a dark torso.
-    _limb(layer, pose.shoulder_f, pose.elbow_f, 2.4 * s * spec.build, 2.0 * s, spec.cloth)
-    _limb(layer, pose.elbow_f, pose.hand_f, 1.9 * s, 1.5 * s, spec.cloth)
+    _limb(layer, pose.shoulder_f, pose.elbow_f, 2.4 * s * spec.build, 2.0 * s, sleeve)
+    _limb(layer, pose.elbow_f, pose.hand_f, 1.9 * s, 1.5 * s, sleeve)
     layer.circle(pose.hand_f[0], pose.hand_f[1], 1.5 * s, spec.skin.dark)
     layer.circle(pose.hand_f[0] - 0.4, pose.hand_f[1] - 0.5, 0.9 * s, spec.skin.core)
 
@@ -623,7 +649,9 @@ def draw_figure(
     _draw_aura(layer, pose, spec, s, t)
 
     layer.outline_pass(spec.cloth.outline)
-    layer.rim_light(P.MOONLIGHT, -1, -1, 105)
+    # Gentle: at full strength this drew a bright thread down the back edge of
+    # every coat, which reads as a stray hair rather than as moonlight.
+    layer.rim_light(P.MOONLIGHT, -1, -1, 62)
 
     if flash > 0.0:
         layer.flash((255, 255, 255, 255), flash)
