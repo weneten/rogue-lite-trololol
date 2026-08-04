@@ -8,15 +8,10 @@ class_name WeaponVisual
 # character's feet, so a visual hanging off it orbited their ankles. This rides
 # at chest height instead.
 #
-# Each weapon keeps its OWN station on a ring around the Hunter — it does not
-# circle them. A loadout you cannot read is a loadout you cannot plan around,
-# and six weapons sliding continuously past each other is unreadable. So the
-# station is fixed, and the weapon leans out of it toward whatever it is
-# currently shooting: recognisably in the same place every time you look, while
-# still visibly pointing at the fight.
-#
-# Position and aim stay two separate things. Coupling them (one pivot doing
-# both) is what pinned every weapon to the side it was firing at.
+# Every weapon rides the same side of the Hunter: whichever way the nearest
+# enemy is. Each keeps a small fixed SlotOffset from that shared aim direction
+# so a full loadout fans out instead of stacking into one sprite, but the
+# cluster as a whole always faces the fight.
 #
 # The art is the same shape the shop card shows
 # (Assets/sprites/weapons/mounted/), drawn pointing right with the grip on the
@@ -37,13 +32,13 @@ const RING_RADIUS_Y := 21.0
 # the origin, so everything carried has to be lifted to meet them.
 const CARRY_HEIGHT := -28.0
 
-# How far off its station a weapon may lean toward its target, in radians.
-# Roughly 50 degrees: enough that the weapon visibly commits to the side the
-# fight is on, short of enough to let two neighbours trade places.
-const MAX_LEAN := 0.9
+# Angle the ring sits at with nothing in range: outward and slightly raised,
+# the way you would hold a weapon waiting.
+const REST_ANGLE := PI * 0.5
 
-# How fast the lean tracks, in radians per second. Snapping straight to the
-# target angle makes the whole loadout twitch every time an enemy dies.
+# How fast the ring and facing track their target, in radians per second.
+# Snapping straight to the target angle makes the whole loadout twitch every
+# time an enemy dies or a new one spawns.
 const LEAN_SPEED := 7.0
 
 # The near half of the ring sits in front of the wielder, the far half
@@ -60,15 +55,15 @@ const BOB_SPEED := 3.4
 const TRAIL_LAG := [2, 4, 7]
 const TRAIL_ALPHA := [0.42, 0.26, 0.14]
 
-# This weapon's station on the ring, in radians. Set by Weapon from the slot
-# index so a six-weapon loadout spreads out instead of stacking into one pile.
-# It never changes on its own — that is the whole point.
-var station_angle: float = 0.0:
+# This weapon's fixed offset from the shared aim direction, in radians. Set by
+# Weapon from the slot index so a six-weapon loadout fans out instead of
+# stacking into one pile. It never changes on its own — that is the whole point.
+var slot_offset: float = 0.0:
 	set(value):
-		station_angle = value
+		slot_offset = value
 		# A weapon that just changed slots (something was sold) belongs at its
-		# new station immediately, not sliding across the body to reach it.
-		_ring_angle = value
+		# new offset immediately, not sliding across the body to reach it.
+		_ring_angle = (_aim if _has_target else REST_ANGLE) + value
 
 var _sprite: Sprite2D
 var _ghosts: Array[Sprite2D] = []
@@ -128,9 +123,9 @@ func setup(data: WeaponData, scale_factor: float = 1.0) -> void:
 	_sprite.z_index = CARRY_Z
 	add_child(_sprite)
 
-	# Start at the station rather than sliding into place from the origin on the
+	# Start at rest rather than sliding into place from the origin on the
 	# first frame after being bought.
-	_ring_angle = station_angle
+	_ring_angle = REST_ANGLE + slot_offset
 	_facing = _rest_facing()
 	_apply_transform()
 
@@ -173,21 +168,17 @@ func _process(delta: float) -> void:
 func _track(delta: float) -> void:
 	var step := minf(1.0, LEAN_SPEED * delta)
 
-	var desired_ring := station_angle
-	if _has_target:
-		# Lean out of the station toward the target, but only so far — past this
-		# the loadout stops being readable, which is the thing the station is
-		# there to protect.
-		desired_ring += clampf(angle_difference(station_angle, _aim), -MAX_LEAN, MAX_LEAN)
+	var shared_angle := _aim if _has_target else REST_ANGLE
+	var desired_ring := shared_angle + slot_offset
 
 	_ring_angle = lerp_angle(_ring_angle, desired_ring, step)
 	_facing = lerp_angle(_facing, _aim if _has_target else _rest_facing(), step)
 
 
-# With nothing to shoot, a weapon points away from the Hunter along its own
-# station — outward and slightly raised, the way you would hold one waiting.
+# With nothing to shoot, a weapon points away from the Hunter along the rest
+# angle, offset by its own slot so idle weapons stay just as spread out.
 func _rest_facing() -> float:
-	return station_angle - 0.35
+	return REST_ANGLE + slot_offset - 0.35
 
 
 # One place composes the final transform out of ring + bob + swing, so the tween
@@ -200,7 +191,7 @@ func _apply_transform() -> void:
 	var lunge := Vector2(cos(_facing), sin(_facing)) * _swing_reach
 
 	_sprite.position = Vector2(outward.x * RING_RADIUS_X, outward.y * RING_RADIUS_Y) \
-		+ Vector2(0.0, sin(_time * BOB_SPEED + station_angle) * BOB_AMPLITUDE) + lunge
+		+ Vector2(0.0, sin(_time * BOB_SPEED + slot_offset) * BOB_AMPLITUDE) + lunge
 	_sprite.rotation = _facing + _swing_rotation
 
 	# Weapons aimed left arrive upside down, so they are mirrored vertically —

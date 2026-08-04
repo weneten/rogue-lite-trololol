@@ -20,14 +20,18 @@ var boss_fallback_waves: Array[int] = [10, 15, 20]
 @export var music_volume: float = 1.0
 @export var sfx_volume: float = 1.0
 
-# Stream placeholders (null = silence-safe; assign assets later)
-@export var shop_music_stream: AudioStream
-@export var combat_base_stream: AudioStream
-@export var combat_percussion_stream: AudioStream
-@export var boss_music_stream: AudioStream
-@export var menu_music_stream: AudioStream
+const SFX_DIR: String = "res://Assets/Audio/sfx/"
 
-# SFX stream map filled in _ready with null placeholders until assets land.
+# Defaults to the procedurally-generated tracks under Assets/Audio; still
+# overridable per-project by assigning a different stream here.
+@export var shop_music_stream: AudioStream = preload("res://Assets/Audio/music/shop.wav")
+@export var combat_base_stream: AudioStream = preload("res://Assets/Audio/music/combat_base.wav")
+@export var combat_percussion_stream: AudioStream = preload("res://Assets/Audio/music/combat_percussion.wav")
+@export var boss_music_stream: AudioStream = preload("res://Assets/Audio/music/boss.wav")
+@export var menu_music_stream: AudioStream = preload("res://Assets/Audio/music/menu.wav")
+
+# SFX stream map filled in _ready from Assets/Audio/sfx; missing files fall
+# back to the null/silence-safe placeholder.
 var _sfx_streams: Dictionary = {}
 
 var _shop_music: AudioStreamPlayer
@@ -170,6 +174,8 @@ func _build_players() -> void:
 		_sfx_pool.append(sfx)
 
 func _make_music_player(name: String, stream: AudioStream) -> AudioStreamPlayer:
+	_ensure_loop(stream)
+
 	var player: AudioStreamPlayer = AudioStreamPlayer.new()
 	player.name = name
 	player.bus = BUS_MUSIC
@@ -179,8 +185,17 @@ func _make_music_player(name: String, stream: AudioStream) -> AudioStreamPlayer:
 	add_child(player)
 	return player
 
+# Music beds are generated WAVs with no authored loop points, so the loop is
+# set here in code rather than relying on editor import settings.
+static func _ensure_loop(stream: AudioStream) -> void:
+	var wav := stream as AudioStreamWAV
+	if wav != null and wav.loop_mode == AudioStreamWAV.LOOP_DISABLED:
+		wav.loop_mode = AudioStreamWAV.LOOP_FORWARD
+		wav.loop_end = int(wav.get_length() * wav.mix_rate)
+
 func _register_placeholder_sfx() -> void:
-	# Keys used by EventBus hooks + call-site wires. Streams stay null until assets land.
+	# Keys used by EventBus hooks + call-site wires. Loaded from Assets/Audio/sfx;
+	# any id with no matching file stays null (silence-safe placeholder).
 	var ids: Array[String] = [
 		"enemy_death",
 		"player_hit",
@@ -204,7 +219,8 @@ func _register_placeholder_sfx() -> void:
 	]
 
 	for id: String in ids:
-		_sfx_streams[id] = null  # silence-safe placeholder
+		var path := SFX_DIR + id + ".wav"
+		_sfx_streams[id] = load(path) if ResourceLoader.exists(path) else null
 
 func _apply_all_volumes() -> void:
 	set_master_volume(master_volume)

@@ -94,16 +94,19 @@ func clear_all_weapons() -> void:
 	for i in range(_equipped_weapons.size() - 1, -1, -1):
 		remove_weapon_at(i)
 
-# Gives every carried weapon a fixed station on the ring around the Hunter, so a
-# full loadout reads as six distinct things you can learn the positions of. This
-# is position only — the moment a target is in range each weapon leans out of
-# its station toward it independently.
+# Radians between neighbouring weapons in the cluster, so a full loadout fans
+# out enough to read as distinct weapons without the fan swallowing more than
+# a quarter of the ring.
+const SLOT_SPACING := 0.32
+
+# Gives every carried weapon a small fixed offset from the shared aim
+# direction, so a full loadout clusters on whichever side the nearest enemy
+# is on instead of ringing the Hunter — while staying spread out enough that
+# six weapons don't stack into one sprite.
 func _reslot_weapons() -> void:
 	var count: int = _equipped_weapons.size()
 	if count == 0:
 		return
 
-	# Stations start in front of the Hunter and spread outward from there, so a
-	# single weapon is never parked behind them where it cannot be seen.
 	for i in range(count):
-		_equipped_weapons[i].station_angle = PI * 0.5 + TAU * float(i) / float(count)
+		_equipped_weapons[i].slot_offset = (float(i) - float(count - 1) * 0.5) * SLOT_SPACING

@@ -31,14 +31,14 @@ var _owner_health: HealthComponent
 
 var _cooldown_remaining: float = 0.0
 
-# This weapon's station on the ring around the wielder. Set by WeaponInventory
-# from the slot index so a full loadout spreads around the body instead of
-# stacking into one pile. Radians, 0 = to the wielder's right.
-var station_angle: float = 0.0:
+# This weapon's offset from the shared aim direction, in radians. Set by
+# WeaponInventory from the slot index so a full loadout fans out on whichever
+# side the nearest enemy is on instead of stacking into one sprite.
+var slot_offset: float = 0.0:
 	set(value):
-		station_angle = value
+		slot_offset = value
 		if _visual != null:
-			_visual.station_angle = value
+			_visual.slot_offset = value
 
 var _visual: WeaponVisual
 
@@ -119,7 +119,7 @@ func _build_visual() -> void:
 
 	_visual = WeaponVisual.new()
 	_visual.name = "WeaponVisual_" + data.name
-	_visual.station_angle = station_angle
+	_visual.slot_offset = slot_offset
 	_visual.setup(data)
 	_update_visual_facing(false)
 	# Deferred: a weapon whose wielder is itself mid-_ready (spawned at runtime
