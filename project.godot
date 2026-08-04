@@ -112,3 +112,4 @@ ui_down={
 [rendering]
 
 textures/canvas_textures/default_texture_filter=0
+gl_compatibility/item_buffer_size=262144
