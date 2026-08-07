@@ -3,10 +3,14 @@ class_name WeaponVisual
 
 # The copy of a weapon the player actually carries.
 #
+# These are the ONLY weapons a Hunter shows. The character sheets are drawn
+# empty-handed (tools/pixelforge/cast.py), so what you see on your Hunter is
+# exactly what you started with or bought — nothing decorative.
+#
 # Built at runtime by Weapon.gd and parented to the WIELDER, not to the Weapon
 # node: the weapon's own transform is anchored at the body origin, which is the
 # character's feet, so a visual hanging off it orbited their ankles. This rides
-# at chest height instead.
+# at hand height instead.
 #
 # Every weapon rides the same side of the Hunter: whichever way the nearest
 # enemy is. Each keeps a small fixed SlotOffset from that shared aim direction
@@ -25,12 +29,17 @@ const MOUNT_DIR := "res://Assets/sprites/weapons/mounted/"
 # The ring is an ellipse, not a circle: the arena is viewed at a slight angle,
 # so a circular ring reads as weapons sliding up and down rather than sitting
 # around the body.
-const RING_RADIUS_X := 46.0
-const RING_RADIUS_Y := 21.0
+#
+# It is kept tight — roughly an arm's length on a 44-pixel Hunter. A wider ring
+# reads as weapons orbiting a character rather than being held by one, which is
+# the whole reason the Hunter sheets no longer bake a weapon into the hand.
+const RING_RADIUS_X := 26.0
+const RING_RADIUS_Y := 12.0
 
-# Chest height above the body origin. The rig draws its characters standing on
-# the origin, so everything carried has to be lifted to meet them.
-const CARRY_HEIGHT := -28.0
+# Hand height above the body origin. The rig draws its characters standing on
+# the origin with the front hand a little below chest, so everything carried has
+# to be lifted to meet it.
+const CARRY_HEIGHT := -22.0
 
 # Angle the ring sits at with nothing in range: outward and slightly raised,
 # the way you would hold a weapon waiting.
@@ -47,7 +56,7 @@ const LEAN_SPEED := 7.0
 const CARRY_Z := 3
 const BEHIND_Z := -1
 
-const BOB_AMPLITUDE := 2.0
+const BOB_AMPLITUDE := 1.3
 const BOB_SPEED := 3.4
 
 # Motion-trail ghosts, in frames of lag. Three samples is enough to smear a

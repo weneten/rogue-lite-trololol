@@ -27,6 +27,15 @@ produces identical files.
 | `../UI/` | Nine-slice panels, buttons, bars, HUD icons, theme |
 | `../Fonts/` | Bitmap font atlases + `.fnt` descriptors |
 
+## Hunters carry nothing
+
+Hunter sheets are drawn empty-handed (`weapon="none"` in `pixelforge/cast.py`).
+The only weapons a Hunter shows in the arena are the ones the player actually
+owns, drawn from `weapons/mounted/` by `Scripts/Combat/WeaponVisual.gd`. Baking
+a weapon into the sheet as well meant a starting Hunter held a scythe they did
+not own while their real weapon rode beside them. Enemies and bosses do not buy
+anything, so they keep theirs.
+
 ## Sheet format
 
 - **Frame size:** 64×64 for hunters and enemies, 96×96 for bosses

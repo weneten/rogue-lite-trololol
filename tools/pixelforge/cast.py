@@ -39,13 +39,22 @@ def _b(ident, title, spec, wstyle, swing="smash") -> Entry:
 
 # ---------------------------------------------------------------------------
 # Hunters
+#
+# Every hunter is drawn empty-handed (weapon="none"). The only weapons a
+# Hunter shows in the arena are the ones the player actually owns, drawn by
+# Scripts/Combat/WeaponVisual.gd from the shop art. A weapon baked into the
+# sheet as well meant a starting Hunter was holding a scythe they did not own
+# while their real weapon rode beside them — two weapons, one of them a lie.
+#
+# weapon_style is still set per hunter: it tints the attack arcs and stays
+# ready if a sheet ever wants a held prop again.
 # ---------------------------------------------------------------------------
 CHARACTERS = [
     _c(
         "the_reaper", "The Reaper",
         BodySpec(
             cloth=P.R_CLOTH_BLACK, armor=P.R_IRON, skin=P.R_FLESH_PALE, accent=P.R_RUST,
-            head="hood", cape="tatters", weapon="scythe", stature=1.05, build=0.9,
+            head="hood", cape="tatters", weapon="none", stature=1.05, build=0.9,
             eye=P.EMBER, belt=True,
         ),
         WeaponStyle(P.R_RUST, P.R_WOOD, P.R_IRON), "slash",
@@ -54,7 +63,7 @@ CHARACTERS = [
         "bloodstained_crusader", "Bloodstained Crusader",
         BodySpec(
             cloth=P.R_CLOTH_CRIMSON, armor=P.R_STEEL, skin=P.R_FLESH, accent=P.R_GOLD,
-            head="helm", cape="cloak", weapon="sword", stature=1.1, build=1.25,
+            head="helm", cape="cloak", weapon="none", stature=1.1, build=1.25,
             eye=P.CANDLE, shoulder_pads=True,
         ),
         WeaponStyle(P.R_STEEL, P.R_LEATHER, P.R_GOLD, P.CANDLE), "smash",
@@ -63,7 +72,7 @@ CHARACTERS = [
         "witch_hunter", "Witch Hunter",
         BodySpec(
             cloth=P.R_LEATHER, armor=P.R_IRON, skin=P.R_FLESH, accent=P.R_GOLD,
-            head="hat", cape="coat", weapon="rifle", stature=1.0, build=0.95,
+            head="hat", cape="coat", weapon="none", stature=1.0, build=0.95,
             eye=P.AMBER,
         ),
         WeaponStyle(P.R_STEEL, P.R_WOOD, P.R_GOLD, P.AMBER), "shoot",
@@ -73,7 +82,7 @@ CHARACTERS = [
         BodySpec(
             cloth=Ramp(P.rgb("d8d2c4"), outline=P.rgb("4a4438")), armor=P.R_SILVER,
             skin=P.R_FLESH_PALE, accent=P.R_GOLD,
-            head="mitre", cape="cloak", weapon="bell", stature=1.05, build=1.0,
+            head="mitre", cape="cloak", weapon="none", stature=1.05, build=1.0,
             eye=P.CANDLE, tall_collar=True, aura=P.CANDLE,
         ),
         WeaponStyle(P.R_GOLD, P.R_WOOD, P.R_SILVER, P.CANDLE), "cast",
@@ -82,7 +91,7 @@ CHARACTERS = [
         "moonlit_duelist", "Moonlit Duelist",
         BodySpec(
             cloth=P.R_CLOTH_NAVY, armor=P.R_SILVER, skin=P.R_FLESH_PALE, accent=P.R_SILVER,
-            head="bare", cape="coat", weapon="kris", stature=1.02, build=0.85,
+            head="bare", cape="coat", weapon="none", stature=1.02, build=0.85,
             eye=P.MOONLIGHT, tall_collar=True,
         ),
         WeaponStyle(P.R_SILVER, P.R_LEATHER, P.R_GOLD, P.MOONLIGHT), "thrust",
@@ -92,7 +101,7 @@ CHARACTERS = [
         BodySpec(
             cloth=Ramp(P.rgb("7a3520"), outline=P.rgb("240d07")), armor=P.R_RUST,
             skin=P.R_FLESH, accent=P.R_GOLD,
-            head="hood", cape="cloak", weapon="firebomb", stature=0.98, build=0.95,
+            head="hood", cape="cloak", weapon="none", stature=0.98, build=0.95,
             eye=P.EMBER, aura=P.EMBER,
         ),
         WeaponStyle(P.R_RUST, P.R_WOOD, P.R_GOLD, P.EMBER), "cast",
@@ -102,7 +111,7 @@ CHARACTERS = [
         BodySpec(
             cloth=Ramp(P.rgb("3d4a35"), outline=P.rgb("121a10")), armor=P.R_IRON,
             skin=P.R_FLESH, accent=P.R_GOLD,
-            head="mask", cape="coat", weapon="flask", stature=0.98, build=0.9,
+            head="mask", cape="coat", weapon="none", stature=0.98, build=0.9,
             eye=P.TOXIC, aura=P.BILE,
         ),
         WeaponStyle(P.R_SILVER, P.R_WOOD, P.R_GOLD, P.TOXIC), "cast",
@@ -112,7 +121,7 @@ CHARACTERS = [
         BodySpec(
             cloth=Ramp(P.rgb("2f3630"), outline=P.rgb("0d100e")), armor=P.R_IRON,
             skin=P.R_FLESH_DEAD, accent=P.R_RUST,
-            head="helm", cape="cloak", weapon="big_cleaver", stature=1.15, build=1.35,
+            head="helm", cape="cloak", weapon="none", stature=1.15, build=1.35,
             eye=P.SPECTRAL, shoulder_pads=True,
         ),
         WeaponStyle(P.R_IRON, P.R_WOOD, P.R_RUST), "smash",
@@ -122,7 +131,7 @@ CHARACTERS = [
         BodySpec(
             cloth=Ramp(P.rgb("2a1030"), outline=P.rgb("0d0512")), armor=P.R_GOLD,
             skin=P.R_FLESH_PALE, accent=P.R_GOLD,
-            head="crown", cape="cloak", weapon="revolver", stature=1.05, build=0.9,
+            head="crown", cape="cloak", weapon="none", stature=1.05, build=0.9,
             eye=P.CRIMSON, tall_collar=True, aura=P.ARCANE,
         ),
         WeaponStyle(P.R_IRON, P.R_LEATHER, P.R_ARCANE, P.VIOLET), "shoot",
@@ -132,7 +141,7 @@ CHARACTERS = [
         BodySpec(
             cloth=Ramp(P.rgb("4a1420"), outline=P.rgb("180509")), armor=P.R_RUST,
             skin=P.R_FLESH_PALE, accent=P.R_RUST,
-            head="bare", cape="tatters", weapon="claws", stature=1.0, build=0.95,
+            head="bare", cape="tatters", weapon="none", stature=1.0, build=0.95,
             eye=P.CRIMSON, aura=P.BLOOD,
         ),
         WeaponStyle(P.R_BONE, P.R_LEATHER, P.R_RUST, P.CRIMSON), "slash",

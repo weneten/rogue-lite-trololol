@@ -22,8 +22,11 @@ var boss_fallback_waves: Array[int] = [10, 15, 20]
 
 const SFX_DIR: String = "res://Assets/Audio/sfx/"
 
-# Defaults to the procedurally-generated tracks under Assets/Audio; still
-# overridable per-project by assigning a different stream here.
+# The generated beds under Assets/Audio/music — see Assets/Audio/README.md and
+# tools/build_music.py. Still overridable by assigning a different stream here.
+#
+# combat_base and combat_percussion are two halves of one 132 BPM arrangement
+# of the same length, so they stay in phase however long a wave runs.
 @export var shop_music_stream: AudioStream = preload("res://Assets/Audio/music/shop.wav")
 @export var combat_base_stream: AudioStream = preload("res://Assets/Audio/music/combat_base.wav")
 @export var combat_percussion_stream: AudioStream = preload("res://Assets/Audio/music/combat_percussion.wav")
