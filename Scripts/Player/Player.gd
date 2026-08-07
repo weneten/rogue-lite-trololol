@@ -116,10 +116,13 @@ func apply_character_visual(data: CharacterData) -> void:
 	var sheet_ok: bool = false
 
 	if wants_sheet and _sprite_animator != null:
+		# Empty attack anim on purpose: Hunter sheets have no attack row and the
+		# body never plays one. CharacterData.attack_anim_name is left in place
+		# for tooling but is deliberately not passed through.
 		sheet_ok = _sprite_animator.configure(
 			sheet_path,
 			data.sprite_json_path,
-			data.attack_anim_name,
+			"",
 			data.sprite_scale if data.sprite_scale > 0.0 else 1.0,
 			Color.WHITE,
 			data.sprite_sheet)
@@ -169,18 +172,21 @@ func _physics_process(delta: float) -> void:
 		_sprite_animator.set_facing(input_direction.x)
 		_sprite_animator.update_locomotion(input_direction.length_squared() > 0.01)
 
-# Called by Weapon whenever it actually swings or fires. The rig has an attack
-# animation per character; nothing was driving it, so the player just slid
-# around while damage happened invisibly.
-func play_attack_animation(target: Node2D = null) -> void:
-	if _sprite_animator == null:
+# Called by Weapon whenever it actually swings or fires.
+#
+# The Hunter has NO attack animation — the weapon plays the swing and the body
+# does not. With six weapons firing at their own cooldowns the character was
+# re-triggering an attack pose several times a second and spent the whole wave
+# twitching; the arena reads far better when the only thing moving is the
+# weapon that actually went off.
+#
+# All that is left is the turn: the Hunter faces what their weapons are
+# hitting, which still happens while idle or running.
+func on_weapon_attack(target: Node2D = null) -> void:
+	if _sprite_animator == null or target == null:
 		return
 
-	if target != null:
-		# Face the thing being hit, overriding movement facing for the swing.
-		_sprite_animator.set_facing(target.global_position.x - global_position.x)
-
-	_sprite_animator.play_attack()
+	_sprite_animator.set_facing(target.global_position.x - global_position.x)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if enable_debug_damage_key and event.is_action_pressed("debug_damage_test"):

@@ -27,14 +27,20 @@ produces identical files.
 | `../UI/` | Nine-slice panels, buttons, bars, HUD icons, theme |
 | `../Fonts/` | Bitmap font atlases + `.fnt` descriptors |
 
-## Hunters carry nothing
+## The weapon fights, not the Hunter
 
-Hunter sheets are drawn empty-handed (`weapon="none"` in `pixelforge/cast.py`).
-The only weapons a Hunter shows in the arena are the ones the player actually
-owns, drawn from `weapons/mounted/` by `Scripts/Combat/WeaponVisual.gd`. Baking
-a weapon into the sheet as well meant a starting Hunter held a scythe they did
-not own while their real weapon rode beside them. Enemies and bosses do not buy
-anything, so they keep theirs.
+Hunter sheets are drawn empty-handed (`weapon="none"` in `pixelforge/cast.py`)
+and have no attack animation at all (`sheets.anims_for`). Both belong to the
+weapons instead: the only weapons a Hunter shows in the arena are the ones the
+player actually owns, drawn from `weapons/mounted/` by
+`Scripts/Combat/WeaponVisual.gd`, and the swing is played there too.
+
+Baking a weapon into the sheet meant a starting Hunter held a scythe they did
+not own while their real weapon rode beside them. Animating the body meant six
+weapons on their own cooldowns re-triggered an attack pose several times a
+second, so the character twitched through the whole wave.
+
+Enemies and bosses buy nothing and attack with their bodies, so they keep both.
 
 ## Sheet format
 
@@ -49,14 +55,18 @@ anything, so they keep theirs.
 |-----|-----------|--------|------|
 | 0 | `idle` | 4 | yes |
 | 1 | `run` | 6 | yes |
-| 2 | `attack` | 6 | no |
+| 2 | `attack` | 6 | no (enemies and bosses only) |
 | 3 | `hurt` | 2 | no |
 | 4 | `death` | 5 | no |
 | 5 | `dash` | 4 | no |
 
+Hunter sheets have **no** `attack` row, so they are five rows and their later
+animations sit one row higher. Nothing on the Godot side hardcodes a row: the
+atlas JSON carries the row and frame indices, and `SpriteSheetCache` reads them.
+
 `attack` is also exported under every alias the combat code asks for
-(`attack_slash`, `attack_whip`, `shield_bash`, …) so a weapon class can never
-fall through to `idle`.
+(`attack_slash`, `attack_whip`, `shield_bash`, …) so an enemy's weapon class can
+never fall through to `idle`.
 
 ## Depth
 
