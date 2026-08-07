@@ -53,7 +53,10 @@ func configure(sheet_path: String, json_path: String, attack_anim_name: String, 
 	_dead = false
 	_one_shot_playing = false
 	_base_scale = scale if scale > 0.0 else 1.0
-	_attack_anim = attack_anim_name if not attack_anim_name.is_empty() else "attack_slash"
+	# An empty name means this rig does not animate attacks at all — that is
+	# how the Hunter is set up, since its swings live on the weapons. Enemy
+	# data always names one (EnemyData defaults to "attack_slash").
+	_attack_anim = attack_anim_name
 	_sheet_path = sheet_path
 
 	if _sprite == null:
@@ -129,7 +132,7 @@ func play_hurt() -> void:
 	_play_one_shot("hurt")
 
 func play_attack() -> void:
-	if _dead or _sprite == null:
+	if _dead or _sprite == null or _attack_anim.is_empty():
 		return
 
 	_play_one_shot(_attack_anim)
@@ -220,11 +223,15 @@ func _on_animation_finished() -> void:
 		if _sprite != null and _sprite.sprite_frames != null and _sprite.sprite_frames.has_animation(_current_locomotion):
 			_sprite.play(_current_locomotion)
 
+# Finds a usable attack animation, or returns "" when the sheet simply has
+# none. Empty rather than a fallback: Hunter sheets have no attack row on
+# purpose, and playing "hurt" or "idle" in its place would look like the
+# character flinching every time a weapon fired.
 func _resolve_attack_anim(preferred: String) -> String:
-	if _sprite == null or _sprite.sprite_frames == null:
-		return preferred
+	if preferred.is_empty():
+		return ""
 
-	if _sprite.sprite_frames.has_animation(preferred) and _sprite.sprite_frames.get_frame_count(preferred) > 0:
+	if _sprite == null or _sprite.sprite_frames == null:
 		return preferred
 
 	var fallbacks = [
@@ -237,11 +244,10 @@ func _resolve_attack_anim(preferred: String) -> String:
 		"attack_spin",
 		"attack_nova",
 		"attack_cross",
-		"hurt"
 	]
 
 	for fallback_name in fallbacks:
 		if not fallback_name.is_empty() and _sprite.sprite_frames.has_animation(fallback_name) and _sprite.sprite_frames.get_frame_count(fallback_name) > 0:
 			return fallback_name
 
-	return "idle"
+	return ""

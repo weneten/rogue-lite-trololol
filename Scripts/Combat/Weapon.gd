@@ -186,10 +186,11 @@ func _find_nearest_target() -> Node2D:
 func _attack(target: Node2D) -> void:
 	AudioManager.play_sfx(_resolve_weapon_hit_sfx_id())
 
-	# Let the wielder play its swing. Duck-typed so this works for the player
-	# and for anything else that ends up holding a weapon.
-	if _owner_body != null and _owner_body.has_method("play_attack_animation"):
-		_owner_body.play_attack_animation(target)
+	# Tell the wielder a weapon went off. Duck-typed so this works for the
+	# player and for anything else that ends up holding a weapon. The wielder
+	# does not animate — the swing below is the whole attack, on the weapon.
+	if _owner_body != null and _owner_body.has_method("on_weapon_attack"):
+		_owner_body.on_weapon_attack(target)
 
 	if _visual != null:
 		_visual.play_swing((data.weapon_class & WeaponData.WeaponClass.MELEE) != 0)

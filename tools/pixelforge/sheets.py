@@ -5,10 +5,14 @@ SpriteSheetCache expects:
 
     row 0  idle   4 frames   loop
     row 1  run    6 frames   loop
-    row 2  attack 6 frames   one-shot
+    row 2  attack 6 frames   one-shot   (enemies and bosses only)
     row 3  hurt   2 frames   one-shot
     row 4  death  5 frames   one-shot
     row 5  dash   4 frames   one-shot
+
+Hunters have no attack row — see `anims_for`. Rows and frame indices are
+written into the atlas JSON, so a sheet with one row fewer needs no change
+anywhere on the Godot side.
 """
 from __future__ import annotations
 
@@ -41,6 +45,23 @@ ATTACK_ALIASES = [
 ]
 
 
+def anims_for(entry: Entry) -> list[tuple]:
+    """Which rows this entry's sheet gets.
+
+    Hunters get no attack row. A Hunter fires six weapons at once at whatever
+    is nearest, so an attack animation on the body was firing several times a
+    second and the character spent the whole wave twitching. The swing lives
+    on the weapon instead (Scripts/Combat/WeaponVisual.gd), which is both what
+    the player is actually watching and the only thing that knows whether the
+    weapon is a scythe or a revolver.
+
+    Enemies and bosses attack with their bodies, so they keep theirs.
+    """
+    if entry.group == "characters":
+        return [a for a in ANIMS if a[0] != "attack"]
+    return ANIMS
+
+
 def _feet_y(cell: int) -> float:
     return cell - 6.0
 
@@ -57,7 +78,7 @@ def render_frames(entry: Entry) -> list[Canvas]:
     )
 
     frames: list[Canvas] = []
-    for name, count, _fps, loops in ANIMS:
+    for name, count, _fps, loops in anims_for(entry):
         row: list[Canvas] = []
         for i in range(count):
             # Looping anims sample [0,1); one-shots reach the final pose.
@@ -89,8 +110,9 @@ def _add_dash_streaks(frame: Canvas, pose, index: int, count: int) -> None:
 
 def build_meta(entry: Entry) -> dict:
     cell = entry.cell
+    anims = anims_for(entry)
     animations: dict[str, dict] = {}
-    for row, (name, count, fps, loops) in enumerate(ANIMS):
+    for row, (name, count, fps, loops) in enumerate(anims):
         indices = [row * COLUMNS + i for i in range(count)]
         animations[name] = {
             "row": row,
@@ -101,15 +123,16 @@ def build_meta(entry: Entry) -> dict:
             "fps": fps,
             "loop": loops,
         }
-    for alias in ATTACK_ALIASES:
-        animations[alias] = dict(animations["attack"])
+    if "attack" in animations:
+        for alias in ATTACK_ALIASES:
+            animations[alias] = dict(animations["attack"])
 
     return {
         "image": f"{entry.ident}.png",
         "frameWidth": cell,
         "frameHeight": cell,
         "columns": COLUMNS,
-        "rows": len(ANIMS),
+        "rows": len(anims),
         "facing": "right",
         "pixelArt": True,
         "origin": {"x": round(cell * 0.46, 1), "y": _feet_y(cell)},
