@@ -40,6 +40,10 @@ func _build() -> void:
 func _on_wave_end(_wave: int) -> void:
 	if NetSession == null or not NetSession.is_active:
 		return
+	# Two or more hunters use the Brotato split-shop instead of this strip.
+	if NetSession.roster.size() >= 2:
+		visible = false
+		return
 	visible = true
 	_on_view(NetSession.intermission_states)
 

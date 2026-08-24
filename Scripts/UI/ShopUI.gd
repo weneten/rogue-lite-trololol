@@ -157,7 +157,7 @@ func _open_shop(wave_number: int) -> void:
 	get_tree().paused = true
 	_focus_default_control()
 	if NetSession != null:
-		NetSession.broadcast_intermission("shop")
+		NetSession.broadcast_intermission("shop", snapshot_state())
 
 # Opens on the leftmost card the player can actually buy, so the keyboard
 # lands somewhere useful. Falls through to NEXT WAVE when nothing is
@@ -233,6 +233,7 @@ func _on_reroll_pressed() -> void:
 	_deal_cards()
 	_refresh_reroll_cost()
 	_update_affordability()
+	_push_net()
 
 # Fills every unlocked card. Weapons and relics come from one draw so a shelf
 # can legitimately be all weapons or all relics — a fixed 3-and-2 split made
@@ -344,6 +345,7 @@ func _buy_weapon(card: ShopCard) -> void:
 	_refresh_trays()
 	_refresh_stats()
 	_update_affordability()
+	_push_net()
 
 func _buy_relic(card: ShopCard) -> void:
 	var data: PassiveItemData = card.offer
@@ -359,6 +361,7 @@ func _buy_relic(card: ShopCard) -> void:
 	_refresh_trays()
 	_refresh_stats()
 	_update_affordability()
+	_push_net()
 
 func _sell_weapon(slot_index: int) -> void:
 	var inventory := WeaponInventory.instance
@@ -378,6 +381,7 @@ func _sell_weapon(slot_index: int) -> void:
 		_refresh_trays()
 		_refresh_stats()
 		_update_affordability()
+		_push_net()
 
 # ---------------------------------------------------------------------- trays
 
@@ -568,13 +572,29 @@ func _refresh_reroll_cost() -> void:
 	if _reroll_cost_label != null:
 		_reroll_cost_label.text = "%dg" % ShopEconomy.get_reroll_cost(_rerolls_this_visit)
 
+func snapshot_state() -> Dictionary:
+	var offers: Array = []
+	for card in _cards:
+		offers.append(card.to_net() if card != null else {"sold": true})
+	var relics: Array = []
+	if GameManager != null:
+		for item in GameManager.owned_passive_items:
+			if item != null:
+				var path := item.icon.resource_path if item.icon != null else ""
+				relics.append({"n": item.display_name, "i": path})
+	return {"offers": offers, "relics": relics}
+
+func _push_net() -> void:
+	if _open and NetSession != null and NetSession.is_active:
+		NetSession.broadcast_intermission("shop", snapshot_state())
+
 func _on_currency_changed(current_currency: int) -> void:
 	if _currency_label != null:
 		_currency_label.text = "%d" % current_currency
 
 	_update_affordability()
 	if _open and NetSession != null and NetSession.is_active:
-		NetSession.broadcast_intermission("shop")
+		NetSession.broadcast_intermission("shop", snapshot_state())
 
 # Greys out anything the player can no longer buy, so affordability is visible
 # without adding up prices.

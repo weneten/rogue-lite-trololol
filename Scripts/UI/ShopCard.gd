@@ -122,6 +122,25 @@ func _build() -> void:
 
 # -------------------------------------------------------------------- content
 
+func to_net() -> Dictionary:
+	if offer == null:
+		return {"sold": true}
+	var icon_path := ""
+	if offer.icon != null:
+		icon_path = offer.icon.resource_path
+	return {
+		"sold": false,
+		"n": _name_label.text if _name_label != null else "",
+		"k": _kind_label.text if _kind_label != null else "",
+		"s": _stats_label.text if _stats_label != null else "",
+		"f": _flavour_label.text if _flavour_label != null else "",
+		"c": buy_button.text if buy_button != null else "",
+		"l": _locked,
+		"i": icon_path,
+		"a": modulate.a,
+	}
+
+
 func show_weapon(data: WeaponData, price: int) -> void:
 	offer = data
 	is_weapon = true

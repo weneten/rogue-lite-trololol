@@ -76,7 +76,7 @@ func _on_player_level_up(new_level: int) -> void:
 
 	_focus_first_choice()
 	if NetSession != null:
-		NetSession.broadcast_intermission("boon")
+		NetSession.broadcast_intermission("boon", {"boons": _boon_snapshot()})
 
 func _focus_first_choice() -> void:
 	for button in _choice_buttons:
@@ -129,6 +129,13 @@ static func _weighted_pick(pool: Array[UpgradeData]) -> UpgradeData:
 			return upgrade
 
 	return pool[pool.size() - 1]
+
+func _boon_snapshot() -> Array:
+	var rows: Array = []
+	for upgrade in _current_choices:
+		if upgrade != null:
+			rows.append({"n": upgrade.display_name, "d": upgrade.description})
+	return rows
 
 func _on_choice_selected(index: int) -> void:
 	if index >= _current_choices.size():

@@ -111,7 +111,7 @@ func mark_ready() -> void:
 	_emit_ready_counts()
 	_try_finish_ready()
 
-func broadcast_intermission(phase: String) -> void:
+func broadcast_intermission(phase: String, extra: Dictionary = {}) -> void:
 	if not is_active:
 		return
 	var weapons: Array = []
@@ -127,6 +127,8 @@ func broadcast_intermission(phase: String) -> void:
 		"gold": GameManager.currency if GameManager != null else 0,
 		"weapons": weapons,
 	}
+	for key in extra.keys():
+		payload[key] = extra[key]
 	intermission_states[local_pid] = payload
 	intermission_view.emit(intermission_states)
 	_send(payload)
@@ -300,6 +302,10 @@ func _arm_arena(scene: Node) -> void:
 		var board := CovenBoard.new()
 		board.name = "CovenBoard"
 		scene.add_child(board)
+	if scene.get_node_or_null("IntermissionSplit") == null:
+		var split := IntermissionSplit.new()
+		split.name = "IntermissionSplit"
+		scene.add_child(split)
 
 func _on_remote_damaged(pid: int, hp: int) -> void:
 	_send({"op": "hurt", "pid": pid, "hp": hp})
@@ -388,16 +394,22 @@ func _send_snapshot() -> void:
 		if hp != null and hp.is_dead:
 			continue
 		var sheet := ""
+		var draw_scale := 2.0
 		if enemy.data != null:
 			sheet = enemy.data.sprite_sheet_path
 			if sheet.is_empty() and enemy.data.sprite_sheet != null:
 				sheet = enemy.data.sprite_sheet.resource_path
+			draw_scale = enemy.data.sprite_scale if enemy.data.sprite_scale > 0.0 else 1.0
+		draw_scale *= enemy.scale.x
+		if enemy.scale.x > 1.05:
+			draw_scale *= 1.08
 		enemies.append([
 			enemy.net_id,
 			snapped(enemy.global_position.x, 0.1),
 			snapped(enemy.global_position.y, 0.1),
 			hp.current_health if hp != null else 0,
 			sheet,
+			snapped(draw_scale, 0.01),
 		])
 	_send({"op": "snap", "pl": players, "en": enemies})
 
@@ -432,7 +444,8 @@ func _apply_snapshot(msg: Dictionary) -> void:
 			proxy.net_id = eid
 			world.add_child(proxy)
 			_proxies[eid] = proxy
-		proxy.apply_pose(Vector2(float(row[1]), float(row[2])), int(row[3]), str(row[4]))
+		var draw_scale := float(row[5]) if row.size() >= 6 else 2.0
+		proxy.apply_pose(Vector2(float(row[1]), float(row[2])), int(row[3]), str(row[4]), draw_scale)
 	var drop: Array = []
 	for eid in _proxies.keys():
 		if not seen.has(eid):
