@@ -10,7 +10,8 @@ var _root: Control
 var _grid: GridContainer
 var _cells: Array[Control] = []
 var _viewports: Dictionary = {}
-var _remote_panes: Dictionary = {}
+var _remote_shops: Dictionary = {}
+var _remote_levels: Dictionary = {}
 var _shop_home: Node
 var _level_home: Node
 var _shop_root: Control
@@ -117,11 +118,19 @@ func _rebuild_cells() -> void:
 			cell.add_child(empty)
 			continue
 		var pid: int = pids[i]
+		var frame := AspectRatioContainer.new()
+		frame.set_anchors_preset(Control.PRESET_FULL_RECT)
+		frame.ratio = 16.0 / 9.0
+		frame.stretch_mode = AspectRatioContainer.STRETCH_FIT
+		frame.alignment_horizontal = AspectRatioContainer.ALIGNMENT_CENTER
+		frame.alignment_vertical = AspectRatioContainer.ALIGNMENT_CENTER
+		cell.add_child(frame)
 		var wrap := SubViewportContainer.new()
-		wrap.set_anchors_preset(Control.PRESET_FULL_RECT)
 		wrap.stretch = true
+		wrap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		wrap.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		wrap.mouse_filter = Control.MOUSE_FILTER_STOP if pid == _local_pid else Control.MOUSE_FILTER_IGNORE
-		cell.add_child(wrap)
+		frame.add_child(wrap)
 		var vp := SubViewport.new()
 		vp.size = VIEW_SIZE
 		vp.handle_input_locally = pid == _local_pid
@@ -131,11 +140,7 @@ func _rebuild_cells() -> void:
 		wrap.add_child(vp)
 		_viewports[pid] = vp
 		if pid != _local_pid:
-			var pane := RemoteShopPane.new()
-			vp.add_child(pane)
-			_remote_panes[pid] = pane
-			if NetSession.intermission_states.has(pid):
-				pane.apply_state(NetSession.intermission_states[pid])
+			_spawn_replicas(pid, vp)
 
 func _dock_local() -> void:
 	var vp: SubViewport = _viewports.get(_local_pid)
@@ -147,6 +152,32 @@ func _dock_local() -> void:
 	if _level_root != null:
 		_level_root.reparent(vp)
 		_fit(_level_root)
+
+func _spawn_replicas(pid: int, vp: SubViewport) -> void:
+	var shop_scene: PackedScene = load("res://Scenes/UI/ShopUI.tscn")
+	var level_scene: PackedScene = load("res://Scenes/UI/LevelUpUI.tscn")
+	if shop_scene != null:
+		var shop: ShopUI = shop_scene.instantiate() as ShopUI
+		shop.is_replica = true
+		shop.name = "ReplicaShop_%d" % pid
+		vp.add_child(shop)
+		_remote_shops[pid] = shop
+	if level_scene != null:
+		var level: LevelUpUI = level_scene.instantiate() as LevelUpUI
+		level.is_replica = true
+		level.name = "ReplicaBoon_%d" % pid
+		vp.add_child(level)
+		_remote_levels[pid] = level
+	if NetSession.intermission_states.has(pid):
+		_apply_replica(pid, NetSession.intermission_states[pid])
+
+func _apply_replica(pid: int, st: Dictionary) -> void:
+	var shop: ShopUI = _remote_shops.get(pid)
+	var level: LevelUpUI = _remote_levels.get(pid)
+	if shop != null:
+		shop.apply_net_state(st)
+	if level != null:
+		level.apply_net_state(st)
 
 func _undock_local() -> void:
 	if _shop_root != null and _shop_home != null and is_instance_valid(_shop_root):
@@ -166,14 +197,15 @@ func _fit(ctrl: Control) -> void:
 func _clear_cells() -> void:
 	_undock_local()
 	_viewports.clear()
-	_remote_panes.clear()
+	_remote_shops.clear()
+	_remote_levels.clear()
 	_cells.clear()
 	if _grid != null:
 		for child in _grid.get_children():
 			child.queue_free()
 
 func _on_view(states: Dictionary) -> void:
-	for pid in _remote_panes.keys():
-		var pane: RemoteShopPane = _remote_panes[pid]
-		if pane != null and states.has(pid):
-			pane.apply_state(states[pid])
+	for pid in states.keys():
+		if int(pid) == _local_pid:
+			continue
+		_apply_replica(int(pid), states[pid])

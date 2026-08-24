@@ -122,6 +122,34 @@ func _build() -> void:
 
 # -------------------------------------------------------------------- content
 
+func apply_net(row: Dictionary) -> void:
+	if bool(row.get("sold", true)):
+		clear()
+		if buy_button != null:
+			buy_button.disabled = true
+		return
+	visible = true
+	offer = self
+	if _kind_label != null:
+		_kind_label.text = str(row.get("k", ""))
+	if _name_label != null:
+		_name_label.text = str(row.get("n", ""))
+	if _stats_label != null:
+		_stats_label.text = str(row.get("s", ""))
+	if _flavour_label != null:
+		_flavour_label.text = str(row.get("f", ""))
+	if buy_button != null:
+		buy_button.text = str(row.get("c", ""))
+		buy_button.disabled = true
+	var ipath := str(row.get("i", ""))
+	if _icon != null:
+		_icon.texture = load(ipath) if not ipath.is_empty() and ResourceLoader.exists(ipath) else null
+	modulate.a = float(row.get("a", 1.0))
+	set_locked(bool(row.get("l", false)))
+	if _lock_button != null:
+		_lock_button.disabled = true
+
+
 func to_net() -> Dictionary:
 	if offer == null:
 		return {"sold": true}

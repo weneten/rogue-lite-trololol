@@ -58,6 +58,8 @@ var _rerolls_this_visit: int = 0
 var _open: bool = false
 var _pending_wave: int = 0
 var _waiting_for_peers: bool = false
+# When true this instance is a split-screen copy of another hunter's shop.
+var is_replica: bool = false
 
 func _ready() -> void:
 	# Lets the shop's own buttons respond while get_tree().paused is true,
@@ -89,6 +91,13 @@ func _ready() -> void:
 
 	if _root_panel != null:
 		_root_panel.visible = false
+
+	if is_replica:
+		if _reroll_button != null:
+			_reroll_button.disabled = true
+		if _next_wave_button != null:
+			_next_wave_button.disabled = true
+		return
 
 	EventBus.wave_end.connect(_on_wave_end)
 	EventBus.intermission_boons_done.connect(_on_boons_done)
@@ -571,6 +580,59 @@ func _add_stat(label: String, value: String) -> void:
 func _refresh_reroll_cost() -> void:
 	if _reroll_cost_label != null:
 		_reroll_cost_label.text = "%dg" % ShopEconomy.get_reroll_cost(_rerolls_this_visit)
+
+func apply_net_state(st: Dictionary) -> void:
+	var phase := str(st.get("phase", "shop"))
+	if _root_panel != null:
+		_root_panel.visible = phase != "boon"
+	if _currency_label != null:
+		_currency_label.text = str(int(st.get("gold", 0)))
+	if _wave_label != null:
+		_wave_label.text = str(st.get("char", ""))
+	var offers: Variant = st.get("offers", [])
+	if typeof(offers) == TYPE_ARRAY:
+		for i in range(_cards.size()):
+			if i < offers.size() and typeof(offers[i]) == TYPE_DICTIONARY:
+				_cards[i].apply_net(offers[i])
+			else:
+				_cards[i].clear()
+	if _next_wave_button != null:
+		_next_wave_button.disabled = true
+		_next_wave_button.text = "READY" if phase == "ready" else "NEXT WAVE"
+	_apply_net_trays(st)
+
+func _apply_net_trays(st: Dictionary) -> void:
+	if _weapon_tray != null:
+		for child in _weapon_tray.get_children():
+			child.queue_free()
+		var names: Variant = st.get("weapons", [])
+		if typeof(names) == TYPE_ARRAY:
+			for raw in names:
+				var lab := Label.new()
+				lab.text = str(raw)
+				lab.theme_type_variation = &"StatLabel"
+				_weapon_tray.add_child(lab)
+	if _relic_tray != null:
+		for child in _relic_tray.get_children():
+			child.queue_free()
+		var relics: Variant = st.get("relics", [])
+		if typeof(relics) == TYPE_ARRAY:
+			for row in relics:
+				if typeof(row) != TYPE_DICTIONARY:
+					continue
+				var icon := TextureRect.new()
+				icon.custom_minimum_size = Vector2(30, 30)
+				icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+				icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+				icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+				var ipath := str(row.get("i", ""))
+				if not ipath.is_empty() and ResourceLoader.exists(ipath):
+					icon.texture = load(ipath)
+				icon.tooltip_text = str(row.get("n", ""))
+				_relic_tray.add_child(icon)
+	if _empty_relics_label != null:
+		var relics2: Variant = st.get("relics", [])
+		_empty_relics_label.visible = typeof(relics2) != TYPE_ARRAY or relics2.is_empty()
 
 func snapshot_state() -> Dictionary:
 	var offers: Array = []

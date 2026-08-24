@@ -23,6 +23,7 @@ var _choice_descriptions: Array[Label] = []
 var _current_choices: Array[UpgradeData] = []
 var _choices_container: Control
 var _header: Control
+var is_replica: bool = false
 
 func _ready() -> void:
 	# Lets the buttons still receive input/process while GetTree().Paused is true for the
@@ -53,6 +54,12 @@ func _ready() -> void:
 
 	if _root_panel != null:
 		_root_panel.visible = false
+
+	if is_replica:
+		for button in _choice_buttons:
+			if button != null:
+				button.disabled = true
+		return
 
 	EventBus.player_level_up.connect(_on_player_level_up)
 
@@ -129,6 +136,24 @@ static func _weighted_pick(pool: Array[UpgradeData]) -> UpgradeData:
 			return upgrade
 
 	return pool[pool.size() - 1]
+
+func apply_net_state(st: Dictionary) -> void:
+	var phase := str(st.get("phase", ""))
+	if _root_panel != null:
+		_root_panel.visible = phase == "boon"
+	var rows: Variant = st.get("boons", [])
+	if typeof(rows) != TYPE_ARRAY:
+		rows = []
+	for i in range(_choice_buttons.size()):
+		var has: bool = i < rows.size() and typeof(rows[i]) == TYPE_DICTIONARY
+		if _choice_buttons[i] != null:
+			_choice_buttons[i].visible = has
+			_choice_buttons[i].disabled = true
+		if has:
+			if _choice_names[i] != null:
+				_choice_names[i].text = str(rows[i].get("n", ""))
+			if _choice_descriptions[i] != null:
+				_choice_descriptions[i].text = str(rows[i].get("d", ""))
 
 func _boon_snapshot() -> Array:
 	var rows: Array = []
