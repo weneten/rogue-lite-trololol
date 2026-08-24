@@ -119,6 +119,8 @@ func _process(delta: float) -> void:
 		return
 
 	_attack(target)
+	if NetSession != null and NetSession.is_active:
+		NetSession.note_swing()
 	_cooldown_remaining = 1.0 / maxf(0.01, data.attack_speed * (_owner_stats.attack_speed_multiplier if _owner_stats else 1.0))
 
 # Summon weapons have no carried copy — the Familiar IS the visible thing, and

@@ -34,6 +34,10 @@ var _proxies: Dictionary = {}
 var _remote_hp: Dictionary = {}
 var _arena_armed: bool = false
 var _char_name: String = ""
+var _swing_queued: bool = false
+
+func note_swing() -> void:
+	_swing_queued = true
 
 func _ready() -> void:
 	# Keep the lobby socket alive during shop / moon-boon pauses.
@@ -303,6 +307,17 @@ func _on_remote_damaged(pid: int, hp: int) -> void:
 func send_pose(player: Node2D, hp: int, facing: float) -> void:
 	if not is_active:
 		return
+	var names: Array = []
+	var aim := 0.0
+	var has_target := false
+	if WeaponInventory.instance != null:
+		has_target = WeaponInventory.instance.aim_target != null
+		for weapon in WeaponInventory.instance.equipped_weapons:
+			if weapon != null and weapon.data != null:
+				names.append(weapon.data.name)
+				aim = weapon.rotation
+	var swinging := _swing_queued
+	_swing_queued = false
 	_send({
 		"op": "pose",
 		"pid": local_pid,
@@ -312,6 +327,10 @@ func send_pose(player: Node2D, hp: int, facing: float) -> void:
 		"vy": (player as CharacterBody2D).velocity.y if player is CharacterBody2D else 0.0,
 		"hp": hp,
 		"f": facing,
+		"aim": aim,
+		"tgt": has_target,
+		"sw": swinging,
+		"wep": names,
 	})
 
 func _apply_pose(msg: Dictionary) -> void:
@@ -321,11 +340,17 @@ func _apply_pose(msg: Dictionary) -> void:
 	var ghost: RemoteHunter = _remotes.get(pid)
 	if ghost == null:
 		return
+	var weps: Variant = msg.get("wep", [])
+	if typeof(weps) == TYPE_ARRAY:
+		ghost.sync_loadout(weps)
 	ghost.apply_pose(
 		Vector2(float(msg.get("x", 0.0)), float(msg.get("y", 0.0))),
 		Vector2(float(msg.get("vx", 0.0)), float(msg.get("vy", 0.0))),
 		int(msg.get("hp", 100)),
-		float(msg.get("f", 0.0))
+		float(msg.get("f", 0.0)),
+		float(msg.get("aim", 0.0)),
+		bool(msg.get("tgt", false)),
+		bool(msg.get("sw", false))
 	)
 
 func _send_snapshot() -> void:
@@ -388,7 +413,7 @@ func _apply_snapshot(msg: Dictionary) -> void:
 			continue
 		var ghost: RemoteHunter = _remotes.get(pid)
 		if ghost != null:
-			ghost.apply_pose(Vector2(float(row[1]), float(row[2])), Vector2(float(row[3]), float(row[4])), int(row[5]), 0.0)
+			ghost.apply_body(Vector2(float(row[1]), float(row[2])), Vector2(float(row[3]), float(row[4])), int(row[5]))
 	var seen: Dictionary = {}
 	var world: Node = tree.current_scene.get_node_or_null("World")
 	if world == null:
