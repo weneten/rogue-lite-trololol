@@ -216,6 +216,8 @@ func _count_alive_enemies() -> int:
 func end_wave() -> void:
 	is_wave_active = false
 	EventBus.wave_end.emit(current_wave)
+	if NetSession != null and NetSession.is_host:
+		NetSession.broadcast_wave_end(current_wave)
 
 func _spawn_random_enemy() -> void:
 	var data: EnemyData = _select_weighted_enemy(wave_definition.enemy_pool, current_wave)

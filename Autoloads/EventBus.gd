@@ -8,6 +8,9 @@ signal enemy_killed(enemy, currency_reward, experience_reward)
 signal wave_start(wave_number)
 signal wave_end(wave_number)
 signal player_level_up(new_level)
+# After every queued moon-boon for this intermission has been picked. ShopUI
+# waits on this so the Ossuary never covers the boon screen.
+signal intermission_boons_done()
 signal item_picked_up(item_id)
 signal player_damaged(damage_amount, current_health)
 

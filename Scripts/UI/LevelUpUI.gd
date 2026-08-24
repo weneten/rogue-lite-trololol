@@ -138,10 +138,11 @@ func _on_choice_selected(index: int) -> void:
 	if index < _choice_buttons.size() and _choice_buttons[index] != null:
 		UIAnim.punch(_choice_buttons[index], 1.2)
 
-	if _root_panel != null:
-		UIAnim.fade_out(_root_panel, 0.16)
-
-	UIAnim.release_focus(get_tree())
+	var more_boons := PlayerStats.instance != null and PlayerStats.instance.pending_boons > 0
+	if not more_boons:
+		if _root_panel != null:
+			_root_panel.visible = false
+		UIAnim.release_focus(get_tree())
 
 	if PlayerStats.instance != null:
 		PlayerStats.instance.confirm_upgrade_selected()

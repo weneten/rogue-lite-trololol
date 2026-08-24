@@ -19,6 +19,10 @@ signal roster_changed(players)
 signal lobby_ready(code)
 signal match_starting(seed)
 signal lobby_failed(message)
+signal all_hunters_ready()
+signal ready_counts(ready_n, total_n)
+
+var _ready_pids: Dictionary = {}
 
 var _socket: WebSocketPeer
 var _snap_acc: float = 0.0
@@ -28,6 +32,10 @@ var _proxies: Dictionary = {}
 var _remote_hp: Dictionary = {}
 var _arena_armed: bool = false
 var _char_name: String = ""
+
+func _ready() -> void:
+	# Keep the lobby socket alive during shop / moon-boon pauses.
+	process_mode = Node.PROCESS_MODE_ALWAYS
 
 func is_client() -> bool:
 	return is_active and not is_host
@@ -41,6 +49,7 @@ func reset() -> void:
 	last_error = ""
 	_arena_armed = false
 	_next_enemy_id = 1
+	_ready_pids.clear()
 	_remotes.clear()
 	_proxies.clear()
 	_remote_hp.clear()
@@ -75,6 +84,43 @@ func take_enemy_id() -> int:
 	_next_enemy_id += 1
 	return id
 
+func broadcast_wave_end(wave_number: int) -> void:
+	_ready_pids.clear()
+	_send({"op": "wave_end", "w": wave_number})
+
+func send_loot(pid: int, xp: int, gold: int) -> void:
+	if pid == local_pid or pid <= 0:
+		_grant_loot(xp, gold)
+		return
+	_send({"op": "loot", "pid": pid, "xp": xp, "gold": gold})
+
+func mark_ready() -> void:
+	_ready_pids[local_pid] = true
+	_send({"op": "ready", "pid": local_pid})
+	_emit_ready_counts()
+	_try_finish_ready()
+
+func _grant_loot(xp: int, gold: int) -> void:
+	if xp > 0 and PlayerStats.instance != null:
+		PlayerStats.instance.add_xp(xp)
+	if gold > 0 and GameManager != null:
+		GameManager.add_currency(gold)
+
+func _peer_total() -> int:
+	return maxi(1, roster.size())
+
+func _emit_ready_counts() -> void:
+	ready_counts.emit(_ready_pids.size(), _peer_total())
+
+func _try_finish_ready() -> void:
+	if not is_host:
+		return
+	if _ready_pids.size() < _peer_total():
+		return
+	_send({"op": "next"})
+	_ready_pids.clear()
+	all_hunters_ready.emit()
+
 func _process(delta: float) -> void:
 	if _socket != null:
 		_socket.poll()
@@ -100,7 +146,7 @@ func _process(delta: float) -> void:
 	if scene != null and scene.name == "Arena" and not _arena_armed:
 		_arm_arena(scene)
 
-	if is_host and _arena_armed:
+	if is_host and _arena_armed and not get_tree().paused:
 		_snap_acc += delta
 		if _snap_acc >= 1.0 / SNAP_HZ:
 			_snap_acc = 0.0
@@ -173,6 +219,19 @@ func _on_packet(text: String) -> void:
 				_apply_hit(int(msg.get("eid", 0)), int(msg.get("dmg", 0)))
 		"hurt":
 			_apply_hurt(msg)
+		"wave_end":
+			if not is_host:
+				EventBus.wave_end.emit(int(msg.get("w", 1)))
+		"loot":
+			if int(msg.get("pid", 0)) == local_pid:
+				_grant_loot(int(msg.get("xp", 0)), int(msg.get("gold", 0)))
+		"ready":
+			_ready_pids[int(msg.get("pid", 0))] = true
+			_emit_ready_counts()
+			_try_finish_ready()
+		"next":
+			_ready_pids.clear()
+			all_hunters_ready.emit()
 
 func _arm_arena(scene: Node) -> void:
 	_arena_armed = true
@@ -293,7 +352,10 @@ func _apply_snapshot(msg: Dictionary) -> void:
 	var world: Node = tree.current_scene.get_node_or_null("World")
 	if world == null:
 		world = tree.current_scene
-	for row in msg.get("en", []):
+	var enemy_rows: Variant = msg.get("en", [])
+	if typeof(enemy_rows) != TYPE_ARRAY:
+		enemy_rows = []
+	for row in enemy_rows:
 		if typeof(row) != TYPE_ARRAY or row.size() < 5:
 			continue
 		var eid := int(row[0])

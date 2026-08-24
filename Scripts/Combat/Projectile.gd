@@ -58,7 +58,9 @@ func _physics_process(delta: float) -> void:
 		_despawn()
 
 func _on_body_entered(body: Node2D) -> void:
-	if not _active or not body.is_in_group(_target_group):
+	if not _active:
+		return
+	if not body.is_in_group(_target_group) and not (body is EnemyProxy):
 		return
 
 	var health = body.get_node_or_null("HealthComponent") as HealthComponent

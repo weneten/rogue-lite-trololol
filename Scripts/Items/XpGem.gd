@@ -93,7 +93,7 @@ func _physics_process(delta: float) -> void:
 		var frame = int(_anim_time * frames_per_second) % FRAME_COUNT
 		_atlas.region = Rect2(frame * FRAME_SIZE, 0, FRAME_SIZE, FRAME_SIZE)
 
-	var player = get_tree().get_first_node_in_group("Player") as Node2D
+	var player := _nearest_hunter()
 	if player == null:
 		return
 
@@ -122,22 +122,45 @@ func _on_body_entered(body: Node2D) -> void:
 	if _active and body.is_in_group("Player"):
 		_collect()
 
+func _nearest_hunter() -> Node2D:
+	var best: Node2D = null
+	var best_d := INF
+	for node in get_tree().get_nodes_in_group("Player"):
+		if not node is Node2D:
+			continue
+		var body := node as Node2D
+		var health := body.get_node_or_null("HealthComponent") as HealthComponent
+		if health != null and health.is_dead:
+			continue
+		var d := global_position.distance_squared_to(body.global_position)
+		if d < best_d:
+			best_d = d
+			best = body
+	return best
+
 func _collect() -> void:
 	if not _active:
 		return
 
 	_active = false  # guard: proximity and body_entered can both fire this frame
 
-	if _xp_value > 0 and PlayerStats.instance != null:
-		PlayerStats.instance.add_xp(_xp_value)
+	var hunter := _nearest_hunter()
+	var xp := _xp_value
+	var payout := _currency_value
+	if payout > 0 and PlayerStats.instance != null:
+		payout = maxi(1, roundi(payout * PlayerStats.instance.currency_gain_multiplier))
 
-	if _currency_value > 0 and GameManager != null:
-		# Gold relics scale what drops pay, not what the shop refunds, so the
-		# multiplier is applied here rather than inside add_currency.
-		var payout = _currency_value
-		if PlayerStats.instance != null:
-			payout = maxi(1, roundi(payout * PlayerStats.instance.currency_gain_multiplier))
-		GameManager.add_currency(payout)
+	var remote_pid := 0
+	if hunter is RemoteHunter:
+		remote_pid = (hunter as RemoteHunter).net_pid
+
+	if remote_pid > 0 and NetSession != null and NetSession.is_active:
+		NetSession.send_loot(remote_pid, xp, payout)
+	else:
+		if xp > 0 and PlayerStats.instance != null:
+			PlayerStats.instance.add_xp(xp)
+		if payout > 0 and GameManager != null:
+			GameManager.add_currency(payout)
 
 	AudioManager.play_sfx("pickup_material")
 	_despawn()

@@ -56,6 +56,8 @@ var _stat_grid: GridContainer
 var _cards: Array[ShopCard] = []
 var _rerolls_this_visit: int = 0
 var _open: bool = false
+var _pending_wave: int = 0
+var _waiting_for_peers: bool = false
 
 func _ready() -> void:
 	# Lets the shop's own buttons respond while get_tree().paused is true,
@@ -89,7 +91,11 @@ func _ready() -> void:
 		_root_panel.visible = false
 
 	EventBus.wave_end.connect(_on_wave_end)
+	EventBus.intermission_boons_done.connect(_on_boons_done)
 	EventBus.currency_changed.connect(_on_currency_changed)
+	if NetSession != null:
+		NetSession.all_hunters_ready.connect(_on_all_hunters_ready)
+		NetSession.ready_counts.connect(_on_ready_counts)
 
 func _build_shelf() -> void:
 	if _shelf == null:
@@ -108,7 +114,18 @@ func _build_shelf() -> void:
 # ------------------------------------------------------------------- lifecycle
 
 func _on_wave_end(wave_number: int) -> void:
+	_pending_wave = wave_number
+	_waiting_for_peers = false
+	get_tree().paused = true
+	# Brotato: moon boons first (every queued level from the wave), then the shop.
+	if PlayerStats.instance != null and PlayerStats.instance.pop_next_boon():
+		return
 	_open_shop(wave_number)
+
+func _on_boons_done() -> void:
+	if _pending_wave <= 0:
+		return
+	_open_shop(_pending_wave)
 
 func _open_shop(wave_number: int) -> void:
 	_open = true
@@ -116,6 +133,10 @@ func _open_shop(wave_number: int) -> void:
 
 	for card in _cards:
 		card.set_locked(false)
+
+	if _next_wave_button != null:
+		_next_wave_button.disabled = false
+		_next_wave_button.text = "NEXT WAVE"
 
 	if _wave_label != null:
 		_wave_label.text = "WAVE %d CLEARED" % wave_number
@@ -152,15 +173,41 @@ func _on_next_wave_pressed() -> void:
 	if not _open:
 		return
 
-	_open = false
 	AudioManager.play_sfx("ui_click")
 
+	if NetSession != null and NetSession.is_active:
+		_waiting_for_peers = true
+		if _next_wave_button != null:
+			_next_wave_button.disabled = true
+			_next_wave_button.text = "WAITING…"
+		NetSession.mark_ready()
+		return
+
+	_close_and_resume()
+
+func _close_and_resume() -> void:
+	_open = false
+	_waiting_for_peers = false
+	_pending_wave = 0
+	if _next_wave_button != null:
+		_next_wave_button.disabled = false
+		_next_wave_button.text = "NEXT WAVE"
 	if _root_panel != null:
 		_root_panel.visible = false
-
 	UIAnim.release_focus(get_tree())
 	get_tree().paused = false
-	WaveManager.start_next_wave()
+	if NetSession == null or not NetSession.is_client():
+		WaveManager.start_next_wave()
+
+func _on_all_hunters_ready() -> void:
+	if not _waiting_for_peers and not _open:
+		return
+	_close_and_resume()
+
+func _on_ready_counts(ready_n: int, total_n: int) -> void:
+	if not _waiting_for_peers or _next_wave_button == null:
+		return
+	_next_wave_button.text = "WAITING %d/%d" % [ready_n, total_n]
 
 # Offers pop in left to right, on open and on every reroll, so new stock reads
 # as new stock rather than as a text swap.

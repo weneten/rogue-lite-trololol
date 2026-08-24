@@ -36,6 +36,11 @@ func _process(delta: float) -> void:
 
 		var enemy = node as Node2D
 
+		# Co-op ghosts are StaticBody2D copies; hiding them made joiners
+		# lose every target.
+		if enemy is EnemyProxy:
+			continue
+
 		# Skip fully inactive pooled instances (already invisible + not processing).
 		if not enemy.is_physics_processing() and not enemy.visible:
 			continue

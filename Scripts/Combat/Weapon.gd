@@ -214,12 +214,10 @@ static func find_nearest(from: Node2D, group: String, max_dist_sq: float, requir
 	return nearest
 
 static func is_live_candidate(candidate: Node2D) -> bool:
-	# Pooled corpses stay in the group but are hidden and not simulating.
-	# Off-screen culled enemies are also hidden — they are still live, but
-	# aiming only cares about what is on camera, and attacks use range first.
-	if not candidate.visible:
-		return false
-	if candidate is CollisionObject2D and not (candidate as CollisionObject2D).is_physics_processing():
+	# Pooled corpses stay in the group but are hidden. Do not require
+	# physics_processing: co-op enemy ghosts are StaticBody2D copies and
+	# would fail that check, so joiners never found a target.
+	if not candidate.visible or not candidate.is_inside_tree():
 		return false
 
 	var health := candidate.get_node_or_null("HealthComponent") as HealthComponent

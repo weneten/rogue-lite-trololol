@@ -69,6 +69,9 @@ var active_passive: PassiveAbility
 
 var level: int = 1
 var current_xp: int = 0
+# Levels earned during the wave. The moon-boon screen waits until the round
+# ends (Brotato): fighting is never paused mid-hunt for a card pick.
+var pending_boons: int = 0
 
 var _health: HealthComponent
 # Tracks how much of DamageMultiplier currently comes from CurseLiftScalingPassive's
@@ -125,27 +128,27 @@ func add_xp(amount: int) -> void:
 	try_level_up()
 
 func try_level_up() -> void:
-	if current_xp < xp_to_next_level:
-		return
+	while current_xp >= xp_to_next_level:
+		current_xp -= xp_to_next_level
+		level += 1
+		pending_boons += 1
+		EventBus.xp_changed.emit(current_xp, xp_to_next_level, level)
 
-	current_xp -= xp_to_next_level
-	level += 1
-
-	# Brief pause while the level-up choice screen is up; the tree resumes via
-	# ConfirmUpgradeSelected() once LevelUpUI reports a choice was made.
-	get_tree().paused = true
-
-	EventBus.xp_changed.emit(current_xp, xp_to_next_level, level)
+# Starts the first queued boon screen. Returns false when there is nothing to pick.
+func pop_next_boon() -> bool:
+	if pending_boons <= 0:
+		return false
+	pending_boons -= 1
 	EventBus.player_level_up.emit(level)
+	return true
 
-# Called by LevelUpUI once the player has picked an upgrade. Resumes gameplay — unless the
-# XP already banked covers the next level too (a big multi-gem pickup), in which case another
-# level-up screen is triggered immediately instead of actually unpausing.
+# Called by LevelUpUI after a card is chosen. Another boon in the queue shows
+# immediately; an empty queue hands the intermission to the shop.
 func confirm_upgrade_selected() -> void:
-	if current_xp >= xp_to_next_level:
-		try_level_up()
-	else:
-		get_tree().paused = false
+	if pending_boons > 0:
+		pop_next_boon()
+		return
+	EventBus.intermission_boons_done.emit()
 
 func apply_damage_upgrade(multiplier_increase: float) -> void:
 	damage_multiplier += multiplier_increase
