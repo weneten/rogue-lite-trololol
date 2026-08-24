@@ -74,7 +74,10 @@ func try_add_weapon(data: WeaponData) -> bool:
 	# New weapons are parented directly onto the owner body, same as the Weapon child
 	# authored in Player.tscn, so this NodePath ("..") resolves to the owner exactly like theirs.
 	weapon.owner_body_path = NodePath("..")
-	_owner_body.add_child(weapon)
+	if _owner_body.is_node_ready():
+		_owner_body.add_child(weapon)
+	else:
+		_owner_body.add_child.call_deferred(weapon)
 	_equipped_weapons.append(weapon)
 	_reslot_weapons()
 	return true

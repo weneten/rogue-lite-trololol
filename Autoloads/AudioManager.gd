@@ -69,13 +69,15 @@ const DENSITY_REFRESH_SECONDS := 0.25
 
 func _ready() -> void:
 	_ensure_buses()
-	_build_players()
 	_register_placeholder_sfx()
-	_apply_all_volumes()
 	_subscribe_gameplay()
 	_try_subscribe_boss_signals()
+	# Players are add_child'd; that is illegal during _ready on Godot 4.7.
+	_boot.call_deferred()
 
-	# Default: menu bed when booting into MainMenu.
+func _boot() -> void:
+	_build_players()
+	_apply_all_volumes()
 	play_music("menu")
 
 func _process(delta: float) -> void:
@@ -105,7 +107,7 @@ func _input(event: InputEvent) -> void:
 # -------------------------------------------------------------------------
 
 func play_sfx(sfx_id: String) -> void:
-	if sfx_id.is_empty():
+	if sfx_id.is_empty() or _sfx_pool.is_empty():
 		return
 
 	var stream: AudioStream = _sfx_streams.get(sfx_id)

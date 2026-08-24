@@ -31,7 +31,7 @@ static var _strip: Texture2D
 
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)
-	_build_sprite()
+	_build_sprite.call_deferred()
 
 # Swaps the placeholder polygon for the pixel shard the art pipeline emits.
 func _build_sprite() -> void:

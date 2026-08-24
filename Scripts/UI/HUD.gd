@@ -80,14 +80,16 @@ func _ready() -> void:
 	if _banner != null:
 		_banner.modulate.a = 0.0
 
-	_ensure_arrow_layer()
-	_build_arrow_pool()
-
 	EventBus.player_health_changed.connect(_on_player_health_changed)
 	EventBus.xp_changed.connect(_on_xp_changed)
 	EventBus.currency_changed.connect(_on_currency_changed)
 	EventBus.wave_start.connect(_on_wave_start)
 
+	_finish_setup.call_deferred()
+
+func _finish_setup() -> void:
+	_ensure_arrow_layer()
+	_build_arrow_pool()
 	_sync_initial_state()
 
 func _process(delta: float) -> void:

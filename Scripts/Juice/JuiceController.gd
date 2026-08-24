@@ -43,6 +43,10 @@ func _ready() -> void:
 	if Engine.time_scale < 0.99:
 		Engine.time_scale = 1.0
 
+	damage_number_scene = damage_number_scene if damage_number_scene != null else load("res://Scenes/Combat/DamageNumber.tscn")
+	_attach_helpers.call_deferred()
+
+func _attach_helpers() -> void:
 	_shake = ScreenShake.new()
 	_shake.name = "ScreenShake"
 	add_child(_shake)
@@ -55,8 +59,6 @@ func _ready() -> void:
 	var culler = OffscreenCuller.new()
 	culler.name = "OffscreenCuller"
 	add_child(culler)
-
-	damage_number_scene = damage_number_scene if damage_number_scene != null else load("res://Scenes/Combat/DamageNumber.tscn")
 
 	if EventBus != null:
 		EventBus.player_damaged.connect(_on_player_damaged)
@@ -95,12 +97,18 @@ func _try_bind_camera() -> void:
 	if cam == null:
 		return
 
+	if _shake == null:
+		return
+
 	_shake.bind(cam)
 	_bound_camera = true
 
 func _on_player_damaged(damage_amount: float, current_health: float) -> void:
 	if not _bound_camera:
 		_try_bind_camera()
+
+	if _shake == null:
+		return
 
 	var trauma = clampf(
 		player_hit_trauma_min + damage_amount * player_hit_trauma_per_damage,
@@ -120,6 +128,7 @@ func _on_player_damage_dealt(target: Node, amount: int) -> void:
 
 	# Hitstop OFF by default. When enabled, rare + cooldown so multi-cleave doesn't stutter.
 	if enable_hit_stop \
+		and _hit_stop != null \
 		and amount >= hit_stop_damage_threshold \
 		and _hit_stop_cooldown_remaining <= 0 \
 		and hit_stop_seconds > 0.0:

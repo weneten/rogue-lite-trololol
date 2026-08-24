@@ -65,6 +65,10 @@ var _charms: Array[Node2D] = []
 var _time: float = 0.0
 
 func _ready() -> void:
+	EventBus.item_picked_up.connect(_on_item_picked_up)
+	_build_layers.call_deferred()
+
+func _build_layers() -> void:
 	# The Hunter's own art draws at z 0; the aura belongs on the floor and the
 	# charms just above it, so neither ever covers the character.
 	_aura = Sprite2D.new()
@@ -80,7 +84,6 @@ func _ready() -> void:
 	_charm_root.name = "Charms"
 	add_child(_charm_root)
 
-	EventBus.item_picked_up.connect(_on_item_picked_up)
 	refresh()
 
 func _on_item_picked_up(_item_id: String) -> void:
@@ -89,6 +92,9 @@ func _on_item_picked_up(_item_id: String) -> void:
 # Rebuilds from GameManager's owned list. Cheap enough to run on every
 # purchase, and rebuilding beats trying to diff two small arrays.
 func refresh() -> void:
+	if _charm_root == null or _aura == null:
+		return
+
 	var owned: Array[PassiveItemData] = GameManager.owned_passive_items if GameManager != null else []
 
 	for charm in _charms:

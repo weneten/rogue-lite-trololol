@@ -62,7 +62,9 @@ func _ready() -> void:
 	if _camera != null:
 		_camera.make_current()
 
-	apply_character_data()
+	# Deferred: adding weapons/passives to this node from inside _ready is
+	# rejected in Godot 4.7 ("parent is busy setting up children").
+	apply_character_data.call_deferred()
 
 # Configures stats/loadout/passive from the Hunter chosen at CharacterSelect (falls back to
 # GameManager.selected_character, then to whatever CharacterData is wired in the

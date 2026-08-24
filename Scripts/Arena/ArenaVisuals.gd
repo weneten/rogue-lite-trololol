@@ -52,6 +52,13 @@ func _ready() -> void:
 	if vignette != null:
 		vignette.color = Color(0.03, 0.01, 0.04, 0.28)
 
+	# Godot 4.7 blocks add_child on a node while its own _ready is running
+	# ("Parent node is busy setting up children"). The eight add_child calls
+	# below used to fail on web, so the floor/walls/props never appeared and
+	# Firefox logged ELEMENT_ARRAY_BUFFER warnings for the missing geometry.
+	_assemble.call_deferred()
+
+func _assemble() -> void:
 	_build_outside()
 	_build_floor()
 	_build_walls()
