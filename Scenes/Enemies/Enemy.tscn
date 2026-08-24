@@ -27,7 +27,7 @@ centered = true
 offset = Vector2(2, -26)
 
 [node name="FallbackPolygon" type="Polygon2D" parent="."]
-visible = true
+visible = false
 color = Color(0.4, 0.55, 0.35, 1)
 polygon = PackedVector2Array(0, -16, 14, 0, 0, 16, -14, 0)
 

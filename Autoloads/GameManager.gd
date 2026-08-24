@@ -26,11 +26,37 @@ var owned_passive_items: Array[PassiveItemData]:
 
 func _ready() -> void:
 	run_seed = randi()
+	_apply_runtime_quality()
 
 	EventBus.enemy_killed.connect(_on_enemy_killed)
 	EventBus.wave_start.connect(_on_wave_start)
 	EventBus.wave_end.connect(_on_wave_end)
 	EventBus.player_died.connect(_on_player_died)
+
+# Browser WASM is single-thread and fill-rate bound. Cap the sim so a hitch
+# cannot snowball, and keep the canvas at project resolution.
+func _apply_runtime_quality() -> void:
+	Engine.max_fps = 60
+	if not OS.has_feature("web"):
+		return
+
+	Engine.physics_ticks_per_second = 30
+	Engine.max_physics_steps_per_frame = 2
+	# Firefox's WASM/WebGL path hitches harder than Chromium if the sim
+	# tries to catch up more than one extra physics tick.
+	if is_firefox():
+		Engine.max_physics_steps_per_frame = 1
+
+static func is_web() -> bool:
+	return OS.has_feature("web")
+
+static func is_firefox() -> bool:
+	if not OS.has_feature("web"):
+		return false
+	if not ClassDB.class_exists("JavaScriptBridge"):
+		return false
+	var ua := str(JavaScriptBridge.eval("navigator.userAgent || ''"))
+	return ua.contains("Firefox")
 
 func _on_enemy_killed(enemy: Node, currency_reward: int, experience_reward: int) -> void:
 	# Neither half of a kill's reward is banked here. Both the experience and

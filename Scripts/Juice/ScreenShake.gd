@@ -27,6 +27,11 @@ func add_trauma(amount: float) -> void:
 	if amount <= 0.0:
 		return
 
+	# Random camera offsets at a low browser framerate read as packet-loss
+	# stutter, not impact.
+	if OS.has_feature("web"):
+		return
+
 	_trauma = clampf(_trauma + amount, 0.0, 1.0)
 
 # Convenience: map a strength/duration pair into trauma (duration only soft-caps decay feel).

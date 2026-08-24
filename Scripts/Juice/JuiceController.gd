@@ -130,6 +130,11 @@ func _spawn_damage_number(world_pos: Vector2, amount: int, color: Color) -> void
 	if damage_number_scene == null:
 		return
 
+	# World-space Labels are one of the most expensive nodes in the HTML5
+	# renderer. Skip them in the browser; hits still flash.
+	if OS.has_feature("web"):
+		return
+
 	if _damage_numbers_this_frame >= MAX_DAMAGE_NUMBERS_PER_FRAME:
 		return
 	_damage_numbers_this_frame += 1

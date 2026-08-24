@@ -39,6 +39,9 @@ var _flicker_phases: Array[float] = []
 var _time: float = 0.0
 
 func _ready() -> void:
+	if OS.has_feature("web"):
+		prop_count = mini(prop_count, 18)
+
 	# Night grade — the art is drawn for a cold blue night with warm fire pools.
 	var modulate_node = get_parent().get_node_or_null("CanvasModulate") as CanvasModulate
 	if modulate_node != null:
@@ -55,6 +58,10 @@ func _ready() -> void:
 	_build_props()
 
 func _process(delta: float) -> void:
+	if _flicker_lights.is_empty():
+		set_process(false)
+		return
+
 	_time += delta
 	# Cheap per-light flicker: two out-of-phase sines never repeat visibly.
 	for i in range(_flicker_lights.size()):
@@ -259,6 +266,11 @@ func _make_prop(strip: Texture2D, index: int, pos: Vector2, rng: RandomNumberGen
 	return holder
 
 func _attach_flicker(holder: Node2D, strong: bool, rng: RandomNumberGenerator) -> void:
+	# 2D lights are a full extra composite pass each. Fine on desktop, fatal
+	# in a single-thread browser build — skip them on web.
+	if OS.has_feature("web"):
+		return
+
 	var light = PointLight2D.new()
 	light.texture = _radial_light_texture()
 	light.texture_scale = 3.4 if strong else 1.6

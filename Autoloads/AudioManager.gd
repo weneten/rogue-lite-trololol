@@ -163,6 +163,10 @@ func set_music_volume(linear01: float) -> void:
 func set_sfx_volume(linear01: float) -> void:
 	sfx_volume = clampf(linear01, 0.0, 1.0)
 	_set_bus_linear(BUS_SFX, sfx_volume)
+	# Sample playback on web can ignore bus volume; keep the pool in sync.
+	for player in _sfx_pool:
+		if player != null:
+			_set_player_linear(player, sfx_volume)
 
 # -------------------------------------------------------------------------
 # Setup
@@ -220,11 +224,12 @@ func _make_music_player(name: String, stream: AudioStream) -> AudioStreamPlayer:
 	add_child(player)
 	return player
 
-# playback_type hint: 0=Default, 1=Stream, 2=Sample. Sample (web default) can
-# ignore custom Music/SFX bus routing; force Stream on HTML5.
+# playback_type: 0=Default, 1=Stream, 2=Sample.
+# Stream mixes on the WASM main thread — Chrome copes, Firefox hitchs and can
+# throw on tree pause (shop / level-up). Sample is the Godot 4.3+ web default.
 static func _configure_web_playback(player: AudioStreamPlayer) -> void:
 	if OS.has_feature("web"):
-		player.playback_type = 1
+		player.playback_type = AudioServer.PLAYBACK_TYPE_SAMPLE
 
 # Music beds are generated WAVs with no authored loop points, so the loop is
 # set here in code rather than relying on editor import settings.

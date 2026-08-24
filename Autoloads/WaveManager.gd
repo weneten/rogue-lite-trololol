@@ -176,7 +176,8 @@ func _get_max_alive_for_wave(wave: int) -> int:
 	var growth: float = wave_definition.enemy_count_growth_per_wave * maxi(0, wave - 1)
 	# BaseEnemyCount now means "starting concurrent pressure", not total quota.
 	var cap: int = roundi((wave_definition.base_enemy_count + 3.0 + growth * 2.0) * _density_multiplier())
-	return clampi(cap, 6, 45)
+	var hard_cap: int = 22 if OS.has_feature("web") else 45
+	return clampi(cap, 6, hard_cap)
 
 func _get_spawn_interval_for_wave(wave: int) -> float:
 	if wave_definition == null:

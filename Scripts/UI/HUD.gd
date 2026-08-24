@@ -57,6 +57,7 @@ var _weapon_slots: HBoxContainer
 # Label it writes. Rebuilt only when the loadout itself changes.
 var _weapon_rows: Array = []
 var _weapon_bar_cooldown: float = 0.0
+var _arrow_frame: int = 0
 
 func _ready() -> void:
 	_health_bar = get_node_or_null(health_bar_path)
@@ -92,7 +93,10 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	_pulse_time += delta
 	_update_wave_timer()
-	_update_offscreen_arrows()
+	_arrow_frame += 1
+	if _arrow_frame >= 4:
+		_arrow_frame = 0
+		_update_offscreen_arrows()
 	_update_low_health_pulse()
 
 	_weapon_bar_cooldown -= delta

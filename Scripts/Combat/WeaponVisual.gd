@@ -123,17 +123,19 @@ func setup(data: WeaponData, scale_factor: float = 1.0) -> void:
 	_base_scale = scale_factor
 
 	# Ghosts are added first so they draw under the weapon itself — a trail
-	# painted over the blade reads as a smear rather than motion.
-	for i in TRAIL_LAG.size():
-		var ghost := Sprite2D.new()
-		ghost.name = "Trail%d" % i
-		ghost.texture = texture
-		ghost.centered = true
-		ghost.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-		ghost.visible = false
-		ghost.z_index = CARRY_Z
-		add_child(ghost)
-		_ghosts.append(ghost)
+	# painted over the blade reads as a smear rather than motion. Skip them
+	# in the browser: six weapons × four extra sprites is a lot of overdraw.
+	if not OS.has_feature("web"):
+		for i in TRAIL_LAG.size():
+			var ghost := Sprite2D.new()
+			ghost.name = "Trail%d" % i
+			ghost.texture = texture
+			ghost.centered = true
+			ghost.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+			ghost.visible = false
+			ghost.z_index = CARRY_Z
+			add_child(ghost)
+			_ghosts.append(ghost)
 
 	_sprite = Sprite2D.new()
 	_sprite.name = "Mount"
@@ -249,6 +251,9 @@ func _apply_transform() -> void:
 # while a swing owns the transform — a permanent trail on an idle weapon just
 # looks like a rendering bug.
 func _update_trail() -> void:
+	if _ghosts.is_empty():
+		return
+
 	_history.push_front({
 		"position": _sprite.position,
 		"rotation": _sprite.rotation,

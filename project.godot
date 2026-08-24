@@ -17,7 +17,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 config/name="Nightbane"
 config/description="A dark gothic horror top-down arena survival roguelite."
 run/main_scene="res://Scenes/MainMenu/MainMenu.tscn"
-config/features=PackedStringArray("4.7", "Forward Plus")
+config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://Assets/Art/icon.svg"
 
 [autoload]
@@ -31,15 +31,18 @@ AudioManager="*res://Autoloads/AudioManager.gd"
 [audio]
 
 buses/default_bus_layout="res://default_bus_layout.tres"
-; Web: Stream playback so custom Music/SFX buses actually output (Sample mode
-; is lower-latency but silently drops bus routing on HTML5 in Godot 4.3+).
-general/default_playback_type.web=1
+; Web default is Sample. Stream mixes on the main thread and hitchs Firefox
+; (and can wasm-error when the tree pauses for shop/level-up). Volume is
+; applied per-player in AudioManager as well as via buses.
+general/default_playback_type.web=2
+driver/output_latency.web=100
 
 [display]
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
-window/stretch/mode="canvas_items"
+window/stretch/mode="viewport"
+window/stretch/aspect="keep"
 
 [input]
 
@@ -124,5 +127,8 @@ common/max_physics_steps_per_frame=4
 
 [rendering]
 
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+renderer/rendering_method.web="gl_compatibility"
 textures/canvas_textures/default_texture_filter=0
-gl_compatibility/item_buffer_size=262144
+2d/snap/snap_2d_transforms_to_pixel=true
