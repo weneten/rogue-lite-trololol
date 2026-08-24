@@ -57,6 +57,37 @@ func _ready() -> void:
 	_build()
 
 
+func apply_pane_size(size: Vector2) -> void:
+	if size.x < 8.0 or size.y < 8.0:
+		custom_minimum_size = CARD_SIZE
+		size_flags_horizontal = Control.SIZE_FILL
+		size_flags_vertical = Control.SIZE_FILL
+		_set_icon_px(ICON_SIZE.y)
+		if _flavour_label != null:
+			_flavour_label.visible = true
+		return
+	custom_minimum_size = size
+	size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	size_flags_vertical = Control.SIZE_EXPAND_FILL
+	var compact := size.y < 230.0 or size.x < 170.0
+	if _flavour_label != null:
+		_flavour_label.visible = not compact
+	var icon_px := ICON_SIZE.y
+	if size.y < 190.0:
+		icon_px = 40.0
+	elif size.y < 230.0:
+		icon_px = 52.0
+	_set_icon_px(icon_px)
+
+
+func _set_icon_px(icon_px: float) -> void:
+	if _icon != null:
+		_icon.custom_minimum_size = Vector2(icon_px, icon_px)
+	var frame := _icon.get_parent() as Control if _icon != null else null
+	if frame != null:
+		frame.custom_minimum_size = Vector2(0, icon_px + 8.0)
+
+
 func _build() -> void:
 	var root := VBoxContainer.new()
 	root.add_theme_constant_override("separation", 6)

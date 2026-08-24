@@ -2,14 +2,11 @@ extends CanvasLayer
 class_name IntermissionSplit
 
 # Local-coop intermission. Each hunter's real shop/boon UI is docked into a
-# pane and uniformly scaled to fit (no SubViewport — those ignore aspect on
-# web and CanvasLayers paint on the root view). 2 players stack top/bottom;
-# 3–4 use a 2×2 grid.
+# pane that fills its half (or quarter) of the screen. The shop reflows at
+# native font size instead of shrinking a 1280×720 layout into a postage stamp.
+# 2 players stack top/bottom; 3–4 use a 2×2 grid.
 
-const VIEW_W := 1280.0
-const VIEW_H := 720.0
-const NAME_H := 22.0
-const GAP := 4.0
+const GAP := 3.0
 
 var _root: Control
 var _layout: Control
@@ -200,24 +197,25 @@ func _add_pane(parent: Control, pid: int) -> void:
 	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	cell.add_child(frame)
 
-	var nameplate := Label.new()
-	nameplate.text = _label_for(pid)
-	nameplate.set_anchors_preset(Control.PRESET_TOP_WIDE)
-	nameplate.offset_bottom = NAME_H
-	nameplate.offset_left = 10
-	nameplate.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	nameplate.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	nameplate.theme_type_variation = &"GoldLabel"
-	nameplate.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	cell.add_child(nameplate)
-
 	var host := Control.new()
 	host.name = "Host_%d" % pid
-	host.size = Vector2(VIEW_W, VIEW_H)
+	host.set_anchors_preset(Control.PRESET_FULL_RECT)
 	host.mouse_filter = Control.MOUSE_FILTER_STOP if pid == _local_pid else Control.MOUSE_FILTER_IGNORE
 	host.clip_contents = true
 	cell.add_child(host)
 	_hosts[pid] = host
+
+	var nameplate := Label.new()
+	nameplate.text = _label_for(pid)
+	nameplate.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	nameplate.offset_left = 12
+	nameplate.offset_right = -12
+	nameplate.offset_bottom = 20
+	nameplate.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	nameplate.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	nameplate.theme_type_variation = &"GoldLabel"
+	nameplate.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	cell.add_child(nameplate)
 
 	if pid != _local_pid:
 		_spawn_replicas(pid, host)
@@ -225,19 +223,27 @@ func _add_pane(parent: Control, pid: int) -> void:
 func _refit() -> void:
 	for pid in _hosts.keys():
 		var host: Control = _hosts[pid]
-		var cell: Control = _cells.get(pid)
-		if host == null or cell == null or not is_instance_valid(host):
+		if host == null or not is_instance_valid(host):
 			continue
-		var avail := Vector2(cell.size.x, maxf(8.0, cell.size.y - NAME_H))
-		if avail.x < 8.0 or avail.y < 8.0:
+		var pane: Vector2 = host.size
+		if pane.x < 8.0 or pane.y < 8.0:
 			continue
-		var s: float = minf(avail.x / VIEW_W, avail.y / VIEW_H)
-		host.size = Vector2(VIEW_W, VIEW_H)
-		host.scale = Vector2(s, s)
-		host.position = Vector2(
-			(cell.size.x - VIEW_W * s) * 0.5,
-			NAME_H + (avail.y - VIEW_H * s) * 0.5
-		)
+		_layout_pid(int(pid), pane)
+
+func _layout_pid(pid: int, pane: Vector2) -> void:
+	if pid == _local_pid:
+		if _shop_home is ShopUI:
+			(_shop_home as ShopUI).apply_pane_layout(pane)
+		if _level_home is LevelUpUI:
+			(_level_home as LevelUpUI).apply_pane_layout(pane)
+		return
+	var shop: ShopUI = _remote_shops.get(pid)
+	if shop != null:
+		shop.apply_pane_layout(pane)
+	var level: LevelUpUI = _remote_levels.get(pid)
+	if level != null:
+		level.apply_pane_layout(pane)
+
 
 func _dock_local() -> void:
 	var host: Control = _hosts.get(_local_pid)
@@ -287,23 +293,24 @@ func _apply_replica(pid: int, st: Dictionary) -> void:
 		level.apply_net_state(st)
 
 func _undock_local() -> void:
+	if _shop_home is ShopUI:
+		(_shop_home as ShopUI).apply_pane_layout(Vector2(1280, 720))
+	if _level_home is LevelUpUI:
+		(_level_home as LevelUpUI).apply_pane_layout(Vector2(1280, 720))
 	if _shop_root != null and _shop_home != null and is_instance_valid(_shop_root):
 		_shop_root.reparent(_shop_home)
 		_fit(_shop_root)
-		_shop_root.scale = Vector2.ONE
 	if _level_root != null and _level_home != null and is_instance_valid(_level_root):
 		_level_root.reparent(_level_home)
 		_fit(_level_root)
-		_level_root.scale = Vector2.ONE
 
 func _fit(ctrl: Control) -> void:
+	ctrl.scale = Vector2.ONE
 	ctrl.set_anchors_preset(Control.PRESET_FULL_RECT)
 	ctrl.offset_left = 0
 	ctrl.offset_top = 0
 	ctrl.offset_right = 0
 	ctrl.offset_bottom = 0
-	ctrl.scale = Vector2.ONE
-	ctrl.size = Vector2(VIEW_W, VIEW_H)
 
 func _clear_panes() -> void:
 	_undock_local()

@@ -729,3 +729,86 @@ static func _apply_passive_effect(item: PassiveItemData) -> void:
 			stats.apply_damage_taken_reduction(item.value)
 		_:
 			push_warning("[ShopUI] Relic '%s' has no effect wired for type %d." % [item.id, item.effect_type])
+
+
+# Split-screen: keep native font size and reflow the chrome so the shop
+# fills the pane instead of shrinking the whole 1280×720 layout.
+func apply_pane_layout(pane: Vector2) -> void:
+	if _root_panel == null:
+		return
+	var content := _root_panel.get_node_or_null("Content") as MarginContainer
+	var rows := _root_panel.get_node_or_null("Content/Rows") as VBoxContainer
+	var body := _root_panel.get_node_or_null("Content/Rows/Body") as HBoxContainer
+	var left := _root_panel.get_node_or_null("Content/Rows/Body/LeftColumn") as Control
+	var stats := _root_panel.get_node_or_null("Content/Rows/Body/LeftColumn/StatsPanel") as Control
+	var right := _root_panel.get_node_or_null("Content/Rows/Body/RightColumn") as VBoxContainer
+	var solo := pane.x >= 1180.0 and pane.y >= 680.0
+	if solo or pane.x < 8.0 or pane.y < 8.0:
+		if content != null:
+			content.add_theme_constant_override("margin_left", 40)
+			content.add_theme_constant_override("margin_top", 26)
+			content.add_theme_constant_override("margin_right", 40)
+			content.add_theme_constant_override("margin_bottom", 26)
+		if rows != null:
+			rows.add_theme_constant_override("separation", 12)
+		if body != null:
+			body.add_theme_constant_override("separation", 20)
+		if left != null:
+			left.visible = true
+			left.custom_minimum_size = Vector2(330, 0)
+		if stats != null:
+			stats.visible = true
+		if right != null:
+			right.add_theme_constant_override("separation", 14)
+		if _shelf != null:
+			_shelf.add_theme_constant_override("separation", 14)
+		for card in _cards:
+			if card != null:
+				card.apply_pane_size(Vector2.ZERO)
+		return
+
+	var tight: bool = pane.y < 560.0
+	var narrow: bool = pane.x < 920.0
+	var m: int = 8 if (tight or narrow) else 18
+	if content != null:
+		content.add_theme_constant_override("margin_left", m)
+		content.add_theme_constant_override("margin_top", m)
+		content.add_theme_constant_override("margin_right", m)
+		content.add_theme_constant_override("margin_bottom", m)
+	if rows != null:
+		rows.add_theme_constant_override("separation", 6 if tight else 10)
+	if body != null:
+		body.add_theme_constant_override("separation", 8 if narrow else 12)
+	if stats != null:
+		stats.visible = not tight and not narrow
+	var left_w := 330.0
+	if narrow:
+		left_w = 132.0
+	elif tight:
+		left_w = 210.0
+	if left != null:
+		left.visible = true
+		left.custom_minimum_size = Vector2(left_w, 0)
+	if right != null:
+		right.add_theme_constant_override("separation", 6 if tight else 10)
+	if _shelf != null:
+		_shelf.add_theme_constant_override("separation", 8 if narrow else 10)
+
+	var center := _shelf.get_parent() as Control if _shelf != null else null
+	var area := Vector2.ZERO
+	if center != null:
+		area = center.size
+	if area.x < 16.0 or area.y < 16.0:
+		area = Vector2(
+			maxf(120.0, pane.x - float(m) * 2.0 - left_w - 12.0),
+			maxf(140.0, pane.y - float(m) * 2.0 - 120.0)
+		)
+	var n: int = maxi(1, _cards.size())
+	var sep: float = 8.0 if narrow else 10.0
+	var card := Vector2(
+		clampf((area.x - sep * float(n - 1)) / float(n), 110.0, 220.0),
+		clampf(area.y, 148.0, 268.0)
+	)
+	for c in _cards:
+		if c != null:
+			c.apply_pane_size(card)

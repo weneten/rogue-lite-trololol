@@ -137,6 +137,22 @@ static func _weighted_pick(pool: Array[UpgradeData]) -> UpgradeData:
 
 	return pool[pool.size() - 1]
 
+func apply_pane_layout(pane: Vector2) -> void:
+	if _choices_container == null:
+		return
+	var solo := pane.x >= 1180.0 and pane.y >= 680.0
+	var n: int = maxi(1, _choices_container.get_child_count())
+	var card := Vector2(250, 220)
+	if not solo and pane.x >= 8.0:
+		card = Vector2(
+			clampf((pane.x - 48.0) / float(n) - 18.0, 160.0, 280.0),
+			clampf(pane.y - 110.0, 150.0, 240.0)
+		)
+	for child in _choices_container.get_children():
+		if child is Control:
+			(child as Control).custom_minimum_size = card
+
+
 func apply_net_state(st: Dictionary) -> void:
 	var phase := str(st.get("phase", ""))
 	if _root_panel != null:
