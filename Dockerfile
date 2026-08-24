@@ -53,6 +53,10 @@ RUN bash -lc " \
 # stock ones that ship in the godot-ci image.
 # ---------------------------------------------------------------------------
 FROM barichello/godot-ci:4.7 AS builder
+USER root
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libfontconfig1 \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /project
 COPY . .
 
@@ -62,6 +66,56 @@ COPY --from=web-template-builder \
 COPY --from=web-template-builder \
     /opt/godot-src/bin/godot.web.template_debug.wasm32.nothreads.zip \
     /root/.local/share/godot/export_templates/4.7.stable/web_nothreads_debug.zip
+
+# Headless export requires a named preset; write it here so the build does not
+# depend on export_presets.cfg being present in the build context.
+RUN printf '%s\n' \
+    '[preset.0]' \
+    '' \
+    'name="Web"' \
+    'platform="Web"' \
+    'runnable=true' \
+    'advanced_options=false' \
+    'dedicated_server=false' \
+    'custom_features=""' \
+    'export_filter="all_resources"' \
+    'include_filter=""' \
+    'exclude_filter=""' \
+    'export_path="build/web/index.html"' \
+    'patches=PackedStringArray()' \
+    'encryption_include_filters=""' \
+    'encryption_exclude_filters=""' \
+    'seed=0' \
+    'encrypt_pck=false' \
+    'encrypt_directory=false' \
+    'script_export_mode=2' \
+    '' \
+    '[preset.0.options]' \
+    '' \
+    'custom_template/debug=""' \
+    'custom_template/release=""' \
+    'variant/extensions_support=false' \
+    'variant/thread_support=false' \
+    'vram_texture_compression/for_desktop=true' \
+    'vram_texture_compression/for_mobile=false' \
+    'html/export_icon=true' \
+    'html/custom_html_shell=""' \
+    'html/head_include=""' \
+    'html/canvas_resize_policy=2' \
+    'html/focus_canvas_on_start=true' \
+    'html/experimental_virtual_keyboard=false' \
+    'progressive_web_app/enabled=false' \
+    'progressive_web_app/ensure_cross_origin_isolation_headers=true' \
+    'progressive_web_app/offline_page=""' \
+    'progressive_web_app/display=1' \
+    'progressive_web_app/orientation=0' \
+    'progressive_web_app/icon_144x144=""' \
+    'progressive_web_app/icon_180x180=""' \
+    'progressive_web_app/icon_512x512=""' \
+    'progressive_web_app/background_color=Color(0, 0, 0, 1)' \
+    'threads/emscripten_pool_size=8' \
+    'threads/godot_pool_size=4' \
+    > export_presets.cfg
 
 RUN mkdir -p build/web \
     && godot --headless --import --quit \
