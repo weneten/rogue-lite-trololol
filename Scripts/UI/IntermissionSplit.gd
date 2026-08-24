@@ -1,27 +1,34 @@
 extends CanvasLayer
 class_name IntermissionSplit
 
-# Brotato-style intermission: 2 hunters split left/right, 3–4 use a 2×2 grid.
-# Local shop/boon UI is reparented into your cell; friends get a live replica.
+# Local-coop intermission. Each hunter's real shop/boon UI is docked into a
+# pane and uniformly scaled to fit (no SubViewport — those ignore aspect on
+# web and CanvasLayers paint on the root view). 2 players stack top/bottom;
+# 3–4 use a 2×2 grid.
 
-const VIEW_SIZE := Vector2i(1280, 720)
+const VIEW_W := 1280.0
+const VIEW_H := 720.0
+const NAME_H := 22.0
+const GAP := 4.0
 
 var _root: Control
-var _grid: GridContainer
-var _cells: Array[Control] = []
-var _viewports: Dictionary = {}
+var _layout: Control
+var _cells: Dictionary = {}
+var _hosts: Dictionary = {}
 var _remote_shops: Dictionary = {}
 var _remote_levels: Dictionary = {}
+var _script_bucket: Node
 var _shop_home: Node
 var _level_home: Node
 var _shop_root: Control
 var _level_root: Control
+var _hidden_layers: Array = []
 var _active: bool = false
 var _local_pid: int = 0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	layer = 18
+	layer = 40
 	visible = false
 	EventBus.wave_end.connect(_on_wave_end)
 	if NetSession != null:
@@ -29,21 +36,23 @@ func _ready() -> void:
 		NetSession.intermission_view.connect(_on_view)
 	_build.call_deferred()
 
+func _process(_delta: float) -> void:
+	if _active:
+		_refit()
+
 func _build() -> void:
 	_root = Control.new()
 	_root.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_root.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(_root)
 	var bg := ColorRect.new()
 	bg.color = Color(0.01, 0.0, 0.02, 1)
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_root.add_child(bg)
-	_grid = GridContainer.new()
-	_grid.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_grid.add_theme_constant_override("h_separation", 4)
-	_grid.add_theme_constant_override("v_separation", 4)
-	_root.add_child(_grid)
+	_script_bucket = Node.new()
+	_script_bucket.name = "ReplicaScripts"
+	add_child(_script_bucket)
 
 func _on_wave_end(_wave: int) -> void:
 	if NetSession == null or not NetSession.is_active:
@@ -62,8 +71,10 @@ func _begin() -> void:
 	visible = true
 	_local_pid = NetSession.local_pid
 	_capture_local_ui()
-	_rebuild_cells()
+	_hide_other_layers()
+	_rebuild_panes()
 	_dock_local()
+	call_deferred("_refit")
 	var board := get_tree().current_scene.get_node_or_null("CovenBoard") as CanvasLayer
 	if board != null:
 		board.visible = false
@@ -72,7 +83,8 @@ func _end() -> void:
 	if not _active:
 		return
 	_undock_local()
-	_clear_cells()
+	_clear_panes()
+	_restore_other_layers()
 	_active = false
 	visible = false
 
@@ -89,84 +101,179 @@ func _capture_local_ui() -> void:
 		_level_home = level
 		_level_root = level.get_node_or_null("RootPanel") as Control
 
+func _hide_other_layers() -> void:
+	_hidden_layers.clear()
+	var scene := get_tree().current_scene
+	if scene == null:
+		return
+	for path in ["HUD", "UI"]:
+		var node := scene.get_node_or_null(path)
+		if node is CanvasLayer and (node as CanvasLayer).visible:
+			(node as CanvasLayer).visible = false
+			_hidden_layers.append(node)
+
+func _restore_other_layers() -> void:
+	for node in _hidden_layers:
+		if node != null and is_instance_valid(node):
+			node.visible = true
+	_hidden_layers.clear()
+
 func _pids() -> Array:
 	var pids: Array = []
 	if NetSession == null:
 		return pids
 	for entry in NetSession.roster:
 		if typeof(entry) == TYPE_DICTIONARY:
-			pids.append(int(entry.get("pid", 0)))
+			var pid := int(entry.get("pid", 0))
+			if pid > 0:
+				pids.append(pid)
 	pids.sort()
+	if _local_pid > 0 and pids.has(_local_pid):
+		pids.erase(_local_pid)
+		pids.push_front(_local_pid)
 	return pids
 
-func _rebuild_cells() -> void:
-	_clear_cells()
+func _label_for(pid: int) -> String:
+	var who := "Hunter"
+	if NetSession != null:
+		for entry in NetSession.roster:
+			if typeof(entry) == TYPE_DICTIONARY and int(entry.get("pid", 0)) == pid:
+				who = str(entry.get("char", who))
+				break
+	if pid == _local_pid:
+		who += "  (you)"
+	return who
+
+func _rebuild_panes() -> void:
+	_clear_panes()
 	var pids := _pids()
 	var n: int = pids.size()
-	_grid.columns = 2 if n >= 3 else maxi(1, n)
-	var slots: int = 4 if n >= 3 else n
-	for i in range(slots):
-		var cell := Control.new()
-		cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		cell.size_flags_vertical = Control.SIZE_EXPAND_FILL
-		_grid.add_child(cell)
-		_cells.append(cell)
-		if i >= n:
-			var empty := ColorRect.new()
-			empty.color = Color(0.02, 0.01, 0.03, 1)
-			empty.set_anchors_preset(Control.PRESET_FULL_RECT)
-			cell.add_child(empty)
+	if n <= 0:
+		return
+
+	var split := VBoxContainer.new()
+	split.set_anchors_preset(Control.PRESET_FULL_RECT)
+	split.offset_left = GAP
+	split.offset_top = GAP
+	split.offset_right = -GAP
+	split.offset_bottom = -GAP
+	split.add_theme_constant_override("separation", GAP)
+	_root.add_child(split)
+	_layout = split
+
+	if n == 2:
+		_add_pane(split, pids[0])
+		_add_pane(split, pids[1])
+		return
+
+	var top := HBoxContainer.new()
+	top.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	top.add_theme_constant_override("separation", GAP)
+	split.add_child(top)
+	var bot := HBoxContainer.new()
+	bot.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	bot.add_theme_constant_override("separation", GAP)
+	split.add_child(bot)
+	var slots: Array = [top, top, bot, bot]
+	for i in range(4):
+		if i < n:
+			_add_pane(slots[i], pids[i])
+		else:
+			var filler := ColorRect.new()
+			filler.color = Color(0.02, 0.01, 0.03, 1)
+			filler.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			filler.size_flags_vertical = Control.SIZE_EXPAND_FILL
+			slots[i].add_child(filler)
+
+func _add_pane(parent: Control, pid: int) -> void:
+	var cell := Control.new()
+	cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	cell.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	cell.clip_contents = true
+	cell.mouse_filter = Control.MOUSE_FILTER_STOP if pid == _local_pid else Control.MOUSE_FILTER_IGNORE
+	parent.add_child(cell)
+	_cells[pid] = cell
+
+	var frame := ColorRect.new()
+	frame.color = Color(0.07, 0.04, 0.10, 1)
+	frame.set_anchors_preset(Control.PRESET_FULL_RECT)
+	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	cell.add_child(frame)
+
+	var nameplate := Label.new()
+	nameplate.text = _label_for(pid)
+	nameplate.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	nameplate.offset_bottom = NAME_H
+	nameplate.offset_left = 10
+	nameplate.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	nameplate.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	nameplate.theme_type_variation = &"GoldLabel"
+	nameplate.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	cell.add_child(nameplate)
+
+	var host := Control.new()
+	host.name = "Host_%d" % pid
+	host.size = Vector2(VIEW_W, VIEW_H)
+	host.mouse_filter = Control.MOUSE_FILTER_STOP if pid == _local_pid else Control.MOUSE_FILTER_IGNORE
+	host.clip_contents = true
+	cell.add_child(host)
+	_hosts[pid] = host
+
+	if pid != _local_pid:
+		_spawn_replicas(pid, host)
+
+func _refit() -> void:
+	for pid in _hosts.keys():
+		var host: Control = _hosts[pid]
+		var cell: Control = _cells.get(pid)
+		if host == null or cell == null or not is_instance_valid(host):
 			continue
-		var pid: int = pids[i]
-		var frame := AspectRatioContainer.new()
-		frame.set_anchors_preset(Control.PRESET_FULL_RECT)
-		frame.ratio = 16.0 / 9.0
-		frame.stretch_mode = AspectRatioContainer.STRETCH_FIT
-		frame.alignment_horizontal = AspectRatioContainer.ALIGNMENT_CENTER
-		frame.alignment_vertical = AspectRatioContainer.ALIGNMENT_CENTER
-		cell.add_child(frame)
-		var wrap := SubViewportContainer.new()
-		wrap.stretch = true
-		wrap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		wrap.size_flags_vertical = Control.SIZE_EXPAND_FILL
-		wrap.mouse_filter = Control.MOUSE_FILTER_STOP if pid == _local_pid else Control.MOUSE_FILTER_IGNORE
-		frame.add_child(wrap)
-		var vp := SubViewport.new()
-		vp.size = VIEW_SIZE
-		vp.handle_input_locally = pid == _local_pid
-		vp.gui_disable_input = pid != _local_pid
-		vp.transparent_bg = false
-		vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS
-		wrap.add_child(vp)
-		_viewports[pid] = vp
-		if pid != _local_pid:
-			_spawn_replicas(pid, vp)
+		var avail := Vector2(cell.size.x, maxf(8.0, cell.size.y - NAME_H))
+		if avail.x < 8.0 or avail.y < 8.0:
+			continue
+		var s: float = minf(avail.x / VIEW_W, avail.y / VIEW_H)
+		host.size = Vector2(VIEW_W, VIEW_H)
+		host.scale = Vector2(s, s)
+		host.position = Vector2(
+			(cell.size.x - VIEW_W * s) * 0.5,
+			NAME_H + (avail.y - VIEW_H * s) * 0.5
+		)
 
 func _dock_local() -> void:
-	var vp: SubViewport = _viewports.get(_local_pid)
-	if vp == null:
+	var host: Control = _hosts.get(_local_pid)
+	if host == null:
 		return
 	if _shop_root != null:
-		_shop_root.reparent(vp)
+		_shop_root.reparent(host)
 		_fit(_shop_root)
 	if _level_root != null:
-		_level_root.reparent(vp)
+		_level_root.reparent(host)
 		_fit(_level_root)
 
-func _spawn_replicas(pid: int, vp: SubViewport) -> void:
+func _spawn_replicas(pid: int, host: Control) -> void:
 	var shop_scene: PackedScene = load("res://Scenes/UI/ShopUI.tscn")
 	var level_scene: PackedScene = load("res://Scenes/UI/LevelUpUI.tscn")
 	if shop_scene != null:
 		var shop: ShopUI = shop_scene.instantiate() as ShopUI
 		shop.is_replica = true
 		shop.name = "ReplicaShop_%d" % pid
-		vp.add_child(shop)
+		shop.layer = 0
+		_script_bucket.add_child(shop)
+		var shop_root := shop.get_node_or_null("RootPanel") as Control
+		if shop_root != null:
+			shop_root.reparent(host)
+			_fit(shop_root)
 		_remote_shops[pid] = shop
 	if level_scene != null:
 		var level: LevelUpUI = level_scene.instantiate() as LevelUpUI
 		level.is_replica = true
 		level.name = "ReplicaBoon_%d" % pid
-		vp.add_child(level)
+		level.layer = 0
+		_script_bucket.add_child(level)
+		var level_root := level.get_node_or_null("RootPanel") as Control
+		if level_root != null:
+			level_root.reparent(host)
+			_fit(level_root)
 		_remote_levels[pid] = level
 	if NetSession.intermission_states.has(pid):
 		_apply_replica(pid, NetSession.intermission_states[pid])
@@ -183,9 +290,11 @@ func _undock_local() -> void:
 	if _shop_root != null and _shop_home != null and is_instance_valid(_shop_root):
 		_shop_root.reparent(_shop_home)
 		_fit(_shop_root)
+		_shop_root.scale = Vector2.ONE
 	if _level_root != null and _level_home != null and is_instance_valid(_level_root):
 		_level_root.reparent(_level_home)
 		_fit(_level_root)
+		_level_root.scale = Vector2.ONE
 
 func _fit(ctrl: Control) -> void:
 	ctrl.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -193,16 +302,24 @@ func _fit(ctrl: Control) -> void:
 	ctrl.offset_top = 0
 	ctrl.offset_right = 0
 	ctrl.offset_bottom = 0
+	ctrl.scale = Vector2.ONE
+	ctrl.size = Vector2(VIEW_W, VIEW_H)
 
-func _clear_cells() -> void:
+func _clear_panes() -> void:
 	_undock_local()
-	_viewports.clear()
+	_cells.clear()
+	_hosts.clear()
+	for shop in _remote_shops.values():
+		if shop != null and is_instance_valid(shop):
+			shop.queue_free()
+	for level in _remote_levels.values():
+		if level != null and is_instance_valid(level):
+			level.queue_free()
 	_remote_shops.clear()
 	_remote_levels.clear()
-	_cells.clear()
-	if _grid != null:
-		for child in _grid.get_children():
-			child.queue_free()
+	if _layout != null and is_instance_valid(_layout):
+		_layout.queue_free()
+		_layout = null
 
 func _on_view(states: Dictionary) -> void:
 	for pid in states.keys():
