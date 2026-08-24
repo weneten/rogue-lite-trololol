@@ -12,10 +12,10 @@ class_name WeaponVisual
 # character's feet, so a visual hanging off it orbited their ankles. This rides
 # at hand height instead.
 #
-# Every weapon rides the same side of the Hunter: whichever way the nearest
-# enemy is. Each keeps a small fixed SlotOffset from that shared aim direction
-# so a full loadout fans out instead of stacking into one sprite, but the
-# cluster as a whole always faces the fight.
+# While an enemy is on camera every weapon rides that side of the Hunter and
+# points at them. Each keeps a small fixed SlotOffset from that shared aim
+# so a full loadout fans out instead of stacking into one sprite. When the
+# screen is empty the same offsets whirl around the body as a group.
 #
 # The art is the same shape the shop card shows
 # (Assets/sprites/weapons/mounted/), drawn pointing right with the grip on the
@@ -41,14 +41,18 @@ const RING_RADIUS_Y := 12.0
 # to be lifted to meet it.
 const CARRY_HEIGHT := -22.0
 
-# Angle the ring sits at with nothing in range: outward and slightly raised,
-# the way you would hold a weapon waiting.
-const REST_ANGLE := PI * 0.5
+# How fast the ring orbits toward the fight, and how fast the blade itself
+# turns to face it. Facing is snappier: a weapon that slides around the body
+# is fine, one that lags its aim reads as broken.
+const LEAN_SPEED := 9.0
+const FACE_SPEED := 16.0
 
-# How fast the ring and facing track their target, in radians per second.
-# Snapping straight to the target angle makes the whole loadout twitch every
-# time an enemy dies or a new one spawns.
-const LEAN_SPEED := 7.0
+# Radians per second the whole loadout whirls when nothing is on camera.
+const SPIN_SPEED := 2.8
+
+# Hold the cluster a little behind the line of fire so the sprites sit in the
+# hands rather than glued to the aim vector.
+const HOLD_BIAS := -0.18
 
 # The near half of the ring sits in front of the wielder, the far half
 # behind. Both are relative to the wielder's own root, so a carried weapon still
@@ -56,13 +60,13 @@ const LEAN_SPEED := 7.0
 const CARRY_Z := 3
 const BEHIND_Z := -1
 
-const BOB_AMPLITUDE := 1.3
-const BOB_SPEED := 3.4
+const BOB_AMPLITUDE := 1.6
+const BOB_SPEED := 3.8
 
-# Motion-trail ghosts, in frames of lag. Three samples is enough to smear a
-# 0.16s swing into a readable arc; more just costs draw calls.
-const TRAIL_LAG := [2, 4, 7]
-const TRAIL_ALPHA := [0.42, 0.26, 0.14]
+# Motion-trail ghosts, in frames of lag. Four samples smear a slash into a
+# readable arc without turning idle weapons into a smear.
+const TRAIL_LAG := [1, 3, 5, 8]
+const TRAIL_ALPHA := [0.5, 0.32, 0.18, 0.08]
 
 # This weapon's fixed offset from the shared aim direction, in radians. Set by
 # Weapon from the slot index so a six-weapon loadout fans out instead of
@@ -72,7 +76,7 @@ var slot_offset: float = 0.0:
 		slot_offset = value
 		# A weapon that just changed slots (something was sold) belongs at its
 		# new offset immediately, not sliding across the body to reach it.
-		_ring_angle = (_aim if _has_target else REST_ANGLE) + value
+		_ring_angle = (_aim + HOLD_BIAS if _has_target else _spin_phase) + value
 
 var _sprite: Sprite2D
 var _ghosts: Array[Sprite2D] = []
@@ -96,6 +100,11 @@ var _swing_rotation: float = 0.0
 var _swing_reach: float = 0.0
 var _swing_scale: float = 1.0
 var _swing_flash: float = 0.0
+var _swing_lift: float = 0.0
+var _swing_lateral: float = 0.0
+# Continuously advancing orbit used when nothing is on screen. Kept in sync
+# with the ring while aiming so dropping into a spin never teleports.
+var _spin_phase: float = PI * 0.5
 
 # Cache: several weapons of the same type share one texture, and a run can
 # equip six at once.
@@ -132,10 +141,11 @@ func setup(data: WeaponData, scale_factor: float = 1.0) -> void:
 	_sprite.z_index = CARRY_Z
 	add_child(_sprite)
 
-	# Start at rest rather than sliding into place from the origin on the
-	# first frame after being bought.
-	_ring_angle = REST_ANGLE + slot_offset
-	_facing = _rest_facing()
+	# Start already spinning rather than sliding into place from the origin
+	# on the first frame after being bought.
+	_spin_phase = PI * 0.5
+	_ring_angle = _spin_phase + slot_offset
+	_facing = _ring_angle
 	_apply_transform()
 
 
@@ -171,36 +181,49 @@ func _process(delta: float) -> void:
 	_update_trail()
 
 
-# Eases the ring position and the facing toward where the fight is. Both are
-# rate-limited rather than assigned, so a weapon never teleports when its target
-# dies or a new one spawns behind the Hunter.
+# Eases the ring and facing toward the fight, or whirls the loadout when the
+# screen is empty. Rate-limited so a weapon never teleports when a target dies
+# or a new one spawns behind the Hunter.
 func _track(delta: float) -> void:
-	var step := minf(1.0, LEAN_SPEED * delta)
-
-	var shared_angle := _aim if _has_target else REST_ANGLE
-	var desired_ring := shared_angle + slot_offset
-
-	_ring_angle = lerp_angle(_ring_angle, desired_ring, step)
-	_facing = lerp_angle(_facing, _aim if _has_target else _rest_facing(), step)
-
-
-# With nothing to shoot, a weapon points away from the Hunter along the rest
-# angle, offset by its own slot so idle weapons stay just as spread out.
-func _rest_facing() -> float:
-	return REST_ANGLE + slot_offset - 0.35
+	if _has_target:
+		var orbit_step := minf(1.0, LEAN_SPEED * delta)
+		var face_step := minf(1.0, FACE_SPEED * delta)
+		var desired_ring := _aim + HOLD_BIAS + slot_offset
+		_ring_angle = lerp_angle(_ring_angle, desired_ring, orbit_step)
+		_facing = lerp_angle(_facing, _aim, face_step)
+		# Keep the spin phase glued to the current station so dropping into a
+		# whirl continues from here instead of snapping back to a rest angle.
+		_spin_phase = _ring_angle - slot_offset
+	else:
+		_spin_phase += SPIN_SPEED * delta
+		_ring_angle = _spin_phase + slot_offset
+		# Point along the orbit, with a slight lead so a whirl reads as motion
+		# rather than a rigid pinwheel.
+		var face_step := minf(1.0, FACE_SPEED * delta)
+		_facing = lerp_angle(_facing, _ring_angle + 0.45, face_step)
 
 
 # One place composes the final transform out of ring + bob + swing, so the tween
 # and the idle motion can never overwrite each other.
 func _apply_transform() -> void:
 	var outward := Vector2(cos(_ring_angle), sin(_ring_angle))
+	var aim_dir := Vector2(cos(_facing), sin(_facing))
+	var side := Vector2(-aim_dir.y, aim_dir.x)
 
-	# The reach pushes the weapon along the direction it points, not along the
-	# ring, so a thrust reads as a thrust wherever around the body it happens.
-	var lunge := Vector2(cos(_facing), sin(_facing)) * _swing_reach
+	# Reach along the aim, lateral across it (the slash sweep), lift is screen-Y
+	# so a chop drops the blade rather than sliding along the orbit.
+	var lunge := aim_dir * _swing_reach + side * _swing_lateral
+	var bob := sin(_time * BOB_SPEED + slot_offset) * BOB_AMPLITUDE
+	var radius_x := RING_RADIUS_X
+	var radius_y := RING_RADIUS_Y
+	if not _has_target:
+		bob *= 0.45
+		var flare := 1.0 + 0.05 * sin(_time * 5.2)
+		radius_x *= flare
+		radius_y *= flare
 
-	_sprite.position = Vector2(outward.x * RING_RADIUS_X, outward.y * RING_RADIUS_Y) \
-		+ Vector2(0.0, sin(_time * BOB_SPEED + slot_offset) * BOB_AMPLITUDE) + lunge
+	_sprite.position = Vector2(outward.x * radius_x, outward.y * radius_y) \
+		+ Vector2(0.0, bob + _swing_lift) + lunge
 	_sprite.rotation = _facing + _swing_rotation
 
 	# Weapons aimed left arrive upside down, so they are mirrored vertically —
@@ -213,7 +236,7 @@ func _apply_transform() -> void:
 	# far half behind them.
 	_sprite.z_index = CARRY_Z if outward.y >= 0.0 else BEHIND_Z
 
-	_sprite.modulate = Color(1.0, 1.0, 1.0).lerp(Color(2.2, 2.1, 1.7), _swing_flash)
+	_sprite.modulate = Color(1.0, 1.0, 1.0).lerp(Color(2.35, 2.2, 1.65), _swing_flash)
 
 
 # A short history of where the weapon has been, replayed at a lag. Only visible
@@ -229,10 +252,11 @@ func _update_trail() -> void:
 	while _history.size() > longest:
 		_history.pop_back()
 
-	var swinging := _swing != null and _swing.is_valid()
+	var swinging := _swing != null and _swing.is_running()
+	var whirling := not _has_target
 	for i in _ghosts.size():
 		var ghost: Sprite2D = _ghosts[i]
-		if not swinging:
+		if not swinging and not whirling:
 			ghost.visible = false
 			continue
 
@@ -247,13 +271,17 @@ func _update_trail() -> void:
 		ghost.rotation = sample["rotation"]
 		ghost.scale = sample["scale"]
 		ghost.z_index = _sprite.z_index
-		ghost.modulate = Color(1.4, 1.35, 1.15, float(TRAIL_ALPHA[i]))
+		var alpha := float(TRAIL_ALPHA[i])
+		if whirling and not swinging:
+			alpha *= 0.4
+			ghost.modulate = Color(1.15, 1.2, 1.35, alpha)
+		else:
+			ghost.modulate = Color(1.45, 1.38, 1.12, alpha)
 
 
-# Melee weapons cut a wide arc; everything else kicks back like it fired. Both
-# run off the same tween so a weapon can never be left mid-swing, and both end
-# by returning every offset to neutral.
-func play_swing(melee: bool) -> void:
+# Class-aware attack motion. Every path runs off one tween so a weapon can
+# never be left mid-swing, and every path returns the offsets to neutral.
+func play_swing(weapon_class: int = 0) -> void:
 	if _sprite == null:
 		return
 
@@ -261,50 +289,179 @@ func play_swing(melee: bool) -> void:
 		_swing.kill()
 
 	_swing = create_tween()
-	_swing.set_trans(Tween.TRANS_CUBIC)
 
-	if melee:
-		# Wind up well behind the shoulder and cut through past the target. The
-		# arc is deliberately wider than a real swing would be: at this sprite
-		# size a subtle one is invisible in a crowd.
-		_swing_rotation = -2.3
-		_swing_reach = -7.0
-		_swing_scale = 1.0
-		_swing_flash = 0.0
-		_swing.set_parallel(true)
-		_swing.set_ease(Tween.EASE_OUT)
-		_swing.tween_property(self, "_swing_rotation", 2.4, 0.17)
-		_swing.tween_property(self, "_swing_reach", 16.0, 0.17)
-		_swing.tween_property(self, "_swing_scale", 1.45, 0.09)
-		_swing.tween_property(self, "_swing_flash", 1.0, 0.05)
-		_swing.chain()
-		_swing.set_parallel(true)
-		_swing.set_ease(Tween.EASE_IN_OUT)
-		_swing.tween_property(self, "_swing_rotation", 0.0, 0.24)
-		_swing.tween_property(self, "_swing_reach", 0.0, 0.24)
-		_swing.tween_property(self, "_swing_scale", 1.0, 0.24)
-		_swing.tween_property(self, "_swing_flash", 0.0, 0.16)
+	if (weapon_class & WeaponData.WeaponClass.MELEE) != 0:
+		_play_melee_slash()
+	elif (weapon_class & WeaponData.WeaponClass.TRAP) != 0:
+		_play_plant()
+	elif (weapon_class & WeaponData.WeaponClass.FIREARM) != 0:
+		_play_recoil()
+	elif (weapon_class & WeaponData.WeaponClass.MAGIC) != 0 \
+			or (weapon_class & WeaponData.WeaponClass.AOE) != 0:
+		_play_cast()
 	else:
-		# Muzzle jump: snap forward and grow on the shot, then settle back.
-		_swing_rotation = 0.0
-		_swing_reach = 10.0
-		_swing_scale = 1.4
-		_swing_flash = 1.0
-		_swing.set_parallel(true)
-		_swing.set_ease(Tween.EASE_OUT)
-		_swing.tween_property(self, "_swing_rotation", -0.5, 0.07)
-		_swing.tween_property(self, "_swing_reach", -9.0, 0.07)
-		_swing.tween_property(self, "_swing_flash", 0.0, 0.12)
-		_swing.chain()
-		_swing.set_parallel(true)
-		_swing.set_ease(Tween.EASE_IN_OUT)
-		_swing.tween_property(self, "_swing_rotation", 0.0, 0.22)
-		_swing.tween_property(self, "_swing_reach", 0.0, 0.22)
-		_swing.tween_property(self, "_swing_scale", 1.0, 0.22)
+		_play_thrust()
 
 
-# Points the weapon along `angle`. With no target it falls back to its resting
-# outward pose rather than freezing wherever the last target happened to die.
+func _play_melee_slash() -> void:
+	# Anticipation behind the shoulder, then a snap through the target that
+	# actually travels sideways so the trail reads as an arc, not a spin.
+	_swing_rotation = 0.0
+	_swing_reach = 0.0
+	_swing_scale = 1.0
+	_swing_flash = 0.0
+	_swing_lift = 0.0
+	_swing_lateral = 0.0
+
+	_swing.set_parallel(true)
+	_swing.set_trans(Tween.TRANS_CUBIC)
+	_swing.set_ease(Tween.EASE_IN)
+	_swing.tween_property(self, "_swing_rotation", -2.15, 0.09)
+	_swing.tween_property(self, "_swing_reach", -9.0, 0.09)
+	_swing.tween_property(self, "_swing_lateral", -11.0, 0.09)
+	_swing.tween_property(self, "_swing_lift", -3.0, 0.09)
+	_swing.tween_property(self, "_swing_scale", 0.92, 0.09)
+
+	_swing.chain()
+	_swing.set_parallel(true)
+	_swing.set_trans(Tween.TRANS_EXPO)
+	_swing.set_ease(Tween.EASE_OUT)
+	_swing.tween_property(self, "_swing_rotation", 2.55, 0.11)
+	_swing.tween_property(self, "_swing_reach", 20.0, 0.11)
+	_swing.tween_property(self, "_swing_lateral", 12.0, 0.11)
+	_swing.tween_property(self, "_swing_lift", 5.0, 0.11)
+	_swing.tween_property(self, "_swing_scale", 1.52, 0.08)
+	_swing.tween_property(self, "_swing_flash", 1.0, 0.04)
+
+	_swing.chain()
+	_settle_swing(0.22, Tween.TRANS_BACK)
+
+
+func _play_recoil() -> void:
+	# Muzzle flash, then kick back and climb, then spring home.
+	_swing_rotation = 0.18
+	_swing_reach = 9.0
+	_swing_scale = 1.55
+	_swing_flash = 1.0
+	_swing_lift = -2.0
+	_swing_lateral = 0.0
+
+	_swing.set_parallel(true)
+	_swing.set_trans(Tween.TRANS_QUAD)
+	_swing.set_ease(Tween.EASE_OUT)
+	_swing.tween_property(self, "_swing_rotation", -0.72, 0.08)
+	_swing.tween_property(self, "_swing_reach", -12.0, 0.08)
+	_swing.tween_property(self, "_swing_lift", -5.0, 0.08)
+	_swing.tween_property(self, "_swing_scale", 1.12, 0.08)
+	_swing.tween_property(self, "_swing_flash", 0.0, 0.12)
+
+	_swing.chain()
+	_settle_swing(0.2, Tween.TRANS_BACK)
+
+
+func _play_thrust() -> void:
+	# Draw back, then a linear stab along the aim — bows, thrown knives.
+	_swing_rotation = 0.0
+	_swing_reach = 0.0
+	_swing_scale = 1.0
+	_swing_flash = 0.0
+	_swing_lift = 0.0
+	_swing_lateral = 0.0
+
+	_swing.set_parallel(true)
+	_swing.set_trans(Tween.TRANS_CUBIC)
+	_swing.set_ease(Tween.EASE_IN)
+	_swing.tween_property(self, "_swing_reach", -8.0, 0.08)
+	_swing.tween_property(self, "_swing_rotation", -0.18, 0.08)
+	_swing.tween_property(self, "_swing_scale", 0.9, 0.08)
+
+	_swing.chain()
+	_swing.set_parallel(true)
+	_swing.set_trans(Tween.TRANS_EXPO)
+	_swing.set_ease(Tween.EASE_OUT)
+	_swing.tween_property(self, "_swing_reach", 16.0, 0.1)
+	_swing.tween_property(self, "_swing_rotation", 0.12, 0.1)
+	_swing.tween_property(self, "_swing_scale", 1.38, 0.08)
+	_swing.tween_property(self, "_swing_flash", 0.85, 0.04)
+
+	_swing.chain()
+	_settle_swing(0.18, Tween.TRANS_CUBIC)
+
+
+func _play_cast() -> void:
+	# Rise and gather, then pulse toward the target.
+	_swing_rotation = 0.0
+	_swing_reach = 0.0
+	_swing_scale = 1.0
+	_swing_flash = 0.0
+	_swing_lift = 0.0
+	_swing_lateral = 0.0
+
+	_swing.set_parallel(true)
+	_swing.set_trans(Tween.TRANS_CUBIC)
+	_swing.set_ease(Tween.EASE_OUT)
+	_swing.tween_property(self, "_swing_lift", -10.0, 0.1)
+	_swing.tween_property(self, "_swing_rotation", 0.55, 0.1)
+	_swing.tween_property(self, "_swing_scale", 1.22, 0.1)
+	_swing.tween_property(self, "_swing_flash", 0.55, 0.1)
+
+	_swing.chain()
+	_swing.set_parallel(true)
+	_swing.set_trans(Tween.TRANS_EXPO)
+	_swing.set_ease(Tween.EASE_OUT)
+	_swing.tween_property(self, "_swing_lift", 3.0, 0.1)
+	_swing.tween_property(self, "_swing_reach", 12.0, 0.1)
+	_swing.tween_property(self, "_swing_rotation", -0.35, 0.1)
+	_swing.tween_property(self, "_swing_scale", 1.42, 0.08)
+	_swing.tween_property(self, "_swing_flash", 1.0, 0.04)
+
+	_swing.chain()
+	_settle_swing(0.2, Tween.TRANS_BACK)
+
+
+func _play_plant() -> void:
+	# Raise, then stamp into the ground.
+	_swing_rotation = 0.0
+	_swing_reach = 0.0
+	_swing_scale = 1.0
+	_swing_flash = 0.0
+	_swing_lift = 0.0
+	_swing_lateral = 0.0
+
+	_swing.set_parallel(true)
+	_swing.set_trans(Tween.TRANS_CUBIC)
+	_swing.set_ease(Tween.EASE_OUT)
+	_swing.tween_property(self, "_swing_lift", -12.0, 0.08)
+	_swing.tween_property(self, "_swing_rotation", 0.55, 0.08)
+	_swing.tween_property(self, "_swing_scale", 1.1, 0.08)
+
+	_swing.chain()
+	_swing.set_parallel(true)
+	_swing.set_trans(Tween.TRANS_EXPO)
+	_swing.set_ease(Tween.EASE_IN)
+	_swing.tween_property(self, "_swing_lift", 7.0, 0.09)
+	_swing.tween_property(self, "_swing_rotation", 0.12, 0.09)
+	_swing.tween_property(self, "_swing_scale", 1.28, 0.09)
+	_swing.tween_property(self, "_swing_flash", 0.7, 0.04)
+
+	_swing.chain()
+	_settle_swing(0.16, Tween.TRANS_CUBIC)
+
+
+func _settle_swing(duration: float, trans: Tween.TransitionType) -> void:
+	_swing.set_parallel(true)
+	_swing.set_trans(trans)
+	_swing.set_ease(Tween.EASE_OUT)
+	_swing.tween_property(self, "_swing_rotation", 0.0, duration)
+	_swing.tween_property(self, "_swing_reach", 0.0, duration)
+	_swing.tween_property(self, "_swing_lateral", 0.0, duration)
+	_swing.tween_property(self, "_swing_lift", 0.0, duration)
+	_swing.tween_property(self, "_swing_scale", 1.0, duration)
+	_swing.tween_property(self, "_swing_flash", 0.0, duration * 0.7)
+
+
+# Points the weapon along `angle`. With no target the ring whirls instead of
+# freezing wherever the last target happened to die.
 func set_aim(angle: float, has_target: bool) -> void:
 	_aim = angle
 	_has_target = has_target

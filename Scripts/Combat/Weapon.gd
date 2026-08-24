@@ -2,9 +2,11 @@ extends Node2D
 class_name Weapon
 
 # Auto-attacking weapon slot attachable to Player (Brotato-style: no manual aim/fire input).
-# Every frame it looks for the nearest live member of TargetGroup within WeaponData.Range;
-# once found it rotates to face it and, on cooldown expiry, either runs a melee hitbox check
-# (WeaponClass.Melee) or spawns pooled Projectile(s) aimed at the target (everything else).
+# Facing tracks the nearest live TargetGroup member still on camera, even outside
+# WeaponData.Range. Attacks themselves stay range-gated: on cooldown expiry it
+# either runs a melee hitbox check (WeaponClass.Melee) or spawns pooled
+# Projectile(s) at the nearest in-range target. With nothing on screen the
+# carried visual whirls around the wielder instead of freezing.
 
 @export var data: WeaponData
 @export var target_group: String = "Enemy"
@@ -89,18 +91,22 @@ func _process(delta: float) -> void:
 
 	_cooldown_remaining -= delta
 
-	var target = _find_nearest_target()
-	if target == null:
-		# Nothing in range: the visual falls back to its resting pose rather than
-		# freezing at whatever angle the last target happened to die at.
+	# Aim at the nearest enemy still on camera, even if they are outside this
+	# weapon's attack range. Combat itself stays range-gated below.
+	var sight_target := _find_nearest_in_sight()
+	if sight_target != null:
+		global_rotation = (sight_target.global_position - _owner_body.global_position).angle()
+		_update_visual_facing(true)
+	else:
+		# Nothing on screen: the visual spins around the wielder instead of
+		# freezing on the last corpse or dropping to a rest pose.
 		_update_visual_facing(false)
-		return
-
-	# Face the target regardless of cooldown so the weapon visibly tracks its target.
-	global_rotation = (target.global_position - _owner_body.global_position).angle()
-	_update_visual_facing(true)
 
 	if _cooldown_remaining > 0:
+		return
+
+	var target := _find_nearest_target()
+	if target == null:
 		return
 
 	_attack(target)
@@ -164,24 +170,54 @@ func _exit_tree() -> void:
 
 # Nearest live TargetGroup member within Data.Range, or null if none in range.
 func _find_nearest_target() -> Node2D:
-	var nearest = null
-	var nearest_dist_sq = data.range * data.range
+	return _find_nearest(data.range * data.range, false)
+
+# Nearest live TargetGroup member still on camera. Range is ignored — this is
+# only for facing. Returns null when every enemy is off-screen (or dead/pooled),
+# which is the cue for the carried weapons to spin.
+func _find_nearest_in_sight() -> Node2D:
+	return _find_nearest(-1.0, true)
+
+func _find_nearest(max_dist_sq: float, require_in_sight: bool) -> Node2D:
+	var nearest: Node2D = null
+	var nearest_dist_sq := max_dist_sq if max_dist_sq >= 0.0 else INF
 
 	for node in get_tree().get_nodes_in_group(target_group):
 		if not node is Node2D:
 			continue
 
-		var candidate = node as Node2D
-		var health = candidate.get_node_or_null("HealthComponent") as HealthComponent
-		if health != null and health.is_dead:
+		var candidate := node as Node2D
+		if not _is_live_candidate(candidate):
+			continue
+		if require_in_sight and not _is_in_sight(candidate):
 			continue
 
-		var dist_sq = _owner_body.global_position.distance_squared_to(candidate.global_position)
+		var dist_sq := _owner_body.global_position.distance_squared_to(candidate.global_position)
 		if dist_sq <= nearest_dist_sq:
 			nearest_dist_sq = dist_sq
 			nearest = candidate
 
 	return nearest
+
+func _is_live_candidate(candidate: Node2D) -> bool:
+	# Pooled corpses stay in the group but are hidden and not simulating.
+	if not candidate.visible:
+		return false
+	if candidate is CollisionObject2D and not (candidate as CollisionObject2D).is_physics_processing():
+		return false
+
+	var health := candidate.get_node_or_null("HealthComponent") as HealthComponent
+	if health != null and health.is_dead:
+		return false
+	return true
+
+func _is_in_sight(candidate: Node2D) -> bool:
+	var vp := get_viewport()
+	if vp == null:
+		return true
+
+	var screen_pos: Vector2 = vp.get_canvas_transform() * candidate.global_position
+	return vp.get_visible_rect().has_point(screen_pos)
 
 func _attack(target: Node2D) -> void:
 	AudioManager.play_sfx(_resolve_weapon_hit_sfx_id())
@@ -193,7 +229,7 @@ func _attack(target: Node2D) -> void:
 		_owner_body.on_weapon_attack(target)
 
 	if _visual != null:
-		_visual.play_swing((data.weapon_class & WeaponData.WeaponClass.MELEE) != 0)
+		_visual.play_swing(data.weapon_class)
 
 	# Order matters: Trap pre-empts everything (it never attacks directly), Melee handles its
 	# own cleave via the hitbox overlap even when also flagged AoE (War Cleaver), and pure AoE
