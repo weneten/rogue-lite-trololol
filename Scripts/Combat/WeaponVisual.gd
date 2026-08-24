@@ -91,11 +91,14 @@ var _ring_angle: float = 0.0
 # Where it currently points. Also smoothed — an idle weapon snapping to face a
 # newly spawned enemy across the arena reads as a glitch.
 var _facing: float = 0.0
-var _swing: Tween
 
-# Driven by the swing tween and composed into the sprite transform every frame.
-# Kept separate from the sprite's own properties so the idle bob and the orbit
-# can keep running underneath a swing instead of fighting it for the transform.
+# Attack motion is stepped in _process rather than tweened. Tweens bound to this
+# node were easy to lose against the orbit, and flipping the sprite off the
+# composed slash angle made a swing look like a flicker instead of a hit.
+enum SwingKind { NONE, MELEE, RECOIL, THRUST, CAST, PLANT }
+var _swing_kind: SwingKind = SwingKind.NONE
+var _swing_time: float = 0.0
+var _swing_duration: float = 0.0
 var _swing_rotation: float = 0.0
 var _swing_reach: float = 0.0
 var _swing_scale: float = 1.0
@@ -176,6 +179,7 @@ func _process(delta: float) -> void:
 		return
 
 	_time += delta
+	_advance_swing(delta)
 	_track(delta)
 	_apply_transform()
 	_update_trail()
@@ -185,20 +189,22 @@ func _process(delta: float) -> void:
 # screen is empty. Rate-limited so a weapon never teleports when a target dies
 # or a new one spawns behind the Hunter.
 func _track(delta: float) -> void:
+	# Hold station during a swing so the slash isn't cancelled by the orbit
+	# sliding the grip around the body mid-cut.
+	var swinging := _swing_kind != SwingKind.NONE
 	if _has_target:
-		var orbit_step := minf(1.0, LEAN_SPEED * delta)
+		if not swinging:
+			var orbit_step := minf(1.0, LEAN_SPEED * delta)
+			var desired_ring := _aim + HOLD_BIAS + slot_offset
+			_ring_angle = lerp_angle(_ring_angle, desired_ring, orbit_step)
+			_spin_phase = _ring_angle - slot_offset
 		var face_step := minf(1.0, FACE_SPEED * delta)
-		var desired_ring := _aim + HOLD_BIAS + slot_offset
-		_ring_angle = lerp_angle(_ring_angle, desired_ring, orbit_step)
 		_facing = lerp_angle(_facing, _aim, face_step)
-		# Keep the spin phase glued to the current station so dropping into a
-		# whirl continues from here instead of snapping back to a rest angle.
-		_spin_phase = _ring_angle - slot_offset
 	else:
+		if swinging:
+			return
 		_spin_phase += SPIN_SPEED * delta
 		_ring_angle = _spin_phase + slot_offset
-		# Point along the orbit, with a slight lead so a whirl reads as motion
-		# rather than a rigid pinwheel.
 		var face_step := minf(1.0, FACE_SPEED * delta)
 		_facing = lerp_angle(_facing, _ring_angle + 0.45, face_step)
 
@@ -226,9 +232,9 @@ func _apply_transform() -> void:
 		+ Vector2(0.0, bob + _swing_lift) + lunge
 	_sprite.rotation = _facing + _swing_rotation
 
-	# Weapons aimed left arrive upside down, so they are mirrored vertically —
-	# which is what a person holding one would do.
-	var flipped := absf(wrapf(_sprite.rotation, -PI, PI)) > PI * 0.5
+	# Mirror off the aim, not the slash. Flipping from the composed swing
+	# angle made a cut look like the sprite was flickering instead of swinging.
+	var flipped := absf(wrapf(_facing, -PI, PI)) > PI * 0.5
 	var magnitude := _base_scale * _swing_scale
 	_sprite.scale = Vector2(magnitude, -magnitude if flipped else magnitude)
 
@@ -252,8 +258,8 @@ func _update_trail() -> void:
 	while _history.size() > longest:
 		_history.pop_back()
 
-	var swinging := _swing != null and _swing.is_running()
-	var whirling := not _has_target
+	var swinging := _swing_kind != SwingKind.NONE
+	var whirling := not _has_target and not swinging
 	for i in _ghosts.size():
 		var ghost: Sprite2D = _ghosts[i]
 		if not swinging and not whirling:
@@ -279,185 +285,204 @@ func _update_trail() -> void:
 			ghost.modulate = Color(1.45, 1.38, 1.12, alpha)
 
 
-# Class-aware attack motion. Every path runs off one tween so a weapon can
-# never be left mid-swing, and every path returns the offsets to neutral.
+# Starts a new attack pose immediately. Retriggering cuts the previous swing
+# short so a fast weapon still reads as hitting, not as a stalled tween.
 func play_swing(weapon_class: int = 0) -> void:
 	if _sprite == null:
 		return
 
-	if _swing != null and _swing.is_valid():
-		_swing.kill()
-
-	_swing = create_tween()
-
 	if (weapon_class & WeaponData.WeaponClass.MELEE) != 0:
-		_play_melee_slash()
+		_swing_kind = SwingKind.MELEE
+		_swing_duration = 0.36
 	elif (weapon_class & WeaponData.WeaponClass.TRAP) != 0:
-		_play_plant()
+		_swing_kind = SwingKind.PLANT
+		_swing_duration = 0.30
 	elif (weapon_class & WeaponData.WeaponClass.FIREARM) != 0:
-		_play_recoil()
+		_swing_kind = SwingKind.RECOIL
+		_swing_duration = 0.26
 	elif (weapon_class & WeaponData.WeaponClass.MAGIC) != 0 \
 			or (weapon_class & WeaponData.WeaponClass.AOE) != 0:
-		_play_cast()
+		_swing_kind = SwingKind.CAST
+		_swing_duration = 0.34
 	else:
-		_play_thrust()
+		_swing_kind = SwingKind.THRUST
+		_swing_duration = 0.30
+
+	_swing_time = 0.0
+	_eval_swing(0.0)
 
 
-func _play_melee_slash() -> void:
-	# Anticipation behind the shoulder, then a snap through the target that
-	# actually travels sideways so the trail reads as an arc, not a spin.
+func _advance_swing(delta: float) -> void:
+	if _swing_kind == SwingKind.NONE:
+		return
+
+	_swing_time += delta
+	var u := clampf(_swing_time / maxf(_swing_duration, 0.001), 0.0, 1.0)
+	_eval_swing(u)
+	if u >= 1.0:
+		_swing_kind = SwingKind.NONE
+		_clear_swing()
+
+
+func _eval_swing(u: float) -> void:
+	match _swing_kind:
+		SwingKind.MELEE:
+			_eval_melee(u)
+		SwingKind.RECOIL:
+			_eval_recoil(u)
+		SwingKind.THRUST:
+			_eval_thrust(u)
+		SwingKind.CAST:
+			_eval_cast(u)
+		SwingKind.PLANT:
+			_eval_plant(u)
+		_:
+			_clear_swing()
+
+
+func _eval_melee(u: float) -> void:
+	# Wind-up, then a wide cut through the target, then recover. First pose is
+	# already cocked so even a 1-frame attack shows the blade moving.
+	if u < 0.22:
+		var p := _ease_in(u / 0.22)
+		_swing_rotation = lerpf(-0.4, -1.85, p)
+		_swing_reach = lerpf(-4.0, -12.0, p)
+		_swing_lateral = lerpf(-6.0, -16.0, p)
+		_swing_lift = lerpf(-2.0, -5.0, p)
+		_swing_scale = lerpf(1.0, 0.95, p)
+		_swing_flash = 0.0
+	elif u < 0.52:
+		var p := _ease_out((u - 0.22) / 0.30)
+		_swing_rotation = lerpf(-1.85, 1.75, p)
+		_swing_reach = lerpf(-12.0, 22.0, p)
+		_swing_lateral = lerpf(-16.0, 18.0, p)
+		_swing_lift = lerpf(-5.0, 6.0, p)
+		_swing_scale = lerpf(0.95, 1.55, p)
+		_swing_flash = 1.0 if p < 0.45 else lerpf(1.0, 0.25, (p - 0.45) / 0.55)
+	else:
+		var p := _ease_out((u - 0.52) / 0.48)
+		_swing_rotation = lerpf(1.75, 0.0, p)
+		_swing_reach = lerpf(22.0, 0.0, p)
+		_swing_lateral = lerpf(18.0, 0.0, p)
+		_swing_lift = lerpf(6.0, 0.0, p)
+		_swing_scale = lerpf(1.55, 1.0, p)
+		_swing_flash = lerpf(0.25, 0.0, p)
+
+
+func _eval_recoil(u: float) -> void:
+	if u < 0.12:
+		var p := u / 0.12
+		_swing_rotation = lerpf(0.25, -0.85, p)
+		_swing_reach = lerpf(10.0, -14.0, p)
+		_swing_lateral = 0.0
+		_swing_lift = lerpf(-2.0, -6.0, p)
+		_swing_scale = lerpf(1.6, 1.15, p)
+		_swing_flash = lerpf(1.0, 0.2, p)
+	else:
+		var p := _ease_out((u - 0.12) / 0.88)
+		_swing_rotation = lerpf(-0.85, 0.0, p)
+		_swing_reach = lerpf(-14.0, 0.0, p)
+		_swing_lateral = 0.0
+		_swing_lift = lerpf(-6.0, 0.0, p)
+		_swing_scale = lerpf(1.15, 1.0, p)
+		_swing_flash = lerpf(0.2, 0.0, p)
+
+
+func _eval_thrust(u: float) -> void:
+	if u < 0.28:
+		var p := _ease_in(u / 0.28)
+		_swing_rotation = lerpf(0.0, -0.25, p)
+		_swing_reach = lerpf(0.0, -10.0, p)
+		_swing_lateral = 0.0
+		_swing_lift = 0.0
+		_swing_scale = lerpf(1.0, 0.88, p)
+		_swing_flash = 0.0
+	elif u < 0.52:
+		var p := _ease_out((u - 0.28) / 0.24)
+		_swing_rotation = lerpf(-0.25, 0.18, p)
+		_swing_reach = lerpf(-10.0, 18.0, p)
+		_swing_lateral = 0.0
+		_swing_lift = 0.0
+		_swing_scale = lerpf(0.88, 1.42, p)
+		_swing_flash = 1.0
+	else:
+		var p := _ease_out((u - 0.52) / 0.48)
+		_swing_rotation = lerpf(0.18, 0.0, p)
+		_swing_reach = lerpf(18.0, 0.0, p)
+		_swing_lateral = 0.0
+		_swing_lift = 0.0
+		_swing_scale = lerpf(1.42, 1.0, p)
+		_swing_flash = lerpf(1.0, 0.0, p)
+
+
+func _eval_cast(u: float) -> void:
+	if u < 0.35:
+		var p := _ease_out(u / 0.35)
+		_swing_rotation = lerpf(0.0, 0.7, p)
+		_swing_reach = lerpf(0.0, -4.0, p)
+		_swing_lateral = 0.0
+		_swing_lift = lerpf(0.0, -12.0, p)
+		_swing_scale = lerpf(1.0, 1.28, p)
+		_swing_flash = lerpf(0.0, 0.7, p)
+	elif u < 0.55:
+		var p := _ease_out((u - 0.35) / 0.20)
+		_swing_rotation = lerpf(0.7, -0.4, p)
+		_swing_reach = lerpf(-4.0, 14.0, p)
+		_swing_lateral = 0.0
+		_swing_lift = lerpf(-12.0, 4.0, p)
+		_swing_scale = lerpf(1.28, 1.48, p)
+		_swing_flash = 1.0
+	else:
+		var p := _ease_out((u - 0.55) / 0.45)
+		_swing_rotation = lerpf(-0.4, 0.0, p)
+		_swing_reach = lerpf(14.0, 0.0, p)
+		_swing_lateral = 0.0
+		_swing_lift = lerpf(4.0, 0.0, p)
+		_swing_scale = lerpf(1.48, 1.0, p)
+		_swing_flash = lerpf(1.0, 0.0, p)
+
+
+func _eval_plant(u: float) -> void:
+	if u < 0.30:
+		var p := _ease_out(u / 0.30)
+		_swing_rotation = lerpf(0.0, 0.65, p)
+		_swing_reach = 0.0
+		_swing_lateral = 0.0
+		_swing_lift = lerpf(0.0, -14.0, p)
+		_swing_scale = lerpf(1.0, 1.12, p)
+		_swing_flash = 0.0
+	elif u < 0.52:
+		var p := _ease_in((u - 0.30) / 0.22)
+		_swing_rotation = lerpf(0.65, 0.1, p)
+		_swing_reach = 0.0
+		_swing_lateral = 0.0
+		_swing_lift = lerpf(-14.0, 8.0, p)
+		_swing_scale = lerpf(1.12, 1.32, p)
+		_swing_flash = 1.0
+	else:
+		var p := _ease_out((u - 0.52) / 0.48)
+		_swing_rotation = lerpf(0.1, 0.0, p)
+		_swing_reach = 0.0
+		_swing_lateral = 0.0
+		_swing_lift = lerpf(8.0, 0.0, p)
+		_swing_scale = lerpf(1.32, 1.0, p)
+		_swing_flash = lerpf(1.0, 0.0, p)
+
+
+func _clear_swing() -> void:
 	_swing_rotation = 0.0
 	_swing_reach = 0.0
+	_swing_lateral = 0.0
+	_swing_lift = 0.0
 	_swing_scale = 1.0
 	_swing_flash = 0.0
-	_swing_lift = 0.0
-	_swing_lateral = 0.0
-
-	_swing.set_parallel(true)
-	_swing.set_trans(Tween.TRANS_CUBIC)
-	_swing.set_ease(Tween.EASE_IN)
-	_swing.tween_property(self, "_swing_rotation", -2.15, 0.09)
-	_swing.tween_property(self, "_swing_reach", -9.0, 0.09)
-	_swing.tween_property(self, "_swing_lateral", -11.0, 0.09)
-	_swing.tween_property(self, "_swing_lift", -3.0, 0.09)
-	_swing.tween_property(self, "_swing_scale", 0.92, 0.09)
-
-	_swing.chain()
-	_swing.set_parallel(true)
-	_swing.set_trans(Tween.TRANS_EXPO)
-	_swing.set_ease(Tween.EASE_OUT)
-	_swing.tween_property(self, "_swing_rotation", 2.55, 0.11)
-	_swing.tween_property(self, "_swing_reach", 20.0, 0.11)
-	_swing.tween_property(self, "_swing_lateral", 12.0, 0.11)
-	_swing.tween_property(self, "_swing_lift", 5.0, 0.11)
-	_swing.tween_property(self, "_swing_scale", 1.52, 0.08)
-	_swing.tween_property(self, "_swing_flash", 1.0, 0.04)
-
-	_swing.chain()
-	_settle_swing(0.22, Tween.TRANS_BACK)
 
 
-func _play_recoil() -> void:
-	# Muzzle flash, then kick back and climb, then spring home.
-	_swing_rotation = 0.18
-	_swing_reach = 9.0
-	_swing_scale = 1.55
-	_swing_flash = 1.0
-	_swing_lift = -2.0
-	_swing_lateral = 0.0
+func _ease_in(t: float) -> float:
+	return t * t
 
-	_swing.set_parallel(true)
-	_swing.set_trans(Tween.TRANS_QUAD)
-	_swing.set_ease(Tween.EASE_OUT)
-	_swing.tween_property(self, "_swing_rotation", -0.72, 0.08)
-	_swing.tween_property(self, "_swing_reach", -12.0, 0.08)
-	_swing.tween_property(self, "_swing_lift", -5.0, 0.08)
-	_swing.tween_property(self, "_swing_scale", 1.12, 0.08)
-	_swing.tween_property(self, "_swing_flash", 0.0, 0.12)
-
-	_swing.chain()
-	_settle_swing(0.2, Tween.TRANS_BACK)
-
-
-func _play_thrust() -> void:
-	# Draw back, then a linear stab along the aim — bows, thrown knives.
-	_swing_rotation = 0.0
-	_swing_reach = 0.0
-	_swing_scale = 1.0
-	_swing_flash = 0.0
-	_swing_lift = 0.0
-	_swing_lateral = 0.0
-
-	_swing.set_parallel(true)
-	_swing.set_trans(Tween.TRANS_CUBIC)
-	_swing.set_ease(Tween.EASE_IN)
-	_swing.tween_property(self, "_swing_reach", -8.0, 0.08)
-	_swing.tween_property(self, "_swing_rotation", -0.18, 0.08)
-	_swing.tween_property(self, "_swing_scale", 0.9, 0.08)
-
-	_swing.chain()
-	_swing.set_parallel(true)
-	_swing.set_trans(Tween.TRANS_EXPO)
-	_swing.set_ease(Tween.EASE_OUT)
-	_swing.tween_property(self, "_swing_reach", 16.0, 0.1)
-	_swing.tween_property(self, "_swing_rotation", 0.12, 0.1)
-	_swing.tween_property(self, "_swing_scale", 1.38, 0.08)
-	_swing.tween_property(self, "_swing_flash", 0.85, 0.04)
-
-	_swing.chain()
-	_settle_swing(0.18, Tween.TRANS_CUBIC)
-
-
-func _play_cast() -> void:
-	# Rise and gather, then pulse toward the target.
-	_swing_rotation = 0.0
-	_swing_reach = 0.0
-	_swing_scale = 1.0
-	_swing_flash = 0.0
-	_swing_lift = 0.0
-	_swing_lateral = 0.0
-
-	_swing.set_parallel(true)
-	_swing.set_trans(Tween.TRANS_CUBIC)
-	_swing.set_ease(Tween.EASE_OUT)
-	_swing.tween_property(self, "_swing_lift", -10.0, 0.1)
-	_swing.tween_property(self, "_swing_rotation", 0.55, 0.1)
-	_swing.tween_property(self, "_swing_scale", 1.22, 0.1)
-	_swing.tween_property(self, "_swing_flash", 0.55, 0.1)
-
-	_swing.chain()
-	_swing.set_parallel(true)
-	_swing.set_trans(Tween.TRANS_EXPO)
-	_swing.set_ease(Tween.EASE_OUT)
-	_swing.tween_property(self, "_swing_lift", 3.0, 0.1)
-	_swing.tween_property(self, "_swing_reach", 12.0, 0.1)
-	_swing.tween_property(self, "_swing_rotation", -0.35, 0.1)
-	_swing.tween_property(self, "_swing_scale", 1.42, 0.08)
-	_swing.tween_property(self, "_swing_flash", 1.0, 0.04)
-
-	_swing.chain()
-	_settle_swing(0.2, Tween.TRANS_BACK)
-
-
-func _play_plant() -> void:
-	# Raise, then stamp into the ground.
-	_swing_rotation = 0.0
-	_swing_reach = 0.0
-	_swing_scale = 1.0
-	_swing_flash = 0.0
-	_swing_lift = 0.0
-	_swing_lateral = 0.0
-
-	_swing.set_parallel(true)
-	_swing.set_trans(Tween.TRANS_CUBIC)
-	_swing.set_ease(Tween.EASE_OUT)
-	_swing.tween_property(self, "_swing_lift", -12.0, 0.08)
-	_swing.tween_property(self, "_swing_rotation", 0.55, 0.08)
-	_swing.tween_property(self, "_swing_scale", 1.1, 0.08)
-
-	_swing.chain()
-	_swing.set_parallel(true)
-	_swing.set_trans(Tween.TRANS_EXPO)
-	_swing.set_ease(Tween.EASE_IN)
-	_swing.tween_property(self, "_swing_lift", 7.0, 0.09)
-	_swing.tween_property(self, "_swing_rotation", 0.12, 0.09)
-	_swing.tween_property(self, "_swing_scale", 1.28, 0.09)
-	_swing.tween_property(self, "_swing_flash", 0.7, 0.04)
-
-	_swing.chain()
-	_settle_swing(0.16, Tween.TRANS_CUBIC)
-
-
-func _settle_swing(duration: float, trans: Tween.TransitionType) -> void:
-	_swing.set_parallel(true)
-	_swing.set_trans(trans)
-	_swing.set_ease(Tween.EASE_OUT)
-	_swing.tween_property(self, "_swing_rotation", 0.0, duration)
-	_swing.tween_property(self, "_swing_reach", 0.0, duration)
-	_swing.tween_property(self, "_swing_lateral", 0.0, duration)
-	_swing.tween_property(self, "_swing_lift", 0.0, duration)
-	_swing.tween_property(self, "_swing_scale", 1.0, duration)
-	_swing.tween_property(self, "_swing_flash", 0.0, duration * 0.7)
+func _ease_out(t: float) -> float:
+	return 1.0 - (1.0 - t) * (1.0 - t)
 
 
 # Points the weapon along `angle`. With no target the ring whirls instead of
