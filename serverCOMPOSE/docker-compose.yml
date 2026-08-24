@@ -1,0 +1,19 @@
+services:
+  nightbane:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: nightbane
+    restart: always
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nightbane.rule=Host(`nb.makl.xyz`)"
+      - "traefik.http.routers.nightbane.entrypoints=websecure"
+      - "traefik.http.routers.nightbane.tls.certresolver=myresolver"
+      - "traefik.http.services.nightbane.loadbalancer.server.port=80"
+
+networks:
+  proxy:
+    external: true
