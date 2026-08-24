@@ -92,8 +92,13 @@ func _process(delta: float) -> void:
 	_cooldown_remaining -= delta
 
 	# Aim at the nearest enemy still on camera, even if they are outside this
-	# weapon's attack range. Combat itself stays range-gated below.
-	var sight_target := _find_nearest_in_sight()
+	# weapon's attack range. Combat itself stays range-gated below. Inventory
+	# computes this once per frame for the whole loadout.
+	var sight_target: Node2D = null
+	if WeaponInventory.instance != null:
+		sight_target = WeaponInventory.instance.aim_target
+	else:
+		sight_target = _find_nearest_in_sight()
 	if sight_target != null:
 		global_rotation = (sight_target.global_position - _owner_body.global_position).angle()
 		_update_visual_facing(true)
@@ -170,37 +175,48 @@ func _exit_tree() -> void:
 
 # Nearest live TargetGroup member within Data.Range, or null if none in range.
 func _find_nearest_target() -> Node2D:
-	return _find_nearest(data.range * data.range, false)
+	return find_nearest(_owner_body, target_group, data.range * data.range, false)
 
 # Nearest live TargetGroup member still on camera. Range is ignored — this is
 # only for facing. Returns null when every enemy is off-screen (or dead/pooled),
 # which is the cue for the carried weapons to spin.
 func _find_nearest_in_sight() -> Node2D:
-	return _find_nearest(-1.0, true)
+	return find_nearest(_owner_body, target_group, -1.0, true)
 
-func _find_nearest(max_dist_sq: float, require_in_sight: bool) -> Node2D:
+static func find_nearest(from: Node2D, group: String, max_dist_sq: float, require_in_sight: bool) -> Node2D:
+	if from == null or not is_instance_valid(from) or from.get_tree() == null:
+		return null
+
 	var nearest: Node2D = null
 	var nearest_dist_sq := max_dist_sq if max_dist_sq >= 0.0 else INF
+	var origin := from.global_position
+	var vp: Viewport = from.get_viewport() if require_in_sight else null
+	var visible_rect := vp.get_visible_rect() if vp != null else Rect2()
+	var canvas := vp.get_canvas_transform() if vp != null else Transform2D.IDENTITY
 
-	for node in get_tree().get_nodes_in_group(target_group):
+	for node in from.get_tree().get_nodes_in_group(group):
 		if not node is Node2D:
 			continue
 
 		var candidate := node as Node2D
-		if not _is_live_candidate(candidate):
+		if not is_live_candidate(candidate):
 			continue
-		if require_in_sight and not _is_in_sight(candidate):
-			continue
+		if require_in_sight and vp != null:
+			var screen_pos: Vector2 = canvas * candidate.global_position
+			if not visible_rect.has_point(screen_pos):
+				continue
 
-		var dist_sq := _owner_body.global_position.distance_squared_to(candidate.global_position)
+		var dist_sq := origin.distance_squared_to(candidate.global_position)
 		if dist_sq <= nearest_dist_sq:
 			nearest_dist_sq = dist_sq
 			nearest = candidate
 
 	return nearest
 
-func _is_live_candidate(candidate: Node2D) -> bool:
+static func is_live_candidate(candidate: Node2D) -> bool:
 	# Pooled corpses stay in the group but are hidden and not simulating.
+	# Off-screen culled enemies are also hidden — they are still live, but
+	# aiming only cares about what is on camera, and attacks use range first.
 	if not candidate.visible:
 		return false
 	if candidate is CollisionObject2D and not (candidate as CollisionObject2D).is_physics_processing():
@@ -210,14 +226,6 @@ func _is_live_candidate(candidate: Node2D) -> bool:
 	if health != null and health.is_dead:
 		return false
 	return true
-
-func _is_in_sight(candidate: Node2D) -> bool:
-	var vp := get_viewport()
-	if vp == null:
-		return true
-
-	var screen_pos: Vector2 = vp.get_canvas_transform() * candidate.global_position
-	return vp.get_visible_rect().has_point(screen_pos)
 
 func _attack(target: Node2D) -> void:
 	AudioManager.play_sfx(_resolve_weapon_hit_sfx_id())

@@ -116,6 +116,12 @@ ui_down={
 2d_physics/layer_3="Enemies"
 2d_physics/layer_4="PlayerProjectiles"
 
+[physics]
+
+# A hitch used to try to simulate many physics ticks in one frame, which made
+# the next frame even longer and felt like the whole run dropped into slow-mo.
+common/max_physics_steps_per_frame=4
+
 [rendering]
 
 textures/canvas_textures/default_texture_filter=0

@@ -200,7 +200,11 @@ func _count_alive_enemies() -> int:
 
 	var count: int = 0
 	for node in tree.get_nodes_in_group("Enemy"):
-		if node is Enemy and is_instance_valid(node) and node.visible and node.is_inside_tree():
+		# Count anything still simulating — OffscreenCuller hides far enemies
+		# with visible=false, and treating those as dead made the spawner
+		# keep filling the map behind the camera until a hitch.
+		if node is Enemy and is_instance_valid(node) and node.is_inside_tree() \
+				and (node as Enemy).is_physics_processing():
 			count += 1
 
 	return count

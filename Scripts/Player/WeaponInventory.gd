@@ -22,6 +22,8 @@ const SLOT_CEILING := 6
 
 var _owner_body: Node2D
 var _equipped_weapons: Array[Weapon] = []
+# Shared per-frame aim so six weapons don't each scan the enemy group.
+var aim_target: Node2D = null
 
 var equipped_weapons: Array[Weapon]:
 	get:
@@ -50,6 +52,13 @@ func _ready() -> void:
 				child.queue_free()
 
 	_reslot_weapons()
+
+func _process(_delta: float) -> void:
+	if _owner_body == null or not is_instance_valid(_owner_body):
+		aim_target = null
+		return
+
+	aim_target = Weapon.find_nearest(_owner_body, "Enemy", -1.0, true)
 
 func _exit_tree() -> void:
 	if instance == self:

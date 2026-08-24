@@ -34,6 +34,9 @@ var _damage_number_pool
 var _player: Node2D
 var _bound_camera: bool
 var _hit_stop_cooldown_remaining: float
+var _damage_numbers_this_frame: int = 0
+
+const MAX_DAMAGE_NUMBERS_PER_FRAME := 8
 
 func _ready() -> void:
 	# Recover if a previous session left TimeScale stuck low after hitstop spam.
@@ -62,13 +65,22 @@ func _ready() -> void:
 		push_warning("[JuiceController] EventBus missing; combat juice disabled.")
 
 func _exit_tree() -> void:
+	if Engine.time_scale < 0.99:
+		Engine.time_scale = 1.0
 	if EventBus != null:
 		EventBus.player_damaged.disconnect(_on_player_damaged)
 		EventBus.player_damage_dealt.disconnect(_on_player_damage_dealt)
 
 func _process(delta: float) -> void:
+	_damage_numbers_this_frame = 0
+
 	if _hit_stop_cooldown_remaining > 0:
 		_hit_stop_cooldown_remaining -= delta
+
+	# Hitstop is off by default; a leftover TimeScale dip from a paused
+	# scene-change is the usual "everything is in slow motion" bug.
+	if not enable_hit_stop and Engine.time_scale < 0.99:
+		Engine.time_scale = 1.0
 
 	# Lazy camera bind: Player may spawn after this node in Arena.tscn.
 	if not _bound_camera:
@@ -106,13 +118,6 @@ func _on_player_damage_dealt(target: Node, amount: int) -> void:
 	_spawn_damage_number(pos, amount, big_damage_color if big_hit else normal_damage_color)
 	_flash_target(target)
 
-	if big_hit:
-		if not _bound_camera:
-			_try_bind_camera()
-
-		# Light shake only — no TimeScale freeze on normal combat hits.
-		_shake.add_trauma(big_hit_trauma * 0.55)
-
 	# Hitstop OFF by default. When enabled, rare + cooldown so multi-cleave doesn't stutter.
 	if enable_hit_stop \
 		and amount >= hit_stop_damage_threshold \
@@ -124,6 +129,10 @@ func _on_player_damage_dealt(target: Node, amount: int) -> void:
 func _spawn_damage_number(world_pos: Vector2, amount: int, color: Color) -> void:
 	if damage_number_scene == null:
 		return
+
+	if _damage_numbers_this_frame >= MAX_DAMAGE_NUMBERS_PER_FRAME:
+		return
+	_damage_numbers_this_frame += 1
 
 	if _damage_number_pool == null:
 		var container = get_tree().current_scene if get_tree().current_scene != null else self
@@ -137,17 +146,19 @@ func _spawn_damage_number(world_pos: Vector2, amount: int, color: Color) -> void
 
 func _flash_target(target: Node) -> void:
 	var sprite = _find_flashable_sprite(target)
-	if sprite == null:
+	if sprite == null or sprite.has_meta("_hit_flashing"):
 		return
 
+	sprite.set_meta("_hit_flashing", true)
 	var original = sprite.modulate
 	sprite.modulate = flash_modulate
 
 	var timer = get_tree().create_timer(hit_flash_seconds, true, true)
-	await timer.timeout
-
-	if is_instance_valid(sprite):
-		sprite.modulate = original
+	timer.timeout.connect(func() -> void:
+		if is_instance_valid(sprite):
+			sprite.modulate = original
+			sprite.remove_meta("_hit_flashing")
+	, CONNECT_ONE_SHOT)
 
 static func _find_flashable_sprite(target: Node) -> CanvasItem:
 	# Prefer an explicit "Sprite" child (AnimatedSprite2D / Polygon2D / Sprite2D).

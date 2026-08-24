@@ -62,6 +62,10 @@ var _target_intensity: float = 0.0
 var _boss_active: bool = false
 var _current_wave: int = 0
 var _web_audio_unlocked: bool = false
+var _cached_enemy_density: float = 0.0
+var _density_refresh_remaining: float = 0.0
+
+const DENSITY_REFRESH_SECONDS := 0.25
 
 func _ready() -> void:
 	_ensure_buses()
@@ -421,6 +425,11 @@ func _apply_percussion_volume() -> void:
 	_set_player_linear(_combat_percussion, combat_presence * _intensity)
 
 func _update_intensity(delta: float) -> void:
+	_density_refresh_remaining -= delta
+	if _density_refresh_remaining <= 0.0:
+		_refresh_enemy_density()
+		_density_refresh_remaining = DENSITY_REFRESH_SECONDS
+
 	if _boss_active or _target_mode == MusicMode.BOSS:
 		_target_intensity = 1.0
 	elif _target_mode == MusicMode.COMBAT or _mode == MusicMode.COMBAT:
@@ -429,6 +438,15 @@ func _update_intensity(delta: float) -> void:
 		_target_intensity = 0.0
 
 	_intensity = move_toward(_intensity, _target_intensity, delta * INTENSITY_LERP_SPEED)
+
+func _refresh_enemy_density() -> void:
+	var live: int = 0
+	var tree: SceneTree = get_tree()
+	if tree != null:
+		for node in tree.get_nodes_in_group("Enemy"):
+			if node is CollisionObject2D and (node as CollisionObject2D).is_physics_processing():
+				live += 1
+	_cached_enemy_density = clampf(live / 24.0, 0.0, 1.0)
 
 # Blends wave number progress, active-wave time progress, and live enemy density (0..1).
 # Percussion layer rides this so late/dense waves feel heavier.
@@ -446,12 +464,9 @@ func _compute_combat_intensity() -> float:
 		var elapsed_frac: float = 1.0 - clampf(remaining / approx_total, 0.0, 1.0)
 		time_factor = elapsed_frac
 
-	var density: float = 0.0
-	var tree: SceneTree = get_tree()
-	if tree != null:
-		var enemies: int = tree.get_nodes_in_group("Enemy").size()
-		# Soft cap ~24 live enemies = full density layer.
-		density = clampf(enemies / 24.0, 0.0, 1.0)
+	# Soft cap ~24 live enemies = full density layer. Refreshed on a timer
+	# so the music bed does not walk the whole Enemy group every frame.
+	var density: float = _cached_enemy_density
 
 	return clampf(0.25 * wave_factor + 0.35 * time_factor + 0.40 * density, 0.0, 1.0)
 

@@ -126,7 +126,7 @@ func update_locomotion(moving: bool) -> void:
 	_play_locomotion("run" if moving else "idle")
 
 func play_hurt() -> void:
-	if _dead or _sprite == null:
+	if _dead or _sprite == null or _one_shot_playing:
 		return
 
 	_play_one_shot("hurt")
