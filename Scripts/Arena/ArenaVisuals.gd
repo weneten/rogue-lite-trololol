@@ -144,6 +144,11 @@ func _build_walls() -> void:
 	_add_wall_slab(strip, "WallW", Rect2(-hw - t, -hh, t, arena_size.y), false)
 	_add_wall_slab(strip, "WallE", Rect2(hw, -hh, t, arena_size.y), false)
 
+	# Line2D uses an element array buffer Firefox's WebGL 2 rejects (bindBuffer /
+	# bufferSubData warnings and hitching). Skip the rim in the browser.
+	if OS.has_feature("web"):
+		return
+
 	# A lit inner lip so the playable edge is unmistakable mid-fight.
 	var rim = Line2D.new()
 	rim.name = "PlayableRim"

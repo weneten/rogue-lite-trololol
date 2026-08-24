@@ -174,6 +174,10 @@ func _physics_process(delta: float) -> void:
 		_sprite_animator.set_facing(input_direction.x)
 		_sprite_animator.update_locomotion(input_direction.length_squared() > 0.01)
 
+	if NetSession != null and NetSession.is_active:
+		var hp := _health.current_health if _health != null else 0
+		NetSession.send_pose(self, hp, input_direction.x)
+
 # Called by Weapon whenever it actually swings or fires.
 #
 # The Hunter has NO attack animation — the weapon plays the swing and the body

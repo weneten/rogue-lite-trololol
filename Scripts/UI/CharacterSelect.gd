@@ -104,6 +104,8 @@ func _ready() -> void:
 		_begin_button.disabled = true
 		_begin_button.pressed.connect(_on_begin_pressed)
 
+	_ensure_coop_buttons.call_deferred()
+
 	if _back_button != null:
 		_back_button.pressed.connect(_on_back_pressed)
 
@@ -350,6 +352,12 @@ func _select_character(data: CharacterData) -> void:
 
 	if _begin_button != null:
 		_begin_button.disabled = not unlocked
+	var host_btn := get_node_or_null("Layout/Rows/Footer/HostButton") as Button
+	var join_btn := get_node_or_null("Layout/Rows/Footer/JoinButton") as Button
+	if host_btn != null:
+		host_btn.disabled = not unlocked
+	if join_btn != null:
+		join_btn.disabled = not unlocked
 
 	if _unlock_button != null:
 		_unlock_button.visible = not unlocked
@@ -461,13 +469,49 @@ func _refresh_meta_label() -> void:
 	if _meta_currency_label != null:
 		_meta_currency_label.text = "Blood Marks: %d" % MetaSave.get_meta_currency()
 
+func _ensure_coop_buttons() -> void:
+	if _begin_button == null:
+		return
+	var footer := _begin_button.get_parent()
+	if footer == null:
+		return
+	if footer.get_node_or_null("HostButton") != null:
+		return
+
+	var host := Button.new()
+	host.name = "HostButton"
+	host.text = "HOST COVEN"
+	host.pressed.connect(_on_host_pressed)
+	footer.add_child(host)
+
+	var join := Button.new()
+	join.name = "JoinButton"
+	join.text = "JOIN COVEN"
+	join.pressed.connect(_on_join_pressed)
+	footer.add_child(join)
+
 func _on_begin_pressed() -> void:
 	if _selected == null or not MetaSave.is_character_unlocked(_selected.character_name):
 		return
 
+	NetSession.reset()
 	GameManager.selected_character = _selected
 	GameManager.start_new_run()
 	get_tree().change_scene_to_file(arena_scene_path)
+
+func _on_host_pressed() -> void:
+	if _selected == null or not MetaSave.is_character_unlocked(_selected.character_name):
+		return
+	GameManager.selected_character = _selected
+	NetSession.lobby_intent = "host"
+	get_tree().change_scene_to_file("res://Scenes/UI/Lobby.tscn")
+
+func _on_join_pressed() -> void:
+	if _selected == null or not MetaSave.is_character_unlocked(_selected.character_name):
+		return
+	GameManager.selected_character = _selected
+	NetSession.lobby_intent = "join"
+	get_tree().change_scene_to_file("res://Scenes/UI/Lobby.tscn")
 
 func _on_back_pressed() -> void:
 	get_tree().change_scene_to_file("res://Scenes/MainMenu/MainMenu.tscn")

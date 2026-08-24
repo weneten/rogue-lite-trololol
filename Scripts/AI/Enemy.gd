@@ -52,6 +52,7 @@ var _erratic_strafe_sign: float = 1.0
 var _erratic_repick_remaining: float = 0.0
 var _cached_player: Node2D
 var _hurt_cooldown_remaining: float = 0.0
+var net_id: int = 0
 
 const HURT_ANIM_COOLDOWN := 0.28
 
@@ -106,6 +107,7 @@ func initialize(enemy_data: EnemyData, pool: ObjectPool) -> void:
 	_erratic_strafe_sign = -1.0 if randf() < 0.5 else 1.0
 	_erratic_repick_remaining = 0.0
 	_hurt_cooldown_remaining = 0.0
+	net_id = 0
 	velocity = Vector2.ZERO
 	scale = Vector2.ONE
 
@@ -279,10 +281,21 @@ func _fire_projectile_at(player: Node2D) -> void:
 	projectile.launch(spawn_pos, direction, _projectile_pool, self, _runtime_attack_damage, 0.0, 1.0, 0.0, "Player")
 
 func _resolve_player() -> Node2D:
-	if _cached_player != null and is_instance_valid(_cached_player):
-		return _cached_player
-	_cached_player = get_tree().get_first_node_in_group("Player") as Node2D
-	return _cached_player
+	var best: Node2D = null
+	var best_d := INF
+	for node in get_tree().get_nodes_in_group("Player"):
+		if not node is Node2D:
+			continue
+		var body := node as Node2D
+		var health := body.get_node_or_null("HealthComponent") as HealthComponent
+		if health != null and health.is_dead:
+			continue
+		var d := global_position.distance_squared_to(body.global_position)
+		if d < best_d:
+			best_d = d
+			best = body
+	_cached_player = best
+	return best
 
 func _on_damaged(amount: int, source: Node) -> void:
 	if _death_sequence_running or _health == null or _health.is_dead:

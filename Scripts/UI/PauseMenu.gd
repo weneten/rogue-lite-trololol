@@ -103,4 +103,6 @@ func _on_settings_pressed() -> void:
 
 func _on_quit_pressed() -> void:
 	get_tree().paused = false
+	if NetSession != null:
+		NetSession.reset()
 	get_tree().change_scene_to_file(main_menu_scene_path)

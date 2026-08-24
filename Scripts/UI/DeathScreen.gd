@@ -60,6 +60,10 @@ func _exit_tree() -> void:
 	is_showing = false
 
 func _on_player_died() -> void:
+	if NetSession != null and NetSession.is_active:
+		# Co-op: stay in the hunt until the host ends or you leave. Don't pause
+		# the tree for everyone when one hunter falls.
+		return
 	_show_summary(false)
 
 func _on_wave_end(wave_number: int) -> void:
@@ -130,4 +134,6 @@ func _show_summary(run_complete: bool) -> void:
 func _on_continue_pressed() -> void:
 	is_showing = false
 	get_tree().paused = false
+	if NetSession != null:
+		NetSession.reset()
 	get_tree().change_scene_to_file(main_menu_scene_path)

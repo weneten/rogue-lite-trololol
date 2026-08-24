@@ -51,6 +51,9 @@ func _ready() -> void:
 	_inter_wave_time_remaining = initial_delay_seconds
 
 func _process(delta: float) -> void:
+	if NetSession != null and NetSession.is_client():
+		return
+
 	if wave_definition == null or enemy_scene == null:
 		return
 
@@ -220,14 +223,20 @@ func _spawn_random_enemy() -> void:
 		push_warning("[WaveManager] No enemy in pool for wave %d." % current_wave)
 		return
 
-	var player: Node2D = get_tree().get_first_node_in_group("Player") as Node2D
-	var origin: Vector2 = player.global_position if player != null else Vector2.ZERO
+	var origin: Vector2 = Vector2.ZERO
+	var hunters: Array = get_tree().get_nodes_in_group("Player")
+	if hunters.size() > 0:
+		var pick = hunters[randi() % hunters.size()]
+		if pick is Node2D:
+			origin = (pick as Node2D).global_position
 	var spawn_pos: Vector2 = _pick_spawn_position(origin)
 
 	var enemy: Enemy = _enemy_pool.acquire()
 	enemy.global_position = spawn_pos
 	enemy.initialize(data, _enemy_pool)
 	enemy.apply_spawn_modifiers(current_wave, EnemyScaling.roll_elite(current_wave))
+	if NetSession != null and NetSession.is_host:
+		enemy.net_id = NetSession.take_enemy_id()
 
 # Random point on a ring around the player, clamped into the arena so enemies never spawn
 # outside walls (where they get stuck and never reach the player).
