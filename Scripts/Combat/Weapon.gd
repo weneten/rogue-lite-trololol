@@ -89,6 +89,10 @@ func _process(delta: float) -> void:
 	if (data.weapon_class & WeaponData.WeaponClass.SUMMON) != 0:
 		return
 
+	if _owner_health != null and _owner_health.is_dead:
+		_update_visual_facing(false)
+		return
+
 	_cooldown_remaining -= delta
 
 	# Aim at the nearest enemy still on camera, even if they are outside this

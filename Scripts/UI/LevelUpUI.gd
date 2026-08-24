@@ -75,6 +75,8 @@ func _on_player_level_up(new_level: int) -> void:
 		UIAnim.cascade(_choices_container, 0.09, true)
 
 	_focus_first_choice()
+	if NetSession != null:
+		NetSession.broadcast_intermission("boon")
 
 func _focus_first_choice() -> void:
 	for button in _choice_buttons:

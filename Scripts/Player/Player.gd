@@ -39,6 +39,7 @@ var _animated_sprite: AnimatedSprite2D
 var _sprite_animator: EnemySpriteAnimator
 var _fallback_polygon: Node2D
 var _procedural_sprite: Sprite2D
+var _body_shape: CollisionShape2D
 
 func _ready() -> void:
 	# Lets Enemy.cs (and anything else) find the player via GetFirstNodeInGroup instead of
@@ -61,6 +62,10 @@ func _ready() -> void:
 
 	if _camera != null:
 		_camera.make_current()
+
+	_body_shape = get_node_or_null("CollisionShape2D") as CollisionShape2D
+	if EventBus != null:
+		EventBus.wave_start.connect(_on_wave_start)
 
 	# Deferred: adding weapons/passives to this node from inside _ready is
 	# rejected in Godot 4.7 ("parent is busy setting up children").
@@ -209,9 +214,36 @@ func on_health_changed(current_health: int, max_health: int) -> void:
 	# HUD can stay in sync without holding a direct reference to the player/HealthComponent.
 	EventBus.player_health_changed.emit(current_health, max_health)
 
+func restore_after_intermission() -> void:
+	visible = true
+	modulate = Color.WHITE
+	if _camera != null:
+		_camera.make_current()
+	if _sprite_animator != null:
+		_sprite_animator.reset_visual()
+	elif _animated_sprite != null:
+		_animated_sprite.visible = true
+	if _procedural_sprite != null and _animated_sprite != null and not _animated_sprite.visible:
+		_procedural_sprite.visible = true
+
+func _on_wave_start(_wave_number: int) -> void:
+	respawn_for_wave()
+
+# Co-op: downed hunters sit out the rest of the round, then return at full HP.
+func respawn_for_wave() -> void:
+	if _health != null and _health.is_dead:
+		_health.revive(_health.max_health)
+	collision_layer = 2
+	if _body_shape != null:
+		_body_shape.disabled = false
+	restore_after_intermission()
+
 func on_health_died(source: Node) -> void:
 	# Fire-and-forget: the death anim just needs to run out, nothing waits on it (physics is
 	# already frozen above, and the game-over UI is driven by EventBus).
+	collision_layer = 0
+	if _body_shape != null:
+		_body_shape.set_deferred("disabled", true)
 	if _sprite_animator != null:
 		_sprite_animator.play_death_async()
 	EventBus.player_died.emit()

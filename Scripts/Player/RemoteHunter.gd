@@ -7,6 +7,7 @@ var net_pid: int = 0
 var _health: HealthComponent
 var _sprite: AnimatedSprite2D
 var _animator: EnemySpriteAnimator
+var _shape: CollisionShape2D
 
 func setup(pid: int, character_name: String) -> void:
 	net_pid = pid
@@ -16,11 +17,14 @@ func setup(pid: int, character_name: String) -> void:
 	add_to_group("Player")
 	set_meta("net_pid", pid)
 
-	var shape := CollisionShape2D.new()
+	_shape = CollisionShape2D.new()
 	var circle := CircleShape2D.new()
 	circle.radius = 16.0
-	shape.shape = circle
-	add_child(shape)
+	_shape.shape = circle
+	add_child(_shape)
+
+	if EventBus != null:
+		EventBus.wave_start.connect(_on_wave_start)
 
 	_health = HealthComponent.new()
 	_health.name = "HealthComponent"
@@ -66,6 +70,18 @@ func apply_pose(pos: Vector2, vel: Vector2, hp: int, _facing: float) -> void:
 	if _health != null and hp >= 0:
 		_health.current_health = hp
 		_health.is_dead = hp <= 0
+		collision_layer = 0 if _health.is_dead else 2
+		if _shape != null:
+			_shape.disabled = _health.is_dead
+
+func _on_wave_start(_wave_number: int) -> void:
+	if _health != null:
+		_health.revive(_health.max_health)
+	collision_layer = 2
+	if _shape != null:
+		_shape.disabled = false
+	if _animator != null:
+		_animator.reset_visual()
 
 func _on_damaged(_amount: int, _source: Node) -> void:
 	if _health != null:

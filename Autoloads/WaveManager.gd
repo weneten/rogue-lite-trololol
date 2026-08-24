@@ -168,6 +168,8 @@ func start_next_wave() -> void:
 	_spawn_time_remaining = 0
 
 	EventBus.wave_start.emit(current_wave)
+	if NetSession != null and NetSession.is_host:
+		NetSession.broadcast_wave_start(current_wave)
 	print("[WaveManager] Wave %d start — continuous spawn for %.0fs (interval %.2fs, max alive %d)." % [
 		current_wave, _wave_time_remaining, _get_spawn_interval_for_wave(current_wave), _enemies_to_spawn_this_wave])
 

@@ -156,6 +156,8 @@ func _open_shop(wave_number: int) -> void:
 	_deal_cards()
 	get_tree().paused = true
 	_focus_default_control()
+	if NetSession != null:
+		NetSession.broadcast_intermission("shop")
 
 # Opens on the leftmost card the player can actually buy, so the keyboard
 # lands somewhere useful. Falls through to NEXT WAVE when nothing is
@@ -196,6 +198,9 @@ func _close_and_resume() -> void:
 		_root_panel.visible = false
 	UIAnim.release_focus(get_tree())
 	get_tree().paused = false
+	var hunter := get_tree().get_first_node_in_group("Player") as Player
+	if hunter != null:
+		hunter.restore_after_intermission()
 	if NetSession == null or not NetSession.is_client():
 		WaveManager.start_next_wave()
 
@@ -568,6 +573,8 @@ func _on_currency_changed(current_currency: int) -> void:
 		_currency_label.text = "%d" % current_currency
 
 	_update_affordability()
+	if _open and NetSession != null and NetSession.is_active:
+		NetSession.broadcast_intermission("shop")
 
 # Greys out anything the player can no longer buy, so affordability is visible
 # without adding up prices.

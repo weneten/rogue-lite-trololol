@@ -21,7 +21,9 @@ signal match_starting(seed)
 signal lobby_failed(message)
 signal all_hunters_ready()
 signal ready_counts(ready_n, total_n)
+signal intermission_view(states)
 
+var intermission_states: Dictionary = {}
 var _ready_pids: Dictionary = {}
 
 var _socket: WebSocketPeer
@@ -50,6 +52,7 @@ func reset() -> void:
 	_arena_armed = false
 	_next_enemy_id = 1
 	_ready_pids.clear()
+	intermission_states.clear()
 	_remotes.clear()
 	_proxies.clear()
 	_remote_hp.clear()
@@ -88,6 +91,9 @@ func broadcast_wave_end(wave_number: int) -> void:
 	_ready_pids.clear()
 	_send({"op": "wave_end", "w": wave_number})
 
+func broadcast_wave_start(wave_number: int) -> void:
+	_send({"op": "wave_start", "w": wave_number})
+
 func send_loot(pid: int, xp: int, gold: int) -> void:
 	if pid == local_pid or pid <= 0:
 		_grant_loot(xp, gold)
@@ -96,9 +102,30 @@ func send_loot(pid: int, xp: int, gold: int) -> void:
 
 func mark_ready() -> void:
 	_ready_pids[local_pid] = true
+	broadcast_intermission("ready")
 	_send({"op": "ready", "pid": local_pid})
 	_emit_ready_counts()
 	_try_finish_ready()
+
+func broadcast_intermission(phase: String) -> void:
+	if not is_active:
+		return
+	var weapons: Array = []
+	if WeaponInventory.instance != null:
+		for weapon in WeaponInventory.instance.equipped_weapons:
+			if weapon != null and weapon.data != null:
+				weapons.append(weapon.data.name)
+	var payload := {
+		"op": "iv",
+		"pid": local_pid,
+		"char": _char_name,
+		"phase": phase,
+		"gold": GameManager.currency if GameManager != null else 0,
+		"weapons": weapons,
+	}
+	intermission_states[local_pid] = payload
+	intermission_view.emit(intermission_states)
+	_send(payload)
 
 func _grant_loot(xp: int, gold: int) -> void:
 	if xp > 0 and PlayerStats.instance != null:
@@ -222,6 +249,9 @@ func _on_packet(text: String) -> void:
 		"wave_end":
 			if not is_host:
 				EventBus.wave_end.emit(int(msg.get("w", 1)))
+		"wave_start":
+			if not is_host:
+				EventBus.wave_start.emit(int(msg.get("w", 1)))
 		"loot":
 			if int(msg.get("pid", 0)) == local_pid:
 				_grant_loot(int(msg.get("xp", 0)), int(msg.get("gold", 0)))
@@ -231,7 +261,13 @@ func _on_packet(text: String) -> void:
 			_try_finish_ready()
 		"next":
 			_ready_pids.clear()
+			intermission_states.clear()
 			all_hunters_ready.emit()
+		"iv":
+			var pid := int(msg.get("pid", 0))
+			if pid > 0:
+				intermission_states[pid] = msg
+				intermission_view.emit(intermission_states)
 
 func _arm_arena(scene: Node) -> void:
 	_arena_armed = true
@@ -255,6 +291,11 @@ func _arm_arena(scene: Node) -> void:
 		_remotes[pid] = ghost
 		if is_host:
 			ghost.damaged_net.connect(_on_remote_damaged)
+
+	if scene.get_node_or_null("CovenBoard") == null:
+		var board := CovenBoard.new()
+		board.name = "CovenBoard"
+		scene.add_child(board)
 
 func _on_remote_damaged(pid: int, hp: int) -> void:
 	_send({"op": "hurt", "pid": pid, "hp": hp})

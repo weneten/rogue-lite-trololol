@@ -44,6 +44,10 @@ func _process(delta: float) -> void:
 	if _owner == null or _data == null:
 		return
 
+	var owner_health := _owner.get_node_or_null("HealthComponent") as HealthComponent
+	if owner_health != null and owner_health.is_dead:
+		return
+
 	var desired_position = _owner.global_position + follow_offset
 	global_position = global_position.move_toward(desired_position, follow_speed * delta)
 
