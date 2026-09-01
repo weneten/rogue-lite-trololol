@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://cqk8n2x5f8h3a"]
+[gd_scene load_steps=16 format=3 uid="uid://cqk8n2x5f8h3a"]
 
 [ext_resource type="PackedScene" uid="uid://c3g8t6qk1n0wp" path="res://Scenes/Player/Player.tscn" id="1_player"]
 [ext_resource type="Script" path="res://Scripts/Waves/XpGemSpawner.gd" id="3_gemspawner"]
@@ -10,7 +10,8 @@
 [ext_resource type="Script" path="res://Scripts/Meta/RunStats.gd" id="9_runstats"]
 [ext_resource type="Script" path="res://Scripts/Juice/JuiceController.gd" id="10_juice"]
 [ext_resource type="Script" path="res://Scripts/Arena/ArenaVisuals.gd" id="11_visuals"]
-[ext_resource type="PackedScene" uid="uid://c8debugmenu001" path="res://Scenes/UI/DebugMenu.tscn" id="12_debug"]
+[ext_resource type="PackedScene" uid="uid://c8bossbar00001" path="res://Scenes/UI/BossHealthBar.tscn" id="12_bossbar"]
+[ext_resource type="PackedScene" uid="uid://c8debugmenu001" path="res://Scenes/UI/DebugMenu.tscn" id="13_debug"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_north"]
 size = Vector2(1664, 64)
@@ -111,4 +112,6 @@ color = Color(0.03, 0.01, 0.04, 0.28)
 
 [node name="DeathScreen" parent="." instance=ExtResource("8_death")]
 
-[node name="DebugMenu" parent="." instance=ExtResource("12_debug")]
+[node name="BossHealthBar" parent="." instance=ExtResource("12_bossbar")]
+
+[node name="DebugMenu" parent="." instance=ExtResource("13_debug")]

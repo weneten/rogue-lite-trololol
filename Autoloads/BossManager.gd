@@ -162,6 +162,15 @@ func debug_end_encounter() -> void:
 func get_active_boss_name() -> String:
 	return _active_data.boss_name if _active_data != null else ""
 
+# The boss currently on the field, or null. The health bar needs the node, not
+# just the name from boss_encounter_start, and reaching into the group would
+# also pick up a corpse that has not finished its death animation.
+func get_active_boss() -> Boss:
+	return _active_boss if _active_boss != null and is_instance_valid(_active_boss) else null
+
+func get_active_data() -> BossData:
+	return _active_data
+
 func _resolve_entity_parent() -> Node:
 	var scene: Node = get_tree().current_scene if get_tree() != null else null
 	if scene != null and is_instance_valid(scene):
