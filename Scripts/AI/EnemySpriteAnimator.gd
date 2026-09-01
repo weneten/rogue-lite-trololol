@@ -137,6 +137,14 @@ func play_attack() -> void:
 
 	_play_one_shot(_attack_anim)
 
+# Plays a named one-shot row, e.g. "dash" for a dive. Silently does nothing
+# when the sheet has no such animation and no attack row to fall back on.
+func play_named(anim_name: String) -> void:
+	if _dead or _sprite == null or anim_name.is_empty():
+		return
+
+	_play_one_shot(anim_name)
+
 # Plays death and returns when finished (or immediately if no sprite/anim).
 func play_death_async() -> void:
 	_dead = true

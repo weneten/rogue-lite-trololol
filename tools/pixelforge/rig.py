@@ -61,6 +61,21 @@ class BodySpec:
     digitigrade: bool = False   # hip -> knee -> hock -> paw
     fur: float = 0.0            # 0 smooth, 1 shaggy: spine ridge + joint tufts
     claws: bool = False         # hooked talons on hands and paws
+    # Membrane wings that actually beat, one behind the body and one in front.
+    # Distinct from cape="wings", which is a static pair of vampire drapes.
+    # Value is the span in pixels before stature scaling; 0 disables.
+    wingspan: float = 0.0
+    # Membrane colour. Falls back to `cloth`, which is what a creature whose
+    # wings are the same hide as its back wants; a bat with purple wings on a
+    # grey body needs the two separated.
+    wing: Ramp | None = None
+    # Torn membrane. Holes are what stop a big flat wing reading as a cape.
+    wing_holes: int = 0
+    # 0 upright, 1 down on all fours: the spine goes horizontal, the hips drop
+    # and the haunches fold. A gargoyle crouch, not a standing man with wings.
+    crouch: float = 0.0
+    # Skull charm hung at the throat.
+    amulet: bool = False
 
 
 # ---------------------------------------------------------------------------
@@ -88,6 +103,12 @@ class Pose:
     # Digitigrade rigs only; None on the humanoids.
     ankle_b: Vec2 | None = None
     ankle_f: Vec2 | None = None
+    # Wing rigs only. flap runs -1 (raised) to +1 (driven down); flare scales
+    # the span, so a screech throws them wide and a dive tucks them in.
+    wing_flap: float = 0.0
+    wing_flare: float = 1.0
+    # 0 shut, 1 gaping. Only the beast heads use it.
+    mouth_open: float = 0.0
     weapon_angle: float = 0.0
     cape_sway: float = 0.0
     tilt: float = 0.0
@@ -160,6 +181,9 @@ def build_pose(
     weapon_angle = -20.0
     cape_sway = 0.0
     drop = 0.0
+    wing_flap = 0.0
+    wing_flare = 1.0
+    mouth_open = 0.0
 
     if anim == "idle":
         breath = math.sin(t * math.tau)
@@ -171,11 +195,16 @@ def build_pose(
         cape_sway = breath * 1.6
         thigh_b, thigh_f = -4.0, 4.0
         shin_b, shin_f = 4.0, -2.0
+        wing_flap = math.sin(t * math.tau) * 0.85
         if spec.hover:
             bob = -2.0 - breath * 2.5
             thigh_b, thigh_f = -12.0, 10.0
             shin_b, shin_f = 14.0, 16.0
             airborne = True
+        if spec.wingspan > 0.0:
+            # A hovering bat is held up by the beat, so the body rides the
+            # downstroke rather than breathing on the spot.
+            bob = -2.5 - wing_flap * 2.2
 
     elif anim == "run":
         ph = t * math.tau
@@ -198,6 +227,10 @@ def build_pose(
         # swing reads as a streamer trailing off the silhouette.
         weapon_angle = -72 + math.sin(ph + math.pi) * 5
         cape_sway = 3.0 + math.sin(ph) * 2.2
+        wing_flap = math.sin(ph)
+        wing_flare = 1.05
+        if spec.wingspan > 0.0:
+            bob = -3.0 - wing_flap * 2.6
         if spec.hover:
             thigh_f, thigh_b = 18.0, -14.0
             shin_f, shin_b = 20.0, 24.0
@@ -221,6 +254,13 @@ def build_pose(
         thigh_b = -14 if t > 0.35 else -6
         shin_f, shin_b = 4, 10
         cape_sway = -4.0 if t < 0.35 else 5.0
+        # Rear back, then throw the wings open on the release: the flare is
+        # the wind-up tell, and it is what makes a screech read as an attack
+        # rather than as one more hover frame.
+        wing_flap = lerp(-0.95, 0.45, ease_out(t))
+        wing_flare = 1.0 + 0.42 * math.sin(min(1.0, t * 1.15) * math.pi)
+        # Snaps open early and holds: a scream is a sustained note, not a bite.
+        mouth_open = ease_out(min(1.0, t * 2.2))
 
     elif anim == "hurt":
         k = ease_out(t)
@@ -233,6 +273,9 @@ def build_pose(
         thigh_b, thigh_f = -16.0, 12.0
         shin_b, shin_f = 18.0, 4.0
         cape_sway = -5.0
+        wing_flap = -0.35
+        wing_flare = 0.72
+        mouth_open = 0.45
 
     elif anim == "death":
         # A collapse: sink toward the ground and slump forward. The knees
@@ -259,6 +302,10 @@ def build_pose(
         shin_f = lerp(8, 14, k)
         alpha = 1.0 if t < 0.6 else lerp(1.0, 0.25, (t - 0.6) / 0.4)
         cape_sway = -8.0 * k
+        # Wings fold as it comes down. A corpse with the span still spread
+        # reads as a kite, not a body.
+        wing_flap = lerp(-0.2, 0.85, k)
+        wing_flare = lerp(1.0, 0.4, k)
 
     elif anim == "dash":
         k = ease_out(t)
@@ -273,17 +320,35 @@ def build_pose(
         weapon_angle = lerp(-70, -25, k)
         cape_sway = 8.0 - k * 4.0
         airborne = True
+        # The dive: swept back and tucked, driving down.
+        wing_flap = lerp(0.55, 0.95, k)
+        wing_flare = lerp(0.62, 0.48, k)
+        # Coming down mouth-first.
+        mouth_open = lerp(0.3, 0.85, k)
 
+    crouch = max(0.0, min(1.0, spec.crouch))
     feet = feet_y + drop
     ground_y = feet_y
-    hip_y = feet - 18.0 * s + bob
+    hip_y = feet - lerp(18.0, 10.0, crouch) * s + bob
     lean_off = math.tan(math.radians(lean)) * 12.0 * s
+    # Crouching trades spine height for spine reach: the chest and head move
+    # forward instead of up, which is the whole difference between a beast on
+    # all fours and a person leaning over.
+    spine_up = lerp(12.0, 5.0, crouch) * s
+    spine_out = 10.5 * crouch * s
     hip = (cx, hip_y)
-    chest = (cx + lean_off * 0.75, hip_y - 12.0 * s)
-    neck = (cx + lean_off, hip_y - 16.0 * s)
-    head_r = 3.9 * s
-    head = (cx + lean_off * 1.25 + math.sin(math.radians(tilt)) * 6.0,
-            hip_y - 21.5 * s + abs(tilt) * 0.06)
+    chest = (cx + lean_off * 0.75 + spine_out, hip_y - spine_up)
+    neck = (cx + lean_off + spine_out * 1.3, hip_y - lerp(16.0, 7.0, crouch) * s)
+    head_r = 3.9 * s * (1.0 + 0.42 * crouch)
+    head = (cx + lean_off * 1.25 + spine_out * 1.75 + math.sin(math.radians(tilt)) * 6.0,
+            hip_y - lerp(21.5, 9.5, crouch) * s + abs(tilt) * 0.06)
+
+    if crouch > 0.0:
+        # Forelimbs come down to meet the ground the body is now over.
+        arm_b_u = lerp(arm_b_u, 24.0, crouch * 0.75)
+        arm_f_u = lerp(arm_f_u, 32.0, crouch * 0.55)
+        arm_b_f = lerp(arm_b_f, 28.0, crouch * 0.6)
+        arm_f_f = lerp(arm_f_f, 26.0, crouch * 0.6)
 
     sh_dx = 5.8 * s
     shoulder_b = (chest[0] - sh_dx * 0.5, chest[1] + 1.0)
@@ -294,12 +359,15 @@ def build_pose(
     hip_b = (hip[0] - 3.0 * s, hip[1])
     hip_f = (hip[0] + 3.0 * s, hip[1])
     ankle_b = ankle_f = None
+    # Segments shrink with the crouch. The hip is lower but the leg is the same
+    # length, so without this the feet punch straight through the cell floor.
+    leg_s = s * lerp(1.0, 0.62, crouch)
     if spec.digitigrade:
-        knee_b, ankle_b, foot_b = _leg_digi(hip_b, thigh_b, shin_b, s)
-        knee_f, ankle_f, foot_f = _leg_digi(hip_f, thigh_f, shin_f, s)
+        knee_b, ankle_b, foot_b = _leg_digi(hip_b, thigh_b, shin_b, leg_s)
+        knee_f, ankle_f, foot_f = _leg_digi(hip_f, thigh_f, shin_f, leg_s)
     else:
-        knee_b, foot_b = _leg(hip_b, thigh_b, shin_b, s)
-        knee_f, foot_f = _leg(hip_f, thigh_f, shin_f, s)
+        knee_b, foot_b = _leg(hip_b, thigh_b, shin_b, leg_s)
+        knee_f, foot_f = _leg(hip_f, thigh_f, shin_f, leg_s)
 
     if not airborne:
         # Pin whichever foot is lower to the ground (which sinks with
@@ -323,6 +391,7 @@ def build_pose(
         hip_b=hip_b, knee_b=knee_b, foot_b=foot_b,
         hip_f=hip_f, knee_f=knee_f, foot_f=foot_f,
         ankle_b=ankle_b, ankle_f=ankle_f,
+        wing_flap=wing_flap, wing_flare=wing_flare, mouth_open=mouth_open,
         weapon_angle=weapon_angle + tilt, cape_sway=cape_sway, tilt=tilt,
         ground_y=ground_y, alpha=alpha, airborne=airborne,
     )
@@ -424,6 +493,98 @@ def _draw_leg(
 
     _limb(c, knee, ankle, r_knee, r_foot, ramp)
     _paw(c, ankle, foot, s, foot_ramp, P.R_BONE.light if spec.claws else None)
+
+
+# Membrane wing in a local frame that points back-and-out from the shoulder,
+# then rotated by the flap. Building it flat and rotating once is what keeps
+# the finger struts and the scalloped trailing edge consistent through the
+# whole beat — posing each strut separately makes the membrane tear open on
+# the extremes.
+# The arm bone climbs before it reaches out, so the wrist sits above the
+# shoulder and the membrane hangs from an arch. A wing that only goes outward
+# reads as a cape no matter how it is shaded.
+_WING_ELBOW = (-0.34, -0.58)
+_WING_WRIST = (-0.94, -0.82)
+# Where the finger tips land, in the same span units. They fan down and back
+# from the wrist; the last one anchors the membrane to the hip.
+_WING_TIPS = ((-1.16, -0.14), (-1.00, 0.36), (-0.70, 0.68), (-0.30, 0.82))
+# Tears in the membrane, as (u, v) centres and a radius in span units.
+_WING_HOLES = ((-0.86, 0.06, 0.10), (-0.58, 0.34, 0.075), (-0.95, -0.42, 0.065))
+
+
+def _draw_bat_wing(c: Canvas, pose: Pose, spec: BodySpec, s: float, near: bool) -> None:
+    span = spec.wingspan * s * pose.wing_flare
+    if span <= 0.0:
+        return
+
+    membrane = spec.wing if spec.wing is not None else spec.cloth
+
+    # The two wings sweep opposite ways — the far one back, the near one
+    # forward over the camera side. Both pointing the same way was the whole
+    # reason the first pass read as a cloak instead of a wingspan.
+    if near:
+        span *= 0.84
+        # A beat behind, so the pair never freezes into one symmetrical shape.
+        flap = pose.wing_flap * 0.86
+        # Rooted behind the shoulder: swept forward from the shoulder itself it
+        # reached across the muzzle and swallowed the whole face.
+        root = (pose.shoulder_f[0] - 2.6 * s, pose.shoulder_f[1] + 0.5)
+        tone = membrane.tinted(P.SMOKE, 0.16)
+        mirror = -1.0
+    else:
+        flap = pose.wing_flap
+        root = (pose.shoulder_b[0] - 1.0 * s, pose.shoulder_b[1] - 0.5)
+        tone = membrane.tinted(P.VOID, 0.42)
+        mirror = 1.0
+
+    # Screen y grows downward, so a raised wing needs the positive angle. The
+    # frame is already arched, so the beat rides on top of it rather than
+    # sweeping the wing from overhead to underfoot.
+    angle = math.radians(lerp(26.0, -22.0, (flap + 1.0) * 0.5)) * mirror
+    cos_a, sin_a = math.cos(angle), math.sin(angle)
+
+    def place(u: float, v: float) -> Vec2:
+        x, y = u * span * mirror, v * span
+        return (root[0] + x * cos_a - y * sin_a, root[1] + x * sin_a + y * cos_a)
+
+    elbow = place(*_WING_ELBOW)
+    wrist = place(*_WING_WRIST)
+    tips = [place(*tip) for tip in _WING_TIPS]
+
+    # Membrane: leading edge out to the wrist, then the trailing edge home,
+    # notched between the fingers so the outline reads as skin over bone.
+    outline = [root, elbow, wrist]
+    for i, tip in enumerate(tips):
+        outline.append(tip)
+        if i < len(tips) - 1:
+            mid_u = (_WING_TIPS[i][0] + _WING_TIPS[i + 1][0]) * 0.5
+            mid_v = (_WING_TIPS[i][1] + _WING_TIPS[i + 1][1]) * 0.5
+            outline.append(place(mid_u * 0.78, mid_v * 0.78))
+
+    c.polygon(outline, tone.dark)
+    # Inner sheen, pulled toward the arm so the membrane looks stretched.
+    inner = [(lerp(p[0], elbow[0], 0.16), lerp(p[1], elbow[1], 0.16) - 0.5) for p in outline]
+    c.polygon(inner, tone.core)
+
+    # Tears. Punched after the fills and before the struts, so a strut can
+    # still cross a hole the way a finger bone crosses a rip.
+    for i in range(min(spec.wing_holes, len(_WING_HOLES))):
+        hu, hv, hr = _WING_HOLES[i]
+        centre = place(hu, hv)
+        c.circle(centre[0], centre[1], max(1.0, hr * span), CLEAR)
+
+    strut = shade(tone.dark, -0.34)
+    for tip in tips:
+        c.line(wrist, tip, strut)
+
+    c.line(root, tips[-1], strut)
+    c.capsule(root, elbow, 2.0 * s, 1.5 * s, tone.light)
+    c.capsule(elbow, wrist, 1.5 * s, 0.7 * s, tone.light)
+    # Thumb hook at the wrist — the claw every bat wing has, and the detail
+    # that stops the shape reading as a cape corner. Small and dull: at bone
+    # white it was a pale bar hanging off each wing tip.
+    hook = place(_WING_WRIST[0] - 0.04, _WING_WRIST[1] - 0.11)
+    c.capsule(wrist, hook, 0.7 * s, 0.4, shade(P.R_BONE.dark, -0.15))
 
 
 def _draw_cape(c: Canvas, pose: Pose, spec: BodySpec, s: float) -> None:
@@ -593,6 +754,72 @@ def _draw_head(c: Canvas, pose: Pose, spec: BodySpec, s: float) -> None:
         c.set(round(hx - r * 0.25), round(hy), spec.eye)
         return
 
+    if kind == "bat":
+        # Ears: big, but sat on the crown and close together. Taller and
+        # further back they stopped reading as ears and became a pair of horns
+        # floating over the neck.
+        for dx, lean_ear, tall in ((0.34, 0.12, 1.0), (-0.34, -0.14, 0.86)):
+            bx = hx + r * dx
+            by = hy - r * 0.72
+            tip = (bx + r * lean_ear, by - r * 1.95 * tall)
+            c.polygon([
+                (bx - r * 0.48, by + r * 0.2),
+                (bx + r * 0.48, by + r * 0.1),
+                tip,
+            ], skin.dark)
+            c.polygon([
+                (bx - r * 0.2, by + r * 0.02),
+                (bx + r * 0.24, by - r * 0.04),
+                (lerp(tip[0], bx, 0.28), lerp(tip[1], by, 0.28)),
+            ], shade(skin.core, 0.14))
+
+        c.ellipse(hx, hy, r * 1.05, r * 1.0, skin.dark)
+        c.ellipse(hx - 0.6, hy - 0.7, r * 0.8, r * 0.7, skin.core)
+
+        # Snub muzzle with a nose leaf.
+        c.ellipse(hx + r * 0.95, hy + r * 0.45, r * 0.72, r * 0.5, skin.dark)
+        c.ellipse(hx + r * 0.9, hy + r * 0.3, r * 0.42, r * 0.28, skin.core)
+        c.vline(round(hx + r * 1.15), round(hy + r * 0.05), round(hy + r * 0.45), P.VOID)
+
+        gape = pose.mouth_open
+        if gape > 0.05:
+            # A wedge hinged at the cheek, dropping away from the muzzle. The
+            # throat behind it is what sells the volume.
+            jaw = r * (0.55 + 1.15 * gape)
+            hinge = (hx + r * 0.35, hy + r * 0.55)
+            c.polygon([
+                hinge,
+                (hx + r * 1.5, hy + r * 0.5),
+                (hx + r * 1.1, hinge[1] + jaw),
+                (hx + r * 0.2, hinge[1] + jaw * 0.72),
+            ], P.VOID)
+            c.polygon([
+                (hinge[0] + r * 0.2, hinge[1] + jaw * 0.22),
+                (hx + r * 1.15, hinge[1] + jaw * 0.28),
+                (hx + r * 0.85, hinge[1] + jaw * 0.6),
+                (hx + r * 0.35, hinge[1] + jaw * 0.52),
+            ], shade(P.CRIMSON, -0.55))
+            # Upper fangs down from the lip, lower fangs up from the jaw.
+            for k in range(2):
+                tx = round(hx + r * (0.55 + k * 0.55))
+                c.vline(tx, round(hinge[1]), round(hinge[1] + r * 0.42), P.BONE)
+                c.vline(tx - 1, round(hinge[1] + jaw * 0.78), round(hinge[1] + jaw * 0.78 + r * 0.34), P.BONE)
+        else:
+            for k in range(2):
+                tx = round(hx + r * (0.75 + k * 0.5))
+                ty = round(hy + r * 0.8)
+                c.vline(tx, ty, ty + 1, P.BONE)
+
+        # Two lamps, small and clearly apart. At the old size they merged into
+        # one red bar across the face.
+        c.line((hx - r * 0.2, hy - r * 0.34), (hx + r * 1.0, hy - r * 0.22),
+               shade(skin.dark, -0.45))
+        for ex in (r * 0.86, r * 0.24):
+            c.ellipse(hx + ex, hy, r * 0.22, r * 0.24, shade(spec.eye, -0.6))
+            c.set(round(hx + ex), round(hy), spec.eye)
+            c.blend(round(hx + ex), round(hy - 1), with_alpha(spec.eye, 130))
+        return
+
     if kind == "wolf":
         ruff = shade(skin.dark, -0.22)
         # Collar of fur first, so the skull sits inside it.
@@ -749,6 +976,24 @@ def _draw_head(c: Canvas, pose: Pose, spec: BodySpec, s: float) -> None:
             c.capsule(mid, tip, r * 0.16, 0.5, P.R_BONE.core)
 
 
+def _draw_amulet(c: Canvas, pose: Pose, spec: BodySpec, s: float) -> None:
+    """A small bone skull slung at the throat, on a thin chain."""
+    if not spec.amulet:
+        return
+
+    hang = (pose.neck[0] + 1.2 * s, pose.neck[1] + 3.4 * s)
+    chain = spec.accent.core if spec.accent is not None else P.R_GOLD.core
+    c.line((pose.neck[0] - 2.4 * s, pose.neck[1] + 0.5), (hang[0], hang[1] - 1.4 * s), chain)
+    c.line((pose.neck[0] + 3.0 * s, pose.neck[1] + 0.5), (hang[0], hang[1] - 1.4 * s), chain)
+
+    r = 1.9 * s
+    c.ellipse(hang[0], hang[1], r, r * 0.95, P.R_BONE.dark)
+    c.ellipse(hang[0] - 0.4, hang[1] - 0.4, r * 0.72, r * 0.66, P.R_BONE.core)
+    c.set(round(hang[0] - r * 0.42), round(hang[1] - r * 0.1), P.VOID)
+    c.set(round(hang[0] + r * 0.42), round(hang[1] - r * 0.1), P.VOID)
+    c.hline(round(hang[0] - r * 0.4), round(hang[0] + r * 0.4), round(hang[1] + r * 0.6), P.VOID)
+
+
 def _draw_aura(c: Canvas, pose: Pose, spec: BodySpec, s: float, t: float) -> None:
     if spec.aura is None:
         return
@@ -785,6 +1030,11 @@ def draw_figure(
         shadow_scale *= 0.7
     layer.ellipse(pose.hip[0], pose.ground_y + 1, 7.0 * s * shadow_scale,
                   2.4 * s * shadow_scale, (0, 0, 0, 90))
+
+    # Far wing under everything, near wing over the body: one behind and one
+    # in front is what gives a flat side-view bat any depth at all.
+    if spec.wingspan > 0.0:
+        _draw_bat_wing(layer, pose, spec, s, near=False)
 
     _draw_cape(layer, pose, spec, s)
 
@@ -829,7 +1079,12 @@ def draw_figure(
             layer.capsule(tail_a, tail_b, 1.8 * s, 0.5, spec.skin.dark)
 
     _fur_fringe(layer, pose, spec, s)
+
+    if spec.wingspan > 0.0:
+        _draw_bat_wing(layer, pose, spec, s, near=True)
+
     _draw_head(layer, pose, spec, s)
+    _draw_amulet(layer, pose, spec, s)
 
     # Sleeve down to the wrist, then a small gloved hand. A full forearm in
     # skin tone reads as a pale smear across a dark torso.

@@ -1,0 +1,53 @@
+[gd_scene load_steps=5 format=3 uid="uid://c8boss5belfry"]
+
+[ext_resource type="Script" path="res://Scripts/Bosses/BelfryTyrant.gd" id="1_boss"]
+[ext_resource type="Script" path="res://Scripts/Combat/HealthComponent.gd" id="2_health"]
+[ext_resource type="Script" path="res://Scripts/AI/EnemySpriteAnimator.gd" id="3_anim"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_body"]
+radius = 24.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_contact"]
+radius = 34.0
+
+[node name="BelfryTyrant" type="CharacterBody2D"]
+collision_layer = 4
+collision_mask = 1
+script = ExtResource("1_boss")
+health_component_path = NodePath("HealthComponent")
+sprite_node_path = NodePath("FallbackPolygon")
+sprite_animator_path = NodePath("SpriteAnimator")
+collision_shape_path = NodePath("CollisionShape2D")
+contact_hitbox_path = NodePath("ContactHitbox")
+
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
+texture_filter = 1
+centered = true
+offset = Vector2(4, -42)
+
+[node name="FallbackPolygon" type="Polygon2D" parent="."]
+visible = false
+color = Color(0.26, 0.22, 0.34, 1)
+polygon = PackedVector2Array(0, -54, 34, -34, 20, -16, 14, 0, -14, 0, -20, -16, -34, -34)
+
+[node name="SpriteAnimator" type="Node" parent="."]
+script = ExtResource("3_anim")
+sprite_path = NodePath("../Sprite")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -20)
+shape = SubResource("CircleShape2D_body")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2_health")
+max_health = 1100
+
+[node name="ContactHitbox" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+monitoring = true
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ContactHitbox"]
+position = Vector2(0, -20)
+shape = SubResource("CircleShape2D_contact")

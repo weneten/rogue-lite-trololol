@@ -240,6 +240,25 @@ BOSSES = [
         WeaponStyle(P.R_BONE, P.R_LEATHER, P.R_RUST, P.AMBER), "slash",
     ),
     _b(
+        # Wave 15. A real bat, not a man in a cape: the Count next door wears
+        # wings, this one is built around them.
+        "belfry_tyrant", "The Belfry Tyrant",
+        BodySpec(
+            # Grey-green hide, purple membrane, red lamps: the wings have to be
+            # a different material from the body or the whole thing flattens.
+            cloth=Ramp(P.rgb("3f453f"), outline=P.rgb("101310")),
+            armor=P.R_BONE,
+            skin=Ramp(P.rgb("4a504a"), outline=P.rgb("12160f")),
+            accent=P.R_GOLD,
+            wing=Ramp(P.rgb("50405e"), outline=P.rgb("160f1e")),
+            head="bat", cape="none", weapon="none", stature=1.45, build=1.15,
+            hunch=0.5, crouch=0.85, eye=P.CRIMSON, aura=P.BLOOD, belt=False,
+            claws=True, digitigrade=True, wingspan=21.0, wing_holes=3,
+            amulet=True,
+        ),
+        WeaponStyle(P.R_BONE, P.R_LEATHER, P.R_SILVER, P.CRIMSON), "cast",
+    ),
+    _b(
         "bat_winged_count", "The Bat-Winged Count",
         BodySpec(
             cloth=Ramp(P.rgb("240a18"), outline=P.rgb("0a0208")), armor=P.R_GOLD,
