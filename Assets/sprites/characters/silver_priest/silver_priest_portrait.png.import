@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dvbufiwx8hkb1"
-path="res://.godot/imported/silver_priest_portrait.png-76b919ce9cc0a31131dd37a4e72f6e89.ctex"
+path="res://.godot/imported/silver_priest_portrait.png-af804df2fba4a6b833e9f8418cc89461.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/sprites/characters/silver_priest/silver_priest_portrait.png"
-dest_files=["res://.godot/imported/silver_priest_portrait.png-76b919ce9cc0a31131dd37a4e72f6e89.ctex"]
+source_file="res://assets/sprites/characters/silver_priest/silver_priest_portrait.png"
+dest_files=["res://.godot/imported/silver_priest_portrait.png-af804df2fba4a6b833e9f8418cc89461.ctex"]
 
 [params]
 

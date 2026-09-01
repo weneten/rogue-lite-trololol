@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://ckbosu2jhts68"
-path="res://.godot/imported/weapon_holy.wav-704fb1425eafec13a1b89e84d8362a03.sample"
+path="res://.godot/imported/weapon_holy.wav-32b2413de4f687117235fabaaaaa0b15.sample"
 
 [deps]
 
-source_file="res://Assets/Audio/sfx/weapon_holy.wav"
-dest_files=["res://.godot/imported/weapon_holy.wav-704fb1425eafec13a1b89e84d8362a03.sample"]
+source_file="res://assets/Audio/sfx/weapon_holy.wav"
+dest_files=["res://.godot/imported/weapon_holy.wav-32b2413de4f687117235fabaaaaa0b15.sample"]
 
 [params]
 

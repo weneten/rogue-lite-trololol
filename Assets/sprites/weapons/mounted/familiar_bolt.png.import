@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dtypudl5xieh5"
-path="res://.godot/imported/familiar_bolt.png-795fc1e32d56d13d20b0daa214166b0a.ctex"
+path="res://.godot/imported/familiar_bolt.png-d4d9b8dbf5f8e69eff1b55fac3b8be30.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/sprites/weapons/mounted/familiar_bolt.png"
-dest_files=["res://.godot/imported/familiar_bolt.png-795fc1e32d56d13d20b0daa214166b0a.ctex"]
+source_file="res://assets/sprites/weapons/mounted/familiar_bolt.png"
+dest_files=["res://.godot/imported/familiar_bolt.png-d4d9b8dbf5f8e69eff1b55fac3b8be30.ctex"]
 
 [params]
 

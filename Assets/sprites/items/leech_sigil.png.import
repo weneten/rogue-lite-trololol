@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bi43riu8fcbkq"
-path="res://.godot/imported/leech_sigil.png-599fd66c7bf1c11ddc028803a5013809.ctex"
+path="res://.godot/imported/leech_sigil.png-63501ac745e0d8497e916934212571e1.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/sprites/items/leech_sigil.png"
-dest_files=["res://.godot/imported/leech_sigil.png-599fd66c7bf1c11ddc028803a5013809.ctex"]
+source_file="res://assets/sprites/items/leech_sigil.png"
+dest_files=["res://.godot/imported/leech_sigil.png-63501ac745e0d8497e916934212571e1.ctex"]
 
 [params]
 

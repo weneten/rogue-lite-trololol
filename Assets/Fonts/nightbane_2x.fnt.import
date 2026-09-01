@@ -3,12 +3,12 @@
 importer="font_data_bmfont"
 type="FontFile"
 uid="uid://dlkodmfiysmjy"
-path="res://.godot/imported/nightbane_2x.fnt-9d4c1f0b1bf7696915297dbe57620a53.fontdata"
+path="res://.godot/imported/nightbane_2x.fnt-683f3c8ca47553a47a1e26b6f41fc3a7.fontdata"
 
 [deps]
 
-source_file="res://Assets/Fonts/nightbane_2x.fnt"
-dest_files=["res://.godot/imported/nightbane_2x.fnt-9d4c1f0b1bf7696915297dbe57620a53.fontdata"]
+source_file="res://assets/Fonts/nightbane_2x.fnt"
+dest_files=["res://.godot/imported/nightbane_2x.fnt-683f3c8ca47553a47a1e26b6f41fc3a7.fontdata"]
 
 [params]
 

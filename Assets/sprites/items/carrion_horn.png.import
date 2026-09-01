@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ix37xyw3det1"
-path="res://.godot/imported/carrion_horn.png-a29fe85707c58e55990726ff294b319e.ctex"
+path="res://.godot/imported/carrion_horn.png-1ea2eb391b5afea47af9a41317f699d9.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/sprites/items/carrion_horn.png"
-dest_files=["res://.godot/imported/carrion_horn.png-a29fe85707c58e55990726ff294b319e.ctex"]
+source_file="res://assets/sprites/items/carrion_horn.png"
+dest_files=["res://.godot/imported/carrion_horn.png-1ea2eb391b5afea47af9a41317f699d9.ctex"]
 
 [params]
 

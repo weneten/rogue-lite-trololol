@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://33y735t5ahkq"
-path="res://.godot/imported/bell_of_judgement.png-afea3ac79be4ed7e2087717461b933a9.ctex"
+path="res://.godot/imported/bell_of_judgement.png-b025adefe15effa921bd10fe36a171c5.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/sprites/weapons/mounted/bell_of_judgement.png"
-dest_files=["res://.godot/imported/bell_of_judgement.png-afea3ac79be4ed7e2087717461b933a9.ctex"]
+source_file="res://assets/sprites/weapons/mounted/bell_of_judgement.png"
+dest_files=["res://.godot/imported/bell_of_judgement.png-b025adefe15effa921bd10fe36a171c5.ctex"]
 
 [params]
 

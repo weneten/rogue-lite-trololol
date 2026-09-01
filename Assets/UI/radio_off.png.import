@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bx6j7eqhxkt13"
-path="res://.godot/imported/radio_off.png-8c3b1ae3d25d2d0fb99b63794f14e3e4.ctex"
+path="res://.godot/imported/radio_off.png-02362a1683b6594ea1c1de19235ee8cc.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/UI/radio_off.png"
-dest_files=["res://.godot/imported/radio_off.png-8c3b1ae3d25d2d0fb99b63794f14e3e4.ctex"]
+source_file="res://assets/UI/radio_off.png"
+dest_files=["res://.godot/imported/radio_off.png-02362a1683b6594ea1c1de19235ee8cc.ctex"]
 
 [params]
 

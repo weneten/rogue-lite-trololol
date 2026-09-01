@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cg87iv6e7t18l"
-path="res://.godot/imported/twin_stiletto_blades.png-90b0daeee99040b382334dbdca2f7e58.ctex"
+path="res://.godot/imported/twin_stiletto_blades.png-78fa849f9bb9f8237f4f68eae6822973.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/sprites/weapons/twin_stiletto_blades.png"
-dest_files=["res://.godot/imported/twin_stiletto_blades.png-90b0daeee99040b382334dbdca2f7e58.ctex"]
+source_file="res://assets/sprites/weapons/twin_stiletto_blades.png"
+dest_files=["res://.godot/imported/twin_stiletto_blades.png-78fa849f9bb9f8237f4f68eae6822973.ctex"]
 
 [params]
 

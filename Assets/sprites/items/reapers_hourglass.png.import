@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://caob1mroyu8pq"
-path="res://.godot/imported/reapers_hourglass.png-1e76687dc29c189f8832c5670c74b99e.ctex"
+path="res://.godot/imported/reapers_hourglass.png-f40c00a9be9edb841c9a5d8111cb2f0f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/sprites/items/reapers_hourglass.png"
-dest_files=["res://.godot/imported/reapers_hourglass.png-1e76687dc29c189f8832c5670c74b99e.ctex"]
+source_file="res://assets/sprites/items/reapers_hourglass.png"
+dest_files=["res://.godot/imported/reapers_hourglass.png-f40c00a9be9edb841c9a5d8111cb2f0f.ctex"]
 
 [params]
 

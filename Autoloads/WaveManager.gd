@@ -173,6 +173,36 @@ func start_next_wave() -> void:
 	print("[WaveManager] Wave %d start — continuous spawn for %.0fs (interval %.2fs, max alive %d)." % [
 		current_wave, _wave_time_remaining, _get_spawn_interval_for_wave(current_wave), _enemies_to_spawn_this_wave])
 
+# --- Admin panel hooks -----------------------------------------------------
+# These exist so DebugMenu never has to reach into the wave loop's privates.
+
+# Concurrent-alive cap for a wave, exposed for the admin readout.
+func get_max_alive_for_wave(wave: int) -> int:
+	return _get_max_alive_for_wave(wave)
+
+func count_alive_enemies() -> int:
+	return _count_alive_enemies()
+
+# Restarts the loop at `wave`, as if the player had just cleared wave-1.
+# Emits wave_start, so wave-triggered content (bosses) fires normally.
+func debug_jump_to_wave(wave: int) -> void:
+	current_wave = maxi(0, wave - 1)
+	is_wave_active = false
+	spawns_paused = false
+	_inter_wave_time_remaining = 0.0
+	start_next_wave()
+
+# Spawns `count` enemies from the current wave's pool immediately, ignoring the
+# alive cap and the spawn timer.
+func debug_spawn_enemies(count: int) -> void:
+	if not _ensure_enemy_pool():
+		push_warning("[WaveManager] No enemy pool yet — is a Player in the tree?")
+		return
+
+	for i in range(maxi(1, count)):
+		_spawn_random_enemy()
+		_enemies_spawned_this_wave += 1
+
 # How many enemies may be alive at once this wave (prevents infinite pile-up).
 func _get_max_alive_for_wave(wave: int) -> int:
 	if wave_definition == null:

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cjqw4majg2epq"
-path="res://.godot/imported/bloodmoon_amulet.png-d6891171d97eb01d68788d99f4a4b935.ctex"
+path="res://.godot/imported/bloodmoon_amulet.png-f4b3ee03de4551c3bcd7ee7d9272e9d7.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/sprites/items/bloodmoon_amulet.png"
-dest_files=["res://.godot/imported/bloodmoon_amulet.png-d6891171d97eb01d68788d99f4a4b935.ctex"]
+source_file="res://assets/sprites/items/bloodmoon_amulet.png"
+dest_files=["res://.godot/imported/bloodmoon_amulet.png-f4b3ee03de4551c3bcd7ee7d9272e9d7.ctex"]
 
 [params]
 

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cr2jb7ae3nmwv"
-path="res://.godot/imported/hexed_revolver.png-72606226d2a9c3bdcedd405c8889ef3a.ctex"
+path="res://.godot/imported/hexed_revolver.png-09c4e74179a82273e95e29d85ee1113e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/sprites/weapons/hexed_revolver.png"
-dest_files=["res://.godot/imported/hexed_revolver.png-72606226d2a9c3bdcedd405c8889ef3a.ctex"]
+source_file="res://assets/sprites/weapons/hexed_revolver.png"
+dest_files=["res://.godot/imported/hexed_revolver.png-09c4e74179a82273e95e29d85ee1113e.ctex"]
 
 [params]
 

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bhotnta37ljjq"
-path="res://.godot/imported/silver_censer.png-1b4d115b564b13790e19a6ce082192cc.ctex"
+path="res://.godot/imported/silver_censer.png-df4fa1a0914b685c745ff9111f78f3fe.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/sprites/items/silver_censer.png"
-dest_files=["res://.godot/imported/silver_censer.png-1b4d115b564b13790e19a6ce082192cc.ctex"]
+source_file="res://assets/sprites/items/silver_censer.png"
+dest_files=["res://.godot/imported/silver_censer.png-df4fa1a0914b685c745ff9111f78f3fe.ctex"]
 
 [params]
 

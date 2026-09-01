@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dag2a78dogumy"
-path="res://.godot/imported/silver_stake_launcher.png-3bb1a326cbab1f70652f5a9558e9a543.ctex"
+path="res://.godot/imported/silver_stake_launcher.png-93829eb6f4271e6a69e7eaf23b4a516b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/sprites/weapons/mounted/silver_stake_launcher.png"
-dest_files=["res://.godot/imported/silver_stake_launcher.png-3bb1a326cbab1f70652f5a9558e9a543.ctex"]
+source_file="res://assets/sprites/weapons/mounted/silver_stake_launcher.png"
+dest_files=["res://.godot/imported/silver_stake_launcher.png-93829eb6f4271e6a69e7eaf23b4a516b.ctex"]
 
 [params]
 

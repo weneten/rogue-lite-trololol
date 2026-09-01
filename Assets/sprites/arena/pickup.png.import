@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c547votr58ivo"
-path="res://.godot/imported/pickup.png-144a79b3ff8d56fc7df318aa6a282768.ctex"
+path="res://.godot/imported/pickup.png-b89b92801bfa611958e0bc707cfaadfc.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/sprites/arena/pickup.png"
-dest_files=["res://.godot/imported/pickup.png-144a79b3ff8d56fc7df318aa6a282768.ctex"]
+source_file="res://assets/sprites/arena/pickup.png"
+dest_files=["res://.godot/imported/pickup.png-b89b92801bfa611958e0bc707cfaadfc.ctex"]
 
 [params]
 

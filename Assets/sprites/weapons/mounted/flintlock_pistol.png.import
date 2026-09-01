@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cye40a141fjy2"
-path="res://.godot/imported/flintlock_pistol.png-54b1241bca294fafde85b9e5988d5fa9.ctex"
+path="res://.godot/imported/flintlock_pistol.png-e49ffa90be2336c54de34ceb1960e12e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/sprites/weapons/mounted/flintlock_pistol.png"
-dest_files=["res://.godot/imported/flintlock_pistol.png-54b1241bca294fafde85b9e5988d5fa9.ctex"]
+source_file="res://assets/sprites/weapons/mounted/flintlock_pistol.png"
+dest_files=["res://.godot/imported/flintlock_pistol.png-e49ffa90be2336c54de34ceb1960e12e.ctex"]
 
 [params]
 

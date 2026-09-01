@@ -55,6 +55,12 @@ class BodySpec:
     extra_arms: bool = False
     horns: bool = False
     tail: bool = False
+    # Beast options. A werewolf is not a hairy man: the reversed middle leg
+    # joint and the ragged outline are what make the silhouette read as an
+    # animal at 40 pixels tall, long before anyone sees the muzzle.
+    digitigrade: bool = False   # hip -> knee -> hock -> paw
+    fur: float = 0.0            # 0 smooth, 1 shaggy: spine ridge + joint tufts
+    claws: bool = False         # hooked talons on hands and paws
 
 
 # ---------------------------------------------------------------------------
@@ -79,6 +85,9 @@ class Pose:
     hip_f: Vec2
     knee_f: Vec2
     foot_f: Vec2
+    # Digitigrade rigs only; None on the humanoids.
+    ankle_b: Vec2 | None = None
+    ankle_f: Vec2 | None = None
     weapon_angle: float = 0.0
     cape_sway: float = 0.0
     tilt: float = 0.0
@@ -103,6 +112,18 @@ def _leg(hip: Vec2, thigh_deg: float, shin_deg: float, s: float) -> tuple[Vec2, 
     knee = _joint(hip, thigh_deg, 9.0 * s)
     foot = _joint(knee, thigh_deg + shin_deg, 9.0 * s)
     return knee, foot
+
+
+def _leg_digi(hip: Vec2, thigh_deg: float, shin_deg: float, s: float) -> tuple[Vec2, Vec2, Vec2]:
+    """Beast leg: femur forward, hock kicking back, long paw forward again.
+
+    Total reach is kept at ~18*s, the same as the humanoid leg, so the shared
+    hip height and the foot-pin correction in `build_pose` still hold.
+    """
+    knee = _joint(hip, thigh_deg + 24.0, 8.0 * s)
+    ankle = _joint(knee, thigh_deg + shin_deg * 0.6 - 38.0, 8.0 * s)
+    toe = _joint(ankle, thigh_deg * 0.4 + shin_deg * 0.3 + 34.0, 5.0 * s)
+    return knee, ankle, toe
 
 
 # Weapon-arm angle curves, one entry per attack frame. Sharp acceleration
@@ -272,8 +293,13 @@ def build_pose(
 
     hip_b = (hip[0] - 3.0 * s, hip[1])
     hip_f = (hip[0] + 3.0 * s, hip[1])
-    knee_b, foot_b = _leg(hip_b, thigh_b, shin_b, s)
-    knee_f, foot_f = _leg(hip_f, thigh_f, shin_f, s)
+    ankle_b = ankle_f = None
+    if spec.digitigrade:
+        knee_b, ankle_b, foot_b = _leg_digi(hip_b, thigh_b, shin_b, s)
+        knee_f, ankle_f, foot_f = _leg_digi(hip_f, thigh_f, shin_f, s)
+    else:
+        knee_b, foot_b = _leg(hip_b, thigh_b, shin_b, s)
+        knee_f, foot_f = _leg(hip_f, thigh_f, shin_f, s)
 
     if not airborne:
         # Pin whichever foot is lower to the ground (which sinks with
@@ -285,6 +311,10 @@ def build_pose(
             correction = 0.0
         foot_b = (foot_b[0], foot_b[1] + correction * 0.85)
         foot_f = (foot_f[0], foot_f[1] + correction * 0.85)
+        # The hock travels with the paw, otherwise the lower leg stretches.
+        if ankle_b is not None:
+            ankle_b = (ankle_b[0], ankle_b[1] + correction * 0.5)
+            ankle_f = (ankle_f[0], ankle_f[1] + correction * 0.5)
 
     return Pose(
         hip=hip, chest=chest, neck=neck, head=head, head_r=head_r,
@@ -292,6 +322,7 @@ def build_pose(
         shoulder_f=shoulder_f, elbow_f=elbow_f, hand_f=hand_f,
         hip_b=hip_b, knee_b=knee_b, foot_b=foot_b,
         hip_f=hip_f, knee_f=knee_f, foot_f=foot_f,
+        ankle_b=ankle_b, ankle_f=ankle_f,
         weapon_angle=weapon_angle + tilt, cape_sway=cape_sway, tilt=tilt,
         ground_y=ground_y, alpha=alpha, airborne=airborne,
     )
@@ -316,6 +347,83 @@ def _boot(c: Canvas, foot: Vec2, s: float, ramp: Ramp) -> None:
     c.ellipse(foot[0] + 1.0 * s, foot[1], 3.2 * s, 1.9 * s, ramp.dark)
     c.ellipse(foot[0] + 0.8 * s, foot[1] - 0.7, 2.6 * s, 1.2 * s, ramp.core)
     c.hline(round(foot[0] - 1.4 * s), round(foot[0] + 1.6 * s), round(foot[1] - 1.4 * s), ramp.light)
+
+
+def _paw(c: Canvas, ankle: Vec2, toe: Vec2, s: float, ramp: Ramp, claw: RGBA | None) -> None:
+    """Metatarsus plus a splayed pad. Wider and flatter than a boot, which is
+    most of what stops the hind leg reading as a shin in a stocking."""
+    c.capsule(ankle, toe, 1.9 * s, 1.5 * s, ramp.dark)
+    c.ellipse(toe[0] + 1.3 * s, toe[1], 3.6 * s, 1.8 * s, ramp.dark)
+    c.ellipse(toe[0] + 1.1 * s, toe[1] - 0.8, 2.7 * s, 1.0 * s, ramp.core)
+    if claw is not None:
+        for k in range(3):
+            cy = toe[1] - 0.8 + k * 1.1
+            c.line((toe[0] + 3.2 * s, cy), (toe[0] + 5.0 * s, cy + 0.7), claw)
+
+
+def _draw_claws(c: Canvas, elbow: Vec2, hand: Vec2, s: float, tone: RGBA) -> None:
+    """Three hooks fanned along the forearm axis, so they swing with the arm
+    instead of pointing at a fixed corner of the cell."""
+    dx, dy = hand[0] - elbow[0], hand[1] - elbow[1]
+    d = math.hypot(dx, dy) or 1.0
+    base = math.atan2(dy / d, dx / d)
+    for k in range(3):
+        a = base + math.radians(-26 + k * 26)
+        tip = (hand[0] + math.cos(a) * 3.6 * s, hand[1] + math.sin(a) * 3.6 * s)
+        c.capsule(hand, tip, 0.9 * s, 0.4, tone)
+
+
+def _fur_fringe(c: Canvas, pose: Pose, spec: BodySpec, s: float) -> None:
+    """Shaggy spikes down the spine and off every joint.
+
+    Fur at this size is a silhouette problem, not a texture problem — a
+    smooth outline reads as armour no matter what colour it is painted.
+    """
+    if spec.fur <= 0.0:
+        return
+
+    amt = spec.fur
+    ramp = spec.cloth
+    spine = shade(ramp.dark, -0.28)
+
+    for k in range(6):
+        f = k / 5.0
+        bx = lerp(pose.neck[0], pose.hip[0], f) - (3.4 + f * 1.4) * s
+        by = lerp(pose.neck[1], pose.hip[1], f)
+        tip = (
+            bx - (2.8 + (k % 2) * 2.0) * s * amt - pose.cape_sway * 0.35,
+            by - (1.8 - f * 3.0) * s * amt,
+        )
+        c.capsule((bx + 1.0, by), tip, 1.5 * s, 0.5, spine)
+
+    for joint_pt, far in (
+        (pose.elbow_b, True), (pose.knee_b, True),
+        (pose.elbow_f, False), (pose.knee_f, False),
+    ):
+        tone = shade(ramp.dark, -0.32) if far else ramp.dark
+        c.capsule(
+            joint_pt,
+            (joint_pt[0] - 4.2 * s * amt, joint_pt[1] + 2.2 * s),
+            1.7 * s, 0.5, tone,
+        )
+
+
+def _draw_leg(
+    c: Canvas, spec: BodySpec, s: float,
+    hip: Vec2, knee: Vec2, ankle: Vec2 | None, foot: Vec2,
+    ramp: Ramp, foot_ramp: Ramp,
+    r_hip: float, r_knee: float, r_foot: float,
+) -> None:
+    """One leg, humanoid or digitigrade. Radii are passed in rather than
+    derived, so the beast branch cannot quietly restyle the whole cast."""
+    _limb(c, hip, knee, r_hip, r_knee, ramp)
+    if ankle is None:
+        _limb(c, knee, foot, r_knee, r_foot, ramp)
+        _boot(c, foot, s, foot_ramp)
+        return
+
+    _limb(c, knee, ankle, r_knee, r_foot, ramp)
+    _paw(c, ankle, foot, s, foot_ramp, P.R_BONE.light if spec.claws else None)
 
 
 def _draw_cape(c: Canvas, pose: Pose, spec: BodySpec, s: float) -> None:
@@ -362,6 +470,22 @@ def _draw_cape(c: Canvas, pose: Pose, spec: BodySpec, s: float) -> None:
             ],
             ramp.dark,
         )
+
+    elif kind == "mane":
+        # A ruff over the shoulders instead of cloth. The wolf has no cape, so
+        # the fur has to carry the whole upper silhouette by itself.
+        base = shade(ramp.dark, -0.14)
+        root = (pose.chest[0] - 0.5 * s, pose.chest[1] + 1.0 * s)
+        for k in range(9):
+            a = math.radians(-188 + k * 27)
+            length = (7.8 + (k % 3) * 2.8) * s
+            tip = (
+                root[0] + math.cos(a) * length - sway * 0.4,
+                root[1] + math.sin(a) * length * 0.8,
+            )
+            c.capsule(root, tip, 2.2 * s, 0.5, base)
+        c.ellipse(root[0] - 0.4 * s, root[1] - 0.5, 5.6 * s, 4.2 * s, ramp.dark)
+        c.ellipse(root[0] - 1.4 * s, root[1] - 1.8, 3.2 * s, 2.2 * s, ramp.core)
 
     elif kind == "wings":
         # Two swept membranes: a leading arm bone up-and-back, then a
@@ -467,6 +591,72 @@ def _draw_head(c: Canvas, pose: Pose, spec: BodySpec, s: float) -> None:
         c.ellipse(hx + r * 0.1, hy + r * 0.15, r * 0.72, r * 0.78, P.VOID)
         c.set(round(hx + r * 0.4), round(hy), spec.eye)
         c.set(round(hx - r * 0.25), round(hy), spec.eye)
+        return
+
+    if kind == "wolf":
+        ruff = shade(skin.dark, -0.22)
+        # Collar of fur first, so the skull sits inside it.
+        for k in range(7):
+            a = math.radians(-152 + k * 34)
+            c.capsule(
+                (hx - r * 0.4, hy + r * 0.5),
+                (hx - r * 0.4 + math.cos(a) * r * 2.4, hy + r * 0.5 + math.sin(a) * r * 2.4),
+                1.8 * s, 0.5, ruff,
+            )
+
+        # Ears: swept back, unequal height so the head reads three-quarter.
+        for dx, tall in ((0.2, 1.0), (-0.5, 0.82)):
+            bx = hx + r * dx
+            by = hy - r * 0.7
+            c.polygon(
+                [
+                    (bx - r * 0.5, by + r * 0.25),
+                    (bx + r * 0.45, by + r * 0.1),
+                    (bx - r * 0.3, by - r * 1.55 * tall),
+                ],
+                skin.dark,
+            )
+            c.set(round(bx - r * 0.1), round(by - r * 0.45 * tall), P.VOID)
+
+        # Cranium.
+        c.ellipse(hx, hy, r * 1.05, r * 0.95, skin.dark)
+        c.ellipse(hx - 0.7, hy - 0.8, r * 0.78, r * 0.64, skin.core)
+
+        # Muzzle: a wedge forward and slightly down. This is the whole animal.
+        tip_x = hx + r * 2.5
+        tip_y = hy + r * 0.5
+        c.polygon(
+            [
+                (hx + r * 0.1, hy - r * 0.45),
+                (tip_x, tip_y - r * 0.4),
+                (tip_x, tip_y + r * 0.3),
+                (hx + r * 0.1, hy + r * 1.0),
+            ],
+            skin.dark,
+        )
+        c.polygon(
+            [
+                (hx + r * 0.3, hy - r * 0.15),
+                (tip_x - r * 0.3, tip_y - r * 0.25),
+                (tip_x - r * 0.3, tip_y + r * 0.02),
+                (hx + r * 0.3, hy + r * 0.5),
+            ],
+            skin.core,
+        )
+        c.set(round(tip_x - 1), round(tip_y - r * 0.15), P.VOID)
+
+        # Bared teeth along the jaw line — cheap, and it does all the menace.
+        for k in range(2):
+            tx = round(tip_x - r * 0.55 - k * r * 0.7)
+            ty = round(hy + r * 0.62 + k * 0.2)
+            c.vline(tx, ty, ty + 1, P.BONE)
+
+        # Brow ridge, then two lamps under it.
+        c.line((hx - r * 0.35, hy - r * 0.4), (hx + r * 0.95, hy - r * 0.2),
+               shade(skin.dark, -0.5))
+        for ex, ey in ((r * 0.8, r * 0.02), (r * 0.15, r * 0.08)):
+            c.set(round(hx + ex), round(hy + ey), spec.eye)
+            c.blend(round(hx + ex), round(hy + ey - 1), with_alpha(spec.eye, 100))
         return
 
     # Skull / flesh base.
@@ -609,23 +799,36 @@ def draw_figure(
     back_trouser = spec.cloth.tinted(P.VOID, 0.62)
     sleeve = spec.cloth.tinted(P.SMOKE, 0.16)
 
-    _limb(layer, pose.hip_b, pose.knee_b, 2.5 * s * spec.build, 2.1 * s, back_trouser)
-    _limb(layer, pose.knee_b, pose.foot_b, 2.1 * s, 1.7 * s, back_trouser)
-    _boot(layer, pose.foot_b, s, back)
+    _draw_leg(layer, spec, s, pose.hip_b, pose.knee_b, pose.ankle_b, pose.foot_b,
+              back_trouser, back, 2.5 * s * spec.build, 2.1 * s, 1.7 * s)
     _limb(layer, pose.shoulder_b, pose.elbow_b, 2.2 * s * spec.build, 1.9 * s, back)
     _limb(layer, pose.elbow_b, pose.hand_b, 1.9 * s, 1.5 * s, back)
+    if spec.claws:
+        layer.circle(pose.hand_b[0], pose.hand_b[1], 1.5 * s, back.dark)
+        _draw_claws(layer, pose.elbow_b, pose.hand_b, s, shade(P.R_BONE.dark, -0.3))
 
     _draw_torso(layer, pose, spec, s)
 
-    _limb(layer, pose.hip_f, pose.knee_f, 2.7 * s * spec.build, 2.2 * s, trouser)
-    _limb(layer, pose.knee_f, pose.foot_f, 2.2 * s, 1.8 * s, trouser)
-    _boot(layer, pose.foot_f, s, P.R_LEATHER)
+    _draw_leg(layer, spec, s, pose.hip_f, pose.knee_f, pose.ankle_f, pose.foot_f,
+              trouser, trouser if spec.digitigrade else P.R_LEATHER,
+              2.7 * s * spec.build, 2.2 * s, 1.8 * s)
 
     if spec.tail:
         tail_a = (pose.hip[0] - 3.0 * s, pose.hip[1])
         tail_b = (tail_a[0] - 9.0 * s, tail_a[1] + 3.0 * s + pose.cape_sway)
-        layer.capsule(tail_a, tail_b, 1.8 * s, 0.5, spec.skin.dark)
+        if spec.fur > 0.0:
+            # A brush, not a rope: two overlapping capsules plus a fanned tip.
+            mid = (tail_a[0] - 5.0 * s, tail_a[1] - 1.0 * s + pose.cape_sway * 0.4)
+            tip = (tail_a[0] - 11.0 * s, tail_a[1] + 2.0 * s + pose.cape_sway)
+            layer.capsule(tail_a, mid, 2.6 * s, 2.4 * s, shade(spec.cloth.dark, -0.2))
+            layer.capsule(mid, tip, 2.4 * s, 1.0 * s, shade(spec.cloth.dark, -0.2))
+            for k in range(3):
+                layer.capsule(mid, (tip[0] - 1.0 * s, tip[1] - 2.5 * s + k * 2.4 * s),
+                              1.4 * s, 0.5, shade(spec.cloth.dark, -0.35))
+        else:
+            layer.capsule(tail_a, tail_b, 1.8 * s, 0.5, spec.skin.dark)
 
+    _fur_fringe(layer, pose, spec, s)
     _draw_head(layer, pose, spec, s)
 
     # Sleeve down to the wrist, then a small gloved hand. A full forearm in
@@ -634,6 +837,8 @@ def draw_figure(
     _limb(layer, pose.elbow_f, pose.hand_f, 1.9 * s, 1.5 * s, sleeve)
     layer.circle(pose.hand_f[0], pose.hand_f[1], 1.5 * s, spec.skin.dark)
     layer.circle(pose.hand_f[0] - 0.4, pose.hand_f[1] - 0.5, 0.9 * s, spec.skin.core)
+    if spec.claws:
+        _draw_claws(layer, pose.elbow_f, pose.hand_f, s, P.R_BONE.dark)
 
     # Weapon last: it is held in the near hand, so nothing may occlude it.
     # Grip sits at the weapon canvas centre, which is the rotation pivot too.

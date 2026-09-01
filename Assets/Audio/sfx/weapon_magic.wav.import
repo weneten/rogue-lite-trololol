@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://l545h5gc7hbw"
-path="res://.godot/imported/weapon_magic.wav-73f16da5511ed0ae3b5ca660f183221d.sample"
+path="res://.godot/imported/weapon_magic.wav-0f1761601dfa7afe65dcefb6a4a96bf7.sample"
 
 [deps]
 
-source_file="res://Assets/Audio/sfx/weapon_magic.wav"
-dest_files=["res://.godot/imported/weapon_magic.wav-73f16da5511ed0ae3b5ca660f183221d.sample"]
+source_file="res://assets/Audio/sfx/weapon_magic.wav"
+dest_files=["res://.godot/imported/weapon_magic.wav-0f1761601dfa7afe65dcefb6a4a96bf7.sample"]
 
 [params]
 

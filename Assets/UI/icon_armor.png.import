@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bbcqnhfmi365o"
-path="res://.godot/imported/icon_armor.png-b43ab2728d683bba08a9498f7b9638dc.ctex"
+path="res://.godot/imported/icon_armor.png-99cfe71555d97d01008291cc738b6d4a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/UI/icon_armor.png"
-dest_files=["res://.godot/imported/icon_armor.png-b43ab2728d683bba08a9498f7b9638dc.ctex"]
+source_file="res://assets/UI/icon_armor.png"
+dest_files=["res://.godot/imported/icon_armor.png-99cfe71555d97d01008291cc738b6d4a.ctex"]
 
 [params]
 

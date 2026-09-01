@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://difcab47maxcm"
-path="res://.godot/imported/hollow_cardinal.png-93cb419b3e668dcbff4847548fec7c65.ctex"
+path="res://.godot/imported/hollow_cardinal.png-fdd06cd87ea4b9cbb15e5d10c76ef039.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/sprites/bosses/hollow_cardinal/hollow_cardinal.png"
-dest_files=["res://.godot/imported/hollow_cardinal.png-93cb419b3e668dcbff4847548fec7c65.ctex"]
+source_file="res://assets/sprites/bosses/hollow_cardinal/hollow_cardinal.png"
+dest_files=["res://.godot/imported/hollow_cardinal.png-fdd06cd87ea4b9cbb15e5d10c76ef039.ctex"]
 
 [params]
 

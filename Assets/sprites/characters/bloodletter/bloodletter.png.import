@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://nyg0kxn8ypfl"
-path="res://.godot/imported/bloodletter.png-dd252fc6eeef1d0f88477205d3a9d483.ctex"
+path="res://.godot/imported/bloodletter.png-dee5780db523efcbbbebe4fd21e0ff8c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/sprites/characters/bloodletter/bloodletter.png"
-dest_files=["res://.godot/imported/bloodletter.png-dd252fc6eeef1d0f88477205d3a9d483.ctex"]
+source_file="res://assets/sprites/characters/bloodletter/bloodletter.png"
+dest_files=["res://.godot/imported/bloodletter.png-dee5780db523efcbbbebe4fd21e0ff8c.ctex"]
 
 [params]
 

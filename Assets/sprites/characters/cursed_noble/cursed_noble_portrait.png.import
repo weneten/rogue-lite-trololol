@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bvofupesiiuy1"
-path="res://.godot/imported/cursed_noble_portrait.png-58570af8fae6e6c14c97539afd759b99.ctex"
+path="res://.godot/imported/cursed_noble_portrait.png-54ea63053ef0550edd1750eb45197481.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/sprites/characters/cursed_noble/cursed_noble_portrait.png"
-dest_files=["res://.godot/imported/cursed_noble_portrait.png-58570af8fae6e6c14c97539afd759b99.ctex"]
+source_file="res://assets/sprites/characters/cursed_noble/cursed_noble_portrait.png"
+dest_files=["res://.godot/imported/cursed_noble_portrait.png-54ea63053ef0550edd1750eb45197481.ctex"]
 
 [params]
 

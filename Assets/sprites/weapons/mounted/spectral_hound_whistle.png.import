@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://djjb50api6ho6"
-path="res://.godot/imported/spectral_hound_whistle.png-ae22399f21efe1e86df7febfa1e679a6.ctex"
+path="res://.godot/imported/spectral_hound_whistle.png-08581c8a6800601fc77b4e06ffbc43f4.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/sprites/weapons/mounted/spectral_hound_whistle.png"
-dest_files=["res://.godot/imported/spectral_hound_whistle.png-ae22399f21efe1e86df7febfa1e679a6.ctex"]
+source_file="res://assets/sprites/weapons/mounted/spectral_hound_whistle.png"
+dest_files=["res://.godot/imported/spectral_hound_whistle.png-08581c8a6800601fc77b4e06ffbc43f4.ctex"]
 
 [params]
 

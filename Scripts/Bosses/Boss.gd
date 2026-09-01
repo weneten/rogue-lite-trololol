@@ -17,11 +17,15 @@ enum BossState {
 @export_group("Wiring")
 @export var health_component_path: NodePath
 @export var sprite_node_path: NodePath
+@export var sprite_animator_path: NodePath
 @export var collision_shape_path: NodePath
 @export var contact_hitbox_path: NodePath
 
 var health: HealthComponent
+# Placeholder art. Bosses with a sprite sheet hide this and drive the animator
+# instead; the two are never visible at once.
 var sprite: Polygon2D
+var sprite_animator: EnemySpriteAnimator
 var collision_shape: CollisionShape2D
 var contact_hitbox: Area2D
 
@@ -43,7 +47,8 @@ func _ready() -> void:
 	add_to_group("Boss")
 
 	health = get_node_or_null(health_component_path)
-	sprite = get_node_or_null(sprite_node_path)
+	sprite = get_node_or_null(sprite_node_path) as Polygon2D
+	sprite_animator = get_node_or_null(sprite_animator_path) as EnemySpriteAnimator
 	collision_shape = get_node_or_null(collision_shape_path)
 	contact_hitbox = get_node_or_null(contact_hitbox_path)
 	enemy_scene = load("res://Scenes/Enemies/Enemy.tscn")
@@ -77,8 +82,36 @@ func apply_data(data: BossData) -> void:
 		health.max_health = data.max_health
 		health.revive(data.max_health)
 
+	var sheet_ok = apply_sprite_sheet(data)
 	if sprite != null:
 		sprite.color = data.sprite_color
+		sprite.visible = not sheet_ok
+
+# Wires the boss sheet into the shared EnemySpriteAnimator. Returns whether
+# frames actually loaded, so the caller can keep the placeholder up if not.
+func apply_sprite_sheet(data: BossData) -> bool:
+	if sprite_animator == null or data == null:
+		return false
+
+	var sheet_path = data.sprite_sheet_path
+	if sheet_path.is_empty() and data.sprite_sheet != null:
+		sheet_path = data.sprite_sheet.resource_path
+
+	if sheet_path.is_empty() and data.sprite_sheet == null:
+		return false
+
+	return sprite_animator.configure(
+		sheet_path,
+		data.sprite_json_path,
+		data.attack_anim_name,
+		data.sprite_scale if data.sprite_scale > 0.0 else 1.0,
+		Color.WHITE,
+		data.sprite_sheet)
+
+# Faces the sprite at a world point (sheets are drawn facing right).
+func face_toward(point: Vector2) -> void:
+	if sprite_animator != null:
+		sprite_animator.set_facing(point.x - global_position.x)
 
 func _physics_process(delta: float) -> void:
 	if data == null or health == null or health.is_dead or state == BossState.DEAD:
@@ -101,6 +134,14 @@ func _physics_process(delta: float) -> void:
 			process_windup(delta, player, has_live_target)
 		BossState.RECOVER:
 			process_recover(delta, player, has_live_target)
+
+	if sprite_animator != null:
+		if velocity.length_squared() > 4.0:
+			sprite_animator.set_facing(velocity.x)
+		elif player != null:
+			sprite_animator.set_facing(player.global_position.x - global_position.x)
+
+		sprite_animator.update_locomotion(velocity.length_squared() > 4.0)
 
 	move_and_slide()
 
@@ -125,6 +166,9 @@ func process_windup(delta: float, player: Node2D, has_live_target: bool) -> void
 	var recovery = pending_attack.recovery_seconds if pending_attack else 0.25
 	if pending_attack != null:
 		remember_attack_cooldown(pending_attack)
+		if sprite_animator != null:
+			sprite_animator.play_attack()
+
 		if has_live_target:
 			execute_attack(pending_attack, player)
 
@@ -152,6 +196,8 @@ func try_begin_attack(player: Node2D) -> void:
 	windup_remaining = maxf(0.05, attack.windup_seconds)
 	state = BossState.WINDUP
 	velocity = Vector2.ZERO
+	if player != null:
+		face_toward(player.global_position)
 
 	begin_telegraph(attack, player)
 
@@ -300,7 +346,8 @@ func tick_contact_damage(delta: float, has_live_target: bool) -> void:
 # Spawns a lightweight Enemy minion from Enemy.tscn with runtime EnemyData.
 # Tracks it for cleanup; frees on minion death (Enemy pool is null).
 func spawn_minion(global_position: Vector2, name: String, color: Color, max_health: int, move_speed: float,
-	attack_damage: float, attack_cooldown: float = 1.0) -> Enemy:
+	attack_damage: float, attack_cooldown: float = 1.0, sheet_path: String = "",
+	sprite_scale: float = 1.0) -> Enemy:
 	if enemy_scene == null:
 		return null
 
@@ -318,6 +365,9 @@ func spawn_minion(global_position: Vector2, name: String, color: Color, max_heal
 	data_obj.currency_reward = 1
 	data_obj.experience_reward = 1
 	data_obj.is_undead = true
+	# Optional: give the add real sheet art instead of the procedural skin.
+	data_obj.sprite_sheet_path = sheet_path
+	data_obj.sprite_scale = sprite_scale
 
 	var enemy = enemy_scene.instantiate()
 	# Parent under World with Player/enemies so minions y-sort correctly.
@@ -341,14 +391,22 @@ func spawn_minion(global_position: Vector2, name: String, color: Color, max_heal
 	spawned_minions.append(enemy)
 	return enemy
 
+var _last_seen_health: int = -1
+
 func _on_health_changed(current_health: int, max_health: int) -> void:
-	# Subclasses may react (UI hooks later).
-	pass
+	# Flinch only on damage, and never mid-wind-up: a boss that twitches out of
+	# its own telegraph is a boss whose attacks cannot be read.
+	var took_damage = _last_seen_health >= 0 and current_health < _last_seen_health
+	_last_seen_health = current_health
+	if took_damage and state == BossState.CHASE and sprite_animator != null:
+		sprite_animator.play_hurt()
 
 func _on_died(source: Node) -> void:
 	state = BossState.DEAD
 	velocity = Vector2.ZERO
 	free_minions()
+	if sprite_animator != null:
+		sprite_animator.play_death_async()
 
 	var currency = data.currency_reward if data else 0
 	var xp = data.experience_reward if data else 0
@@ -358,7 +416,7 @@ func _on_died(source: Node) -> void:
 	# Brief death hold then free — BossManager also listens to OnBossEncounterEnd.
 	var tree = get_tree()
 	if tree != null:
-		tree.create_timer(0.6).timeout.connect(func():
+		tree.create_timer(1.1 if sprite_animator != null else 0.6).timeout.connect(func():
 			if is_instance_valid(self):
 				queue_free())
 

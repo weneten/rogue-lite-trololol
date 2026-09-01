@@ -193,6 +193,21 @@ ENEMIES = [
         WeaponStyle(P.R_ROT, P.R_WOOD, P.R_RUST), "smash",
     ),
     _e(
+        # The Blood Moon Alpha's pack. Same beast rig as the boss at two
+        # thirds the height, so a summoned add reads as "one of his".
+        "dire_wolf", "Dire Wolf",
+        BodySpec(
+            cloth=Ramp(P.rgb("434653"), outline=P.rgb("0f1017")),
+            armor=P.R_BONE,
+            skin=Ramp(P.rgb("4d505d"), outline=P.rgb("111219")),
+            accent=P.R_BONE,
+            head="wolf", cape="mane", weapon="none", stature=0.82, build=1.1,
+            hunch=0.85, eye=P.AMBER, belt=False,
+            digitigrade=True, fur=0.85, claws=True, tail=True,
+        ),
+        WeaponStyle(P.R_BONE, P.R_LEATHER, P.R_RUST, P.AMBER), "slash",
+    ),
+    _e(
         "plague_rat", "Plague Rat",
         BodySpec(
             cloth=Ramp(P.rgb("4a3d33"), outline=P.rgb("140f0b")), armor=P.R_IRON,
@@ -208,6 +223,22 @@ ENEMIES = [
 # Bosses
 # ---------------------------------------------------------------------------
 BOSSES = [
+    _b(
+        # Wave 10. The only beast rig in the cast: digitigrade legs, a muzzle
+        # and a ragged fur outline, so it does not read as one more tall man
+        # in a coat next to the Count and the Colossus.
+        "blood_moon_alpha", "The Blood Moon Alpha",
+        BodySpec(
+            cloth=Ramp(P.rgb("57525f"), outline=P.rgb("120f1a")),
+            armor=P.R_BONE,
+            skin=Ramp(P.rgb("635c6c"), outline=P.rgb("15121e")),
+            accent=P.R_BONE,
+            head="wolf", cape="mane", weapon="none", stature=1.5, build=1.25,
+            hunch=0.35, eye=P.AMBER, aura=P.BLOOD, belt=False,
+            digitigrade=True, fur=1.0, claws=True, tail=True,
+        ),
+        WeaponStyle(P.R_BONE, P.R_LEATHER, P.R_RUST, P.AMBER), "slash",
+    ),
     _b(
         "bat_winged_count", "The Bat-Winged Count",
         BodySpec(

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cb0ao5acewxap"
-path="res://.godot/imported/sanguine_chalice.png-6c00ccc9d6e24ab3ea10077247d3f46b.ctex"
+path="res://.godot/imported/sanguine_chalice.png-f2ddd5b363794219e15f28c5b2b6f9d0.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/sprites/items/sanguine_chalice.png"
-dest_files=["res://.godot/imported/sanguine_chalice.png-6c00ccc9d6e24ab3ea10077247d3f46b.ctex"]
+source_file="res://assets/sprites/items/sanguine_chalice.png"
+dest_files=["res://.godot/imported/sanguine_chalice.png-f2ddd5b363794219e15f28c5b2b6f9d0.ctex"]
 
 [params]
 

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cf62npdrhqaux"
-path="res://.godot/imported/vignette.png-68cdedebb184804b8bb67d005ab8a4a3.ctex"
+path="res://.godot/imported/vignette.png-49501faa16779804abd9cc4300470311.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/UI/vignette.png"
-dest_files=["res://.godot/imported/vignette.png-68cdedebb184804b8bb67d005ab8a4a3.ctex"]
+source_file="res://assets/UI/vignette.png"
+dest_files=["res://.godot/imported/vignette.png-49501faa16779804abd9cc4300470311.ctex"]
 
 [params]
 

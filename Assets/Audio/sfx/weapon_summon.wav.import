@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://6qkd0w0l5ge0"
-path="res://.godot/imported/weapon_summon.wav-0710d93a14c6571223368e08433c851c.sample"
+path="res://.godot/imported/weapon_summon.wav-4c38d26bbc69ae1c3c35d1ba1b91bedb.sample"
 
 [deps]
 
-source_file="res://Assets/Audio/sfx/weapon_summon.wav"
-dest_files=["res://.godot/imported/weapon_summon.wav-0710d93a14c6571223368e08433c851c.sample"]
+source_file="res://assets/Audio/sfx/weapon_summon.wav"
+dest_files=["res://.godot/imported/weapon_summon.wav-4c38d26bbc69ae1c3c35d1ba1b91bedb.sample"]
 
 [params]
 

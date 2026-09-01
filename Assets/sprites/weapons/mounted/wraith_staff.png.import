@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ddsb2d5c5lyql"
-path="res://.godot/imported/wraith_staff.png-93960bbbbe2983dcf163f87f704d55d6.ctex"
+path="res://.godot/imported/wraith_staff.png-0831a6ddc64933c0670d482a8274ed98.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/sprites/weapons/mounted/wraith_staff.png"
-dest_files=["res://.godot/imported/wraith_staff.png-93960bbbbe2983dcf163f87f704d55d6.ctex"]
+source_file="res://assets/sprites/weapons/mounted/wraith_staff.png"
+dest_files=["res://.godot/imported/wraith_staff.png-0831a6ddc64933c0670d482a8274ed98.ctex"]
 
 [params]
 

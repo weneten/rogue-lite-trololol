@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://eh4uayrq0nmj"
-path="res://.godot/imported/the_reaper_portrait.png-e29991b336716152bbca40e09724d163.ctex"
+path="res://.godot/imported/the_reaper_portrait.png-ecd36d4f5085656ec16f9d985667323b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/sprites/characters/the_reaper/the_reaper_portrait.png"
-dest_files=["res://.godot/imported/the_reaper_portrait.png-e29991b336716152bbca40e09724d163.ctex"]
+source_file="res://assets/sprites/characters/the_reaper/the_reaper_portrait.png"
+dest_files=["res://.godot/imported/the_reaper_portrait.png-ecd36d4f5085656ec16f9d985667323b.ctex"]
 
 [params]
 

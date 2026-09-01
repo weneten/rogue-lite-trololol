@@ -9,8 +9,18 @@ class_name BossData
 @export var boss_scene: PackedScene
 @export var portrait: Texture2D
 
-# Placeholder Polygon2D tint so bosses read as visually distinct.
+# Tint applied to the sprite sheet, or to the placeholder Polygon2D on bosses
+# that still have no sheet.
 @export var sprite_color: Color = Color(0.7, 0.15, 0.2, 1.0)
+
+@export_group("Sprite sheet")
+# Same contract as EnemyData: a Nightbane sheet PNG under Assets/sprites plus
+# its sibling .json. Leave empty and the boss falls back to its Polygon2D.
+@export var sprite_sheet: Texture2D
+@export var sprite_sheet_path: String = ""
+@export var sprite_json_path: String = ""
+@export var sprite_scale: float = 1.0
+@export var attack_anim_name: String = "attack_slash"
 
 @export var max_health: int = 500
 @export var move_speed: float = 60.0

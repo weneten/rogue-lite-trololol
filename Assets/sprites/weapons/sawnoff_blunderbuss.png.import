@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bmeq4mb0mk0ww"
-path="res://.godot/imported/sawnoff_blunderbuss.png-db269aca79336dee8c1682f6791c3eef.ctex"
+path="res://.godot/imported/sawnoff_blunderbuss.png-3d57e8e4cb4f2e454fef8b13df918abb.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/sprites/weapons/sawnoff_blunderbuss.png"
-dest_files=["res://.godot/imported/sawnoff_blunderbuss.png-db269aca79336dee8c1682f6791c3eef.ctex"]
+source_file="res://assets/sprites/weapons/sawnoff_blunderbuss.png"
+dest_files=["res://.godot/imported/sawnoff_blunderbuss.png-3d57e8e4cb4f2e454fef8b13df918abb.ctex"]
 
 [params]
 

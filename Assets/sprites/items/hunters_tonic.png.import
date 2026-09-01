@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://1gbtf300j8n6"
-path="res://.godot/imported/hunters_tonic.png-a431f07fb1087e2c97613bc6bf1f170d.ctex"
+path="res://.godot/imported/hunters_tonic.png-e18fff464fd9554ad2a2c85a33466d38.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/sprites/items/hunters_tonic.png"
-dest_files=["res://.godot/imported/hunters_tonic.png-a431f07fb1087e2c97613bc6bf1f170d.ctex"]
+source_file="res://assets/sprites/items/hunters_tonic.png"
+dest_files=["res://.godot/imported/hunters_tonic.png-e18fff464fd9554ad2a2c85a33466d38.ctex"]
 
 [params]
 

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cubl6bjhaqmkf"
-path="res://.godot/imported/crimson_leech_jar.png-7fb198de4c15c30d02ef8e0b843a73e7.ctex"
+path="res://.godot/imported/crimson_leech_jar.png-5187ee3ebfc76be0b646902cbb96d478.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/sprites/items/crimson_leech_jar.png"
-dest_files=["res://.godot/imported/crimson_leech_jar.png-7fb198de4c15c30d02ef8e0b843a73e7.ctex"]
+source_file="res://assets/sprites/items/crimson_leech_jar.png"
+dest_files=["res://.godot/imported/crimson_leech_jar.png-5187ee3ebfc76be0b646902cbb96d478.ctex"]
 
 [params]
 

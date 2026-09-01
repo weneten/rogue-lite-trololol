@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bvaqhlvs2niqh"
-path="res://.godot/imported/embalmers_salve.png-d223374cd7e98ad206000c90581b625b.ctex"
+path="res://.godot/imported/embalmers_salve.png-43488f9b7c3129351ba59e1f498bcf5e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/sprites/items/embalmers_salve.png"
-dest_files=["res://.godot/imported/embalmers_salve.png-d223374cd7e98ad206000c90581b625b.ctex"]
+source_file="res://assets/sprites/items/embalmers_salve.png"
+dest_files=["res://.godot/imported/embalmers_salve.png-43488f9b7c3129351ba59e1f498bcf5e.ctex"]
 
 [params]
 

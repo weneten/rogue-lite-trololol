@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://34qh46vttxli"
-path="res://.godot/imported/rusty_scythe.png-3cf95853964a11219345e4472d8941fd.ctex"
+path="res://.godot/imported/rusty_scythe.png-1ae7c78f1a083e424cb6cfbd6db2a547.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/sprites/weapons/rusty_scythe.png"
-dest_files=["res://.godot/imported/rusty_scythe.png-3cf95853964a11219345e4472d8941fd.ctex"]
+source_file="res://assets/sprites/weapons/rusty_scythe.png"
+dest_files=["res://.godot/imported/rusty_scythe.png-1ae7c78f1a083e424cb6cfbd6db2a547.ctex"]
 
 [params]
 

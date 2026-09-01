@@ -1,0 +1,139 @@
+[gd_resource type="Resource" script_class="BossData" load_steps=13 format=3 uid="uid://bossdata_bloodmoon"]
+
+[ext_resource type="Script" path="res://Resources/BossData/BossData.gd" id="1_bossdata"]
+[ext_resource type="Script" path="res://Resources/BossData/BossPhaseData.gd" id="2_phase"]
+[ext_resource type="Script" path="res://Resources/BossData/BossAttackPatternData.gd" id="3_atk"]
+[ext_resource type="PackedScene" uid="uid://c8boss4wolfa" path="res://Scenes/Bosses/BloodMoonAlpha.tscn" id="4_scene"]
+
+[sub_resource type="Resource" id="atk_claw"]
+script = ExtResource("3_atk")
+attack_id = "claw_combo"
+windup_seconds = 0.55
+recovery_seconds = 0.25
+cooldown_seconds = 2.4
+damage = 26.0
+radius = 105.0
+range = 90.0
+speed = 0.0
+count = 2
+duration = 0.0
+heal_fraction = 0.0
+
+[sub_resource type="Resource" id="atk_pounce"]
+script = ExtResource("3_atk")
+attack_id = "pounce"
+windup_seconds = 0.8
+recovery_seconds = 0.45
+cooldown_seconds = 3.4
+damage = 30.0
+radius = 52.0
+range = 300.0
+speed = 760.0
+count = 1
+duration = 0.0
+heal_fraction = 0.0
+
+[sub_resource type="Resource" id="atk_howl"]
+script = ExtResource("3_atk")
+attack_id = "howl"
+windup_seconds = 1.1
+recovery_seconds = 0.5
+cooldown_seconds = 9.0
+damage = 8.0
+radius = 150.0
+range = 150.0
+speed = 0.0
+count = 3
+duration = 6.0
+heal_fraction = 0.0
+
+[sub_resource type="Resource" id="atk_claw_frenzy"]
+script = ExtResource("3_atk")
+attack_id = "claw_combo"
+windup_seconds = 0.42
+recovery_seconds = 0.2
+cooldown_seconds = 1.9
+damage = 30.0
+radius = 115.0
+range = 90.0
+speed = 0.0
+count = 2
+duration = 0.0
+heal_fraction = 0.0
+
+[sub_resource type="Resource" id="atk_pounce_frenzy"]
+script = ExtResource("3_atk")
+attack_id = "pounce"
+windup_seconds = 0.6
+recovery_seconds = 0.4
+cooldown_seconds = 2.6
+damage = 34.0
+radius = 52.0
+range = 340.0
+speed = 820.0
+count = 1
+duration = 0.0
+heal_fraction = 0.0
+
+[sub_resource type="Resource" id="atk_howl_frenzy"]
+script = ExtResource("3_atk")
+attack_id = "howl"
+windup_seconds = 0.9
+recovery_seconds = 0.4
+cooldown_seconds = 8.0
+damage = 9.0
+radius = 160.0
+range = 160.0
+speed = 0.0
+count = 5
+duration = 7.0
+heal_fraction = 0.0
+
+[sub_resource type="Resource" id="atk_rampage"]
+script = ExtResource("3_atk")
+attack_id = "rampage"
+windup_seconds = 0.9
+recovery_seconds = 0.6
+cooldown_seconds = 7.0
+damage = 26.0
+radius = 52.0
+range = 260.0
+speed = 760.0
+count = 3
+duration = 0.0
+heal_fraction = 0.0
+
+[sub_resource type="Resource" id="phase_hunt"]
+script = ExtResource("2_phase")
+phase_name = "On the Scent"
+enter_hp_fraction = 1.0
+move_speed_multiplier = 1.0
+attack_cooldown_multiplier = 1.0
+attacks = [SubResource("atk_claw"), SubResource("atk_pounce"), SubResource("atk_howl")]
+
+[sub_resource type="Resource" id="phase_frenzy"]
+script = ExtResource("2_phase")
+phase_name = "Blood Frenzy"
+enter_hp_fraction = 0.5
+move_speed_multiplier = 1.3
+attack_cooldown_multiplier = 0.72
+attacks = [SubResource("atk_claw_frenzy"), SubResource("atk_pounce_frenzy"), SubResource("atk_howl_frenzy"), SubResource("atk_rampage")]
+
+[resource]
+script = ExtResource("1_bossdata")
+boss_name = "The Blood Moon Alpha"
+boss_scene = ExtResource("4_scene")
+sprite_color = Color(1, 1, 1, 1)
+sprite_sheet_path = "res://Assets/sprites/bosses/blood_moon_alpha/blood_moon_alpha.png"
+sprite_json_path = "res://Assets/sprites/bosses/blood_moon_alpha/blood_moon_alpha.json"
+sprite_scale = 2.0
+attack_anim_name = "attack_slash"
+max_health = 900
+move_speed = 118.0
+contact_damage = 14.0
+contact_damage_cooldown = 0.9
+phases = [SubResource("phase_hunt"), SubResource("phase_frenzy")]
+wave_trigger = 10
+currency_reward = 140
+experience_reward = 70
+ability_ids = PackedStringArray("claw_combo", "pounce", "howl", "rampage")

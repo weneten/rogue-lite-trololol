@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c85ndevkc4o7n"
-path="res://.godot/imported/martyrs_heart.png-2d26febfb792fd982ab8ffe610b6ba77.ctex"
+path="res://.godot/imported/martyrs_heart.png-28a0e1f9db74f0109239af574d3df0ba.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/sprites/items/martyrs_heart.png"
-dest_files=["res://.godot/imported/martyrs_heart.png-2d26febfb792fd982ab8ffe610b6ba77.ctex"]
+source_file="res://assets/sprites/items/martyrs_heart.png"
+dest_files=["res://.godot/imported/martyrs_heart.png-28a0e1f9db74f0109239af574d3df0ba.ctex"]
 
 [params]
 

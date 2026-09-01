@@ -18,8 +18,12 @@ var _triggered_waves: Array[int] = []
 
 func _ready() -> void:
 	if boss_roster == null or boss_roster.is_empty():
+		# One entry per trigger wave; BossManager takes the first match, so two
+		# bosses must never share a wave_trigger. BatWingedCount.tres is kept on
+		# disk but left off the roster: BloodMoonAlpha took wave 10 from it, and
+		# putting it back needs a wave_trigger of its own first.
 		boss_roster = [
-			load("res://Resources/BossData/Data/BatWingedCount.tres"),
+			load("res://Resources/BossData/Data/BloodMoonAlpha.tres"),
 			load("res://Resources/BossData/Data/GravekeeperColossus.tres"),
 			load("res://Resources/BossData/Data/HollowCardinal.tres")
 		]
@@ -131,6 +135,29 @@ func debug_spawn_boss_for_wave(wave_number: int) -> void:
 	var data: BossData = _find_boss_for_wave(wave_number)
 	if data != null:
 		spawn_boss(data)
+
+# Admin panel: start any encounter on demand, even one already fought this run
+# or one whose boss is still on the field. Clears the live fight first so two
+# bosses can never share the arena.
+func debug_force_spawn(data: BossData) -> void:
+	if data == null:
+		return
+
+	debug_end_encounter()
+	if not _triggered_waves.has(data.wave_trigger):
+		_triggered_waves.append(data.wave_trigger)
+
+	spawn_boss(data)
+
+# Removes the live boss without paying out its rewards.
+func debug_end_encounter() -> void:
+	if _active_boss != null and is_instance_valid(_active_boss):
+		_active_boss.queue_free()
+
+	_end_encounter(false)
+
+func get_active_boss_name() -> String:
+	return _active_data.boss_name if _active_data != null else ""
 
 func _resolve_entity_parent() -> Node:
 	var scene: Node = get_tree().current_scene if get_tree() != null else null
