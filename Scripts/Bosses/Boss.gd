@@ -108,6 +108,38 @@ func apply_sprite_sheet(data: BossData) -> bool:
 		Color.WHITE,
 		data.sprite_sheet)
 
+# Swaps in a phase's own artwork, for bosses that visibly transform rather than
+# just speeding up. No-op when the phase names no sheet of its own.
+func apply_phase_sprite_sheet(phase: BossPhaseData) -> bool:
+	if sprite_animator == null or phase == null or data == null:
+		return false
+
+	var sheet_path = phase.sprite_sheet_path
+	if sheet_path.is_empty() and phase.sprite_sheet != null:
+		sheet_path = phase.sprite_sheet.resource_path
+
+	if sheet_path.is_empty() and phase.sprite_sheet == null:
+		return false
+
+	var scale = phase.sprite_scale
+	if scale <= 0.0:
+		scale = data.sprite_scale if data.sprite_scale > 0.0 else 1.0
+
+	return sprite_animator.configure(
+		sheet_path,
+		phase.sprite_json_path,
+		data.attack_anim_name,
+		scale,
+		Color.WHITE,
+		phase.sprite_sheet)
+
+# Scales every point of damage this boss deals. Read by apply_damage_to_player
+# and contact damage, so a phase that hits twice as hard needs one number in
+# the resource rather than a duplicated set of attack patterns.
+func get_phase_damage_multiplier() -> float:
+	var phase = get_current_phase()
+	return maxf(0.0, phase.damage_multiplier) if phase != null else 1.0
+
 # Faces the sprite at a world point (sheets are drawn facing right).
 func face_toward(point: Vector2) -> void:
 	if sprite_animator != null:
@@ -249,9 +281,10 @@ func apply_damage_to_player(damage: int, heal_fraction: float = 0.0) -> void:
 	if health_comp == null or health_comp.is_dead:
 		return
 
-	health_comp.take_damage(damage, self)
+	var scaled = maxi(1, roundi(damage * get_phase_damage_multiplier()))
+	health_comp.take_damage(scaled, self)
 	if heal_fraction > 0.0 and health != null and not health.is_dead:
-		health.heal(maxi(1, roundi(damage * heal_fraction)))
+		health.heal(maxi(1, roundi(scaled * heal_fraction)))
 
 func apply_damage_in_radius(center: Vector2, radius: float, damage: int, heal_fraction: float = 0.0) -> void:
 	var player = get_tree().get_first_node_in_group("Player") as Node2D
@@ -327,6 +360,7 @@ func update_phase_from_health() -> void:
 func on_phase_entered(phase_index: int, previous_phase_index: int = -1) -> void:
 	var phase = get_current_phase()
 	if phase != null:
+		apply_phase_sprite_sheet(phase)
 		print("[Boss] %s entered %s (index %d)." % [data.boss_name, phase.phase_name, phase_index])
 
 func tick_contact_damage(delta: float, has_live_target: bool) -> void:
@@ -345,7 +379,7 @@ func tick_contact_damage(delta: float, has_live_target: bool) -> void:
 		if hp == null or hp.is_dead:
 			continue
 
-		hp.take_damage(roundi(data.contact_damage), self)
+		hp.take_damage(maxi(1, roundi(data.contact_damage * get_phase_damage_multiplier())), self)
 		contact_cooldown_remaining = data.contact_damage_cooldown
 		break
 

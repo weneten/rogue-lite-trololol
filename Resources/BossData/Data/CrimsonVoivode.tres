@@ -1,0 +1,144 @@
+[gd_resource type="Resource" script_class="BossData" load_steps=12 format=3 uid="uid://bossdata_voivode"]
+
+[ext_resource type="Script" path="res://Resources/BossData/BossData.gd" id="1_bossdata"]
+[ext_resource type="Script" path="res://Resources/BossData/BossPhaseData.gd" id="2_phase"]
+[ext_resource type="Script" path="res://Resources/BossData/BossAttackPatternData.gd" id="3_atk"]
+[ext_resource type="PackedScene" uid="uid://c8boss6voivod" path="res://Scenes/Bosses/CrimsonVoivode.tscn" id="4_scene"]
+
+[sub_resource type="Resource" id="atk_aura"]
+script = ExtResource("3_atk")
+attack_id = "blood_aura"
+windup_seconds = 0.7
+recovery_seconds = 0.35
+cooldown_seconds = 6.0
+damage = 7.0
+radius = 130.0
+range = 0.0
+speed = 0.0
+count = 1
+duration = 6.0
+heal_fraction = 0.0
+
+[sub_resource type="Resource" id="atk_bats"]
+script = ExtResource("3_atk")
+attack_id = "bat_swarm"
+windup_seconds = 0.85
+recovery_seconds = 0.4
+cooldown_seconds = 5.5
+damage = 13.0
+radius = 54.0
+range = 0.0
+speed = 0.5
+count = 5
+duration = 0.0
+heal_fraction = 0.0
+
+[sub_resource type="Resource" id="atk_pools"]
+script = ExtResource("3_atk")
+attack_id = "blood_pools"
+windup_seconds = 0.75
+recovery_seconds = 0.3
+cooldown_seconds = 2.2
+damage = 6.0
+radius = 76.0
+range = 135.0
+speed = 0.0
+count = 3
+duration = 9.0
+heal_fraction = 0.0
+
+[sub_resource type="Resource" id="atk_aura_asc"]
+script = ExtResource("3_atk")
+attack_id = "blood_aura"
+windup_seconds = 0.5
+recovery_seconds = 0.25
+cooldown_seconds = 5.0
+damage = 8.0
+radius = 150.0
+range = 0.0
+speed = 0.0
+count = 1
+duration = 7.0
+heal_fraction = 0.0
+
+[sub_resource type="Resource" id="atk_bats_asc"]
+script = ExtResource("3_atk")
+attack_id = "bat_swarm"
+windup_seconds = 0.6
+recovery_seconds = 0.3
+cooldown_seconds = 4.5
+damage = 14.0
+radius = 58.0
+range = 0.0
+speed = 0.42
+count = 5
+duration = 0.0
+heal_fraction = 0.0
+
+[sub_resource type="Resource" id="atk_pools_asc"]
+script = ExtResource("3_atk")
+attack_id = "blood_pools"
+windup_seconds = 0.55
+recovery_seconds = 0.25
+cooldown_seconds = 1.8
+damage = 7.0
+radius = 84.0
+range = 145.0
+speed = 0.0
+count = 5
+duration = 10.0
+heal_fraction = 0.0
+
+[sub_resource type="Resource" id="atk_shadow"]
+script = ExtResource("3_atk")
+attack_id = "shadow_step"
+windup_seconds = 0.55
+recovery_seconds = 0.45
+cooldown_seconds = 3.6
+damage = 26.0
+radius = 70.0
+range = 128.0
+speed = 0.0
+count = 1
+duration = 0.0
+heal_fraction = 0.0
+
+[sub_resource type="Resource" id="phase_court"]
+script = ExtResource("2_phase")
+phase_name = "Crimson Court"
+enter_hp_fraction = 1.0
+move_speed_multiplier = 1.0
+attack_cooldown_multiplier = 1.0
+damage_multiplier = 1.0
+attacks = [SubResource("atk_pools"), SubResource("atk_bats"), SubResource("atk_aura")]
+
+[sub_resource type="Resource" id="phase_ascendant"]
+script = ExtResource("2_phase")
+phase_name = "Ascendant"
+enter_hp_fraction = 0.3
+move_speed_multiplier = 1.2
+attack_cooldown_multiplier = 0.8
+damage_multiplier = 2.0
+sprite_sheet_path = "res://Assets/sprites/bosses/crimson_voivode_ascendant/crimson_voivode_ascendant.png"
+sprite_json_path = "res://Assets/sprites/bosses/crimson_voivode_ascendant/crimson_voivode_ascendant.json"
+sprite_scale = 1.6
+attacks = [SubResource("atk_shadow"), SubResource("atk_pools_asc"), SubResource("atk_bats_asc"), SubResource("atk_aura_asc")]
+
+[resource]
+script = ExtResource("1_bossdata")
+boss_name = "The Crimson Voivode"
+boss_scene = ExtResource("4_scene")
+sprite_color = Color(1, 1, 1, 1)
+sprite_sheet_path = "res://Assets/sprites/bosses/crimson_voivode/crimson_voivode.png"
+sprite_json_path = "res://Assets/sprites/bosses/crimson_voivode/crimson_voivode.json"
+sprite_scale = 1.6
+attack_anim_name = "attack_slash"
+max_health = 1500
+move_speed = 105.0
+contact_damage = 12.0
+contact_damage_cooldown = 1.0
+phases = [SubResource("phase_court"), SubResource("phase_ascendant")]
+wave_trigger = 20
+currency_reward = 260
+experience_reward = 130
+ability_ids = PackedStringArray("blood_aura", "bat_swarm", "blood_pools", "shadow_step")

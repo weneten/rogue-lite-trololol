@@ -19,15 +19,16 @@ var _triggered_waves: Array[int] = []
 func _ready() -> void:
 	if boss_roster == null or boss_roster.is_empty():
 		# One entry per trigger wave; BossManager takes the first match, so two
-		# bosses must never share a wave_trigger. BatWingedCount.tres and
-		# GravekeeperColossus.tres are kept on disk but left off the roster:
-		# BloodMoonAlpha took wave 10 and BelfryTyrant took wave 15 from them.
-		# Putting either back needs a wave_trigger of its own first. The admin
-		# panel (F1 -> Bosses) lists every file on disk, roster or not.
+		# bosses must never share a wave_trigger. BatWingedCount.tres,
+		# GravekeeperColossus.tres and HollowCardinal.tres are kept on disk but
+		# left off the roster: BloodMoonAlpha, BelfryTyrant and CrimsonVoivode
+		# took waves 10, 15 and 20 from them. Putting one back needs a
+		# wave_trigger of its own first. The admin panel (F1 -> Bosses) lists
+		# every file on disk, roster or not.
 		boss_roster = [
 			load("res://Resources/BossData/Data/BloodMoonAlpha.tres"),
 			load("res://Resources/BossData/Data/BelfryTyrant.tres"),
-			load("res://Resources/BossData/Data/HollowCardinal.tres")
+			load("res://Resources/BossData/Data/CrimsonVoivode.tres")
 		]
 
 	if EventBus != null:
