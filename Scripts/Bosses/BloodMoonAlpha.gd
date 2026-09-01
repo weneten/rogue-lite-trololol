@@ -26,6 +26,25 @@ const HOWL_HASTE_SECONDS := 6.0
 const HOWL_HASTE_MOVE := 1.35
 const HOWL_HASTE_COOLDOWN := 0.7
 
+# The leap is his signature, so it comes up far more often than anything else,
+# and it always sets up a second move: land on the player, then swipe.
+const ATTACK_WEIGHTS := {
+	"pounce": 3.2,
+	"claw_combo": 1.4,
+	"rampage": 1.0,
+	"howl": 0.6,
+}
+# Gap between the leap landing and the follow-up it bought him. Long enough to
+# read as two moves, short enough that stepping out from under him is a dodge
+# rather than a stroll.
+const FOLLOW_UP_DELAY := 0.15
+
+# How close he wants to be. Inside this he circles; outside he closes. He never
+# walks away from the player — that read as him losing interest mid-fight.
+const PROWL_RANGE := 96.0
+const PROWL_RANGE_FRENZY := 70.0
+const STEER_RESPONSE := 8.0
+
 const WOLF_SHEET := "res://Assets/sprites/enemies/dire_wolf/dire_wolf.png"
 
 var _frenzy_announced: bool
@@ -39,6 +58,14 @@ var _charge_hit: bool
 
 var _haste_remaining: float
 
+# Set when a leap resolves, consumed by the next attack pick: the follow-up is
+# never another leap, and it comes almost immediately.
+var _chain_follow_up: bool
+
+# Which way he circles, flipped now and then so he does not tread one rut.
+var _orbit_sign: float = 1.0
+var _orbit_flip_in: float = 2.0
+
 func _process(delta: float) -> void:
 	if _haste_remaining > 0.0:
 		_haste_remaining -= delta
@@ -50,6 +77,61 @@ func get_phase_move_multiplier() -> float:
 func get_phase_cooldown_multiplier() -> float:
 	var base = super.get_phase_cooldown_multiplier()
 	return base * HOWL_HASTE_COOLDOWN if _haste_remaining > 0.0 else base
+
+# Weighted pick with the leap on top. The base class rolls uniformly, which
+# spread his best move thin across three others.
+func pick_attack() -> BossAttackPatternData:
+	var phase := get_current_phase()
+	if phase == null or phase.attacks == null or phase.attacks.is_empty():
+		return null
+
+	var chaining := _chain_follow_up
+	_chain_follow_up = false
+
+	var total := 0.0
+	for attack: BossAttackPatternData in phase.attacks:
+		total += _attack_weight(attack, chaining)
+
+	if total <= 0.0:
+		# Only reachable when the follow-up filter excluded everything, i.e. a
+		# phase whose whole pool is leaps. Fall back to the plain roll.
+		return super.pick_attack()
+
+	var roll := randf() * total
+	for attack: BossAttackPatternData in phase.attacks:
+		roll -= _attack_weight(attack, chaining)
+		if roll <= 0.0:
+			return attack
+
+	return phase.attacks[phase.attacks.size() - 1]
+
+func _attack_weight(attack: BossAttackPatternData, chaining: bool) -> float:
+	if attack == null:
+		return 0.0
+
+	# A leap into a leap is just a longer leap, and it drags him off the player.
+	if chaining and attack.attack_id == "pounce":
+		return 0.0
+
+	return ATTACK_WEIGHTS.get(attack.attack_id, 1.0)
+
+# Paced off the fastest tool in the phase rather than the one just used. The
+# base class reuses the last attack's cooldown, so a single 7s howl handed the
+# player a free lap of the arena.
+func get_next_attack_cooldown() -> float:
+	if _chain_follow_up:
+		return FOLLOW_UP_DELAY
+
+	var phase := get_current_phase()
+	if phase == null or phase.attacks == null or phase.attacks.is_empty():
+		return super.get_next_attack_cooldown()
+
+	var fastest := phase.attacks[0].cooldown_seconds
+	for attack: BossAttackPatternData in phase.attacks:
+		if attack != null:
+			fastest = minf(fastest, attack.cooldown_seconds)
+
+	return maxf(0.3, fastest * get_phase_cooldown_multiplier() * randf_range(0.85, 1.1))
 
 func on_phase_entered(phase_index: int, previous_phase_index: int = -1) -> void:
 	super.on_phase_entered(phase_index, previous_phase_index)
@@ -147,6 +229,9 @@ func _execute_pounce(attack: BossAttackPatternData, player: Node2D) -> void:
 	var facing = to_player.normalized() if to_player.length_squared() > 0.0001 else Vector2.RIGHT
 	var length = _pounce_length(attack, to_player)
 	_launch_charge(facing, length, roundi(attack.damage))
+	# He lands next to the player with his weight already forward — the swipe
+	# that follows is the point of the leap.
+	_chain_follow_up = true
 
 func _execute_howl(attack: BossAttackPatternData) -> void:
 	_haste_remaining = maxf(_haste_remaining, attack.duration if attack.duration > 0.0 else HOWL_HASTE_SECONDS)
@@ -220,6 +305,14 @@ func _launch_charge(direction: Vector2, length: float, damage: int) -> void:
 	if _hit_lane(direction, length, POUNCE_LANE_WIDTH, damage):
 		_charge_hit = true
 
+# Mid-leap the body leads: he looks where he is going, not at the player he is
+# about to sail past.
+func resolve_facing_x(player: Node2D) -> float:
+	if _charge_remaining > 0.0:
+		return _charge_direction.x
+
+	return super.resolve_facing_x(player)
+
 func process_recover(delta: float, player: Node2D, has_live_target: bool) -> void:
 	if _charge_remaining <= 0.0:
 		super.process_recover(delta, player, has_live_target)
@@ -242,20 +335,30 @@ func process_chase(delta: float, player: Node2D, has_live_target: bool) -> void:
 		super.process_chase(delta, player, has_live_target)
 		return
 
-	# He circles his prey rather than walking into it, which keeps him out of
-	# the player's melee range long enough for the telegraphs to matter.
+	# He arcs in on his prey and circles once he is on top of it. He never
+	# retreats: an earlier version backed off inside its own attack range,
+	# which read as the wolf losing its nerve and walking off mid-fight.
 	var speed = data.move_speed * get_phase_move_multiplier()
 	var to_player = player.global_position - global_position
 	var dist = to_player.length()
 	var dir = to_player / dist if dist > 0.001 else Vector2.RIGHT
-	var prowl = 92.0 if current_phase_index >= 1 else 130.0
 
-	if dist < prowl * 0.75:
-		velocity = -dir * speed * 0.8
-	elif dist > prowl * 1.5:
-		velocity = dir * speed
+	_orbit_flip_in -= delta
+	if _orbit_flip_in <= 0.0:
+		_orbit_sign = -_orbit_sign
+		_orbit_flip_in = randf_range(1.6, 3.2)
+
+	var tangent = Vector2(-dir.y, dir.x) * _orbit_sign
+	var prowl = PROWL_RANGE_FRENZY if current_phase_index >= 1 else PROWL_RANGE
+	var desired: Vector2
+	if dist > prowl:
+		desired = (dir + tangent * 0.35).normalized() * speed
 	else:
-		velocity = (dir.rotated(PI * 0.5) * 0.85 + dir * 0.35).normalized() * speed * 0.9
+		desired = tangent * speed * 0.7
+
+	# Steered rather than snapped, so crossing the prowl boundary does not
+	# make him stutter between closing and circling.
+	velocity = velocity.lerp(desired, clampf(delta * STEER_RESPONSE, 0.0, 1.0))
 
 	attack_cooldown_remaining -= delta
 	if attack_cooldown_remaining <= 0:

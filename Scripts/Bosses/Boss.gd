@@ -113,6 +113,16 @@ func face_toward(point: Vector2) -> void:
 	if sprite_animator != null:
 		sprite_animator.set_facing(point.x - global_position.x)
 
+# Which way the sprite should look this frame. Tracking the target rather than
+# the velocity is what stops a boss that sidesteps or backs off from turning
+# its back and appearing to moonwalk. Subclasses override for moves where the
+# body genuinely leads — a leap looks where it lands.
+func resolve_facing_x(player: Node2D) -> float:
+	if player != null:
+		return player.global_position.x - global_position.x
+
+	return velocity.x
+
 func _physics_process(delta: float) -> void:
 	if data == null or health == null or health.is_dead or state == BossState.DEAD:
 		velocity = Vector2.ZERO
@@ -136,11 +146,7 @@ func _physics_process(delta: float) -> void:
 			process_recover(delta, player, has_live_target)
 
 	if sprite_animator != null:
-		if velocity.length_squared() > 4.0:
-			sprite_animator.set_facing(velocity.x)
-		elif player != null:
-			sprite_animator.set_facing(player.global_position.x - global_position.x)
-
+		sprite_animator.set_facing(resolve_facing_x(player))
 		sprite_animator.update_locomotion(velocity.length_squared() > 4.0)
 
 	move_and_slide()
