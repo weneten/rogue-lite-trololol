@@ -128,6 +128,32 @@ func build_visuals() -> void:
 	_ring.polygon = _build_border_polygon(points, 3.0)
 	add_child(_ring)
 
+# Re-aims a telegraph that is already on the ground. The wind-up clock is
+# untouched, so the growing fill keeps its progress — only where it points has
+# moved. This is what lets an attack track its target while it charges up
+# instead of committing to wherever the target stood when it started.
+func retarget(new_origin: Vector2, new_direction: Vector2, new_length: float = -1.0) -> void:
+	global_position = new_origin
+
+	if new_direction.length_squared() > 0.0001:
+		direction = new_direction.normalized()
+
+	if new_length > 0.0:
+		radius = new_length
+
+	rebuild_shape()
+
+func rebuild_shape() -> void:
+	var points := _build_shape_polygon()
+	if _fill != null:
+		_fill.polygon = points
+
+	if _grow != null:
+		_grow.polygon = points
+
+	if _ring != null:
+		_ring.polygon = _build_border_polygon(points, 3.0)
+
 func _build_shape_polygon() -> PackedVector2Array:
 	match shape:
 		Shape.CONE:

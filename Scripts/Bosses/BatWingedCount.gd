@@ -84,7 +84,7 @@ func _execute_bat_swarm(attack: BossAttackPatternData) -> void:
 func process_chase(delta: float, player: Node2D, has_live_target: bool) -> void:
 	# Frenzy: slightly more aggressive close-range orbit.
 	if current_phase_index >= 1 and has_live_target and player != null:
-		var speed = data.move_speed * get_phase_move_multiplier()
+		var speed = get_move_speed() * get_phase_move_multiplier()
 		var to_player = player.global_position - global_position
 		var dist = to_player.length()
 		var dir = to_player / dist if dist > 0.001 else Vector2.RIGHT

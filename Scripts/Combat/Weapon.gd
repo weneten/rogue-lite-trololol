@@ -420,7 +420,7 @@ func _place_trap() -> void:
 
 	var crit_chance = data.crit_chance + (_owner_stats.extra_crit_chance if _owner_stats else 0.0)
 	var crit_multiplier = data.crit_multiplier + (_owner_stats.extra_crit_multiplier if _owner_stats else 0.0)
-	var damage_multiplier = _owner_stats.damage_multiplier if _owner_stats else 1.0
+	var damage_multiplier = (_owner_stats.damage_multiplier * _owner_stats.difficulty_damage_multiplier) if _owner_stats else 1.0
 
 	var trap = _trap_pool.acquire()
 	trap.arm(
@@ -468,6 +468,7 @@ func _apply_on_hit_lifesteal(damage_dealt: int) -> void:
 # when the target is an EnemyData.is_undead archetype.
 func _compute_damage_multiplier(target: Node2D) -> float:
 	var multiplier = _owner_stats.damage_multiplier if _owner_stats else 1.0
+	multiplier *= _owner_stats.difficulty_damage_multiplier if _owner_stats else 1.0
 
 	if (data.weapon_class & WeaponData.WeaponClass.MAGIC) != 0:
 		var magic_stat = _owner_stats.magic_damage_multiplier if _owner_stats else 1.0

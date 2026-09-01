@@ -15,6 +15,16 @@ var run_seed: int
 # not something a fresh run should silently clear).
 var selected_character: CharacterData
 
+# Difficulty picked at CharacterSelect. Like selected_character it survives
+# start_new_run: choosing it is a deliberate act, and dying should not quietly
+# put the player back on Normal.
+var difficulty: int = Difficulty.Level.NORMAL
+
+# The Hunter's move speed at run start, published by Player once it has applied
+# its CharacterData. "Dark is the Night" sets enemy speed relative to this, and
+# enemies spawn before they could ask a Player that may not exist yet.
+var player_base_speed: float = 300.0
+
 # PassiveItemData already purchased this run. Kept as the resources rather than
 # bare ids because the shop tray and the Hunter's cosmetic layer both need the
 # icon and effect, not just "do I own this".
@@ -105,6 +115,10 @@ func try_spend_currency(amount: int) -> bool:
 	return true
 
 # Resets state for a fresh run. Pass 0 to roll a new random seed.
+func set_difficulty(level: int) -> void:
+	difficulty = level
+	print("[GameManager] Difficulty set to %s." % Difficulty.display_name(level))
+
 func start_new_run(seed: int = 0) -> void:
 	currency = 0
 	wave_number = 1

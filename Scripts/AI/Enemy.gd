@@ -125,7 +125,16 @@ func apply_spawn_modifiers(wave_number: int, is_elite: bool) -> void:
 		dmg_mul *= EnemyScaling.ELITE_DAMAGE_MULTIPLIER
 		spd_mul *= EnemyScaling.ELITE_SPEED_MULTIPLIER
 
-	_runtime_move_speed = data.move_speed * spd_mul
+	# Difficulty rides on top of the per-wave curve rather than replacing it, so
+	# a hard run still gets harder as the waves climb.
+	var difficulty: int = GameManager.difficulty
+	hp_mul *= Difficulty.enemy_health_multiplier(difficulty)
+	dmg_mul *= Difficulty.enemy_damage_multiplier(difficulty)
+
+	# Speed is set, not scaled: the hard mode's promise is "barely slower than
+	# you", which is an absolute number, and the wave curve then builds on it.
+	_runtime_move_speed = Difficulty.enemy_speed(
+		difficulty, data.move_speed, GameManager.player_base_speed) * spd_mul
 	_runtime_attack_damage = data.attack_damage * dmg_mul
 	_runtime_explosion_damage = data.explosion_damage * dmg_mul
 

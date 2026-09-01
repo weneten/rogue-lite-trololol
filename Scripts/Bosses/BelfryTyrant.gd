@@ -276,7 +276,7 @@ func process_chase(delta: float, player: Node2D, has_live_target: bool) -> void:
 		super.process_chase(delta, player, has_live_target)
 		return
 
-	var speed := data.move_speed * get_phase_move_multiplier()
+	var speed := get_move_speed() * get_phase_move_multiplier()
 	var to_player := player.global_position - global_position
 	var dist := to_player.length()
 	var dir := to_player / dist if dist > 0.001 else Vector2.RIGHT

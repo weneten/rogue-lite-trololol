@@ -226,7 +226,8 @@ func _refresh_headline() -> void:
 	var coin := GameManager.currency if GameManager != null else 0
 	var boss := BossManager.get_active_boss_name() if BossManager != null else ""
 
-	var line := "wave %d · %d/%d alive · %d coin" % [wave, alive, cap, coin]
+	var mode := Difficulty.display_name(GameManager.difficulty) if GameManager != null else "?"
+	var line := "%s · wave %d · %d/%d alive · %d coin" % [mode, wave, alive, cap, coin]
 	if not boss.is_empty():
 		line += " · fighting %s" % boss
 
@@ -338,6 +339,21 @@ func _build_waves_tab(body: VBoxContainer) -> void:
 			WaveManager.start_next_wave()
 			_say("Wave %d started." % WaveManager.current_wave, GOOD)),
 	])
+
+	_section(body, "Difficulty")
+	var mode_label := _label("", DIM, true)
+	var refresh_mode := func():
+		mode_label.text = Difficulty.description(GameManager.difficulty)
+	refresh_mode.call()
+	_row(body, [
+		_label(Difficulty.display_name(GameManager.difficulty), Color.WHITE, true),
+		_button("Switch mode", func():
+			GameManager.set_difficulty(Difficulty.next(GameManager.difficulty))
+			_say("Now %s — applies to what spawns from here on, not to the Hunter already in the arena."
+				% Difficulty.display_name(GameManager.difficulty), WARN)
+			_rebuild_all_tabs.call_deferred()),
+	])
+	body.add_child(mode_label)
 
 	_section(body, "Horde")
 	# enemy_density_multiplier is the one dial that scales both halves of the

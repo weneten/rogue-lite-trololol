@@ -21,6 +21,10 @@ static var _default_unlocked_characters: Array[String] = [
 
 static var meta_currency: int = 0
 
+# Last difficulty the player chose. Remembered so a Dark is the Night regular
+# is not put back on Normal every time they launch the game.
+static var preferred_difficulty: int = 0
+
 static var _unlocked_characters: Array[String] = []
 static var _unlocked_weapons: Array[String] = []
 static var _loaded: bool = false
@@ -37,6 +41,7 @@ static func load_data() -> void:
 	_unlocked_characters.clear()
 	_unlocked_weapons.clear()
 	meta_currency = 0
+	preferred_difficulty = 0
 
 	if not FileAccess.file_exists(SAVE_PATH):
 		_apply_defaults()
@@ -66,6 +71,10 @@ static func load_data() -> void:
 		var data = json.data
 		if data is Dictionary:
 			meta_currency = maxi(0, int(data.get("meta_currency", 0)))
+			# Clamped against the enum: a save written by a build with more
+			# difficulties must not select one this build cannot describe.
+			preferred_difficulty = clampi(int(data.get("preferred_difficulty", 0)),
+				0, Difficulty.ORDER.size() - 1)
 			var chars = data.get("unlocked_characters")
 			if chars is Array:
 				for name in chars:
@@ -84,6 +93,7 @@ static func load_data() -> void:
 static func save() -> void:
 	var data = {
 		"meta_currency": meta_currency,
+		"preferred_difficulty": preferred_difficulty,
 		"unlocked_characters": Array(_unlocked_characters),
 		"unlocked_weapons": Array(_unlocked_weapons)
 	}
@@ -95,6 +105,17 @@ static func save() -> void:
 		return
 
 	file.store_string(json_str)
+
+
+static func set_preferred_difficulty(level: int) -> void:
+	ensure_loaded()
+	preferred_difficulty = level
+	save()
+
+
+static func get_preferred_difficulty() -> int:
+	ensure_loaded()
+	return preferred_difficulty
 
 
 static func get_meta_currency() -> int:

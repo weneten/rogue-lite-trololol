@@ -32,15 +32,25 @@ func _ready() -> void:
 		]
 
 	if EventBus != null:
+		EventBus.run_started.connect(_on_run_started)
 		EventBus.wave_start.connect(_on_wave_start)
 		EventBus.boss_encounter_end.connect(_on_boss_encounter_end)
 		EventBus.player_died.connect(_on_player_died)
 
 func _exit_tree() -> void:
 	if EventBus != null:
+		EventBus.run_started.disconnect(_on_run_started)
 		EventBus.wave_start.disconnect(_on_wave_start)
 		EventBus.boss_encounter_end.disconnect(_on_boss_encounter_end)
 		EventBus.player_died.disconnect(_on_player_died)
+
+# BossManager is an autoload, so _triggered_waves outlived the run that filled
+# it: every wave that had ever spawned a boss stayed marked for the rest of the
+# session, and the second run got no bosses at all. Only noticeable on waves
+# 10/15/20 before — obvious the moment a difficulty puts one on every third.
+func _on_run_started() -> void:
+	_triggered_waves.clear()
+	_end_encounter(false)
 
 func _on_wave_start(wave_number: int) -> void:
 	if is_boss_active:
@@ -65,7 +75,25 @@ func _find_boss_for_wave(wave_number: int) -> BossData:
 		if data != null and data.wave_trigger == wave_number:
 			return data
 
-	return null
+	return _find_recurring_boss(wave_number)
+
+# Difficulties that promise "a boss every N waves" fill the gaps between the
+# authored encounters by cycling the roster, so the third, sixth and ninth wave
+# each get one even though nobody wrote a boss for them.
+func _find_recurring_boss(wave_number: int) -> BossData:
+	var interval: int = Difficulty.boss_every_waves(GameManager.difficulty)
+	if interval <= 0 or wave_number <= 0 or wave_number % interval != 0:
+		return null
+
+	var pool: Array[BossData] = []
+	for data: BossData in boss_roster:
+		if data != null:
+			pool.append(data)
+
+	if pool.is_empty():
+		return null
+
+	return pool[(wave_number / interval - 1) % pool.size()]
 
 func spawn_boss(data: BossData) -> void:
 	if data == null:
@@ -146,10 +174,9 @@ func debug_force_spawn(data: BossData) -> void:
 	if data == null:
 		return
 
+	# Deliberately does not mark the wave as triggered: previewing an encounter
+	# from the admin panel should not delete it from the run.
 	debug_end_encounter()
-	if not _triggered_waves.has(data.wave_trigger):
-		_triggered_waves.append(data.wave_trigger)
-
 	spawn_boss(data)
 
 # Removes the live boss without paying out its rewards.

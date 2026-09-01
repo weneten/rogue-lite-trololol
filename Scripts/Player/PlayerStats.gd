@@ -24,6 +24,10 @@ static var instance: PlayerStats
 
 # Multiplies all Weapon damage; read by Weapon.cs. Starts at 1 (no bonus).
 var damage_multiplier: float = 1.0
+# The run difficulty's cut of the player's damage, kept separate from
+# damage_multiplier so that upgrades keep adding to the base the game was tuned
+# around instead of to an already-reduced number.
+var difficulty_damage_multiplier: float = 1.0
 # Multiplies Player.MoveSpeed; read by Player.cs. Starts at 1 (no bonus).
 var move_speed_multiplier: float = 1.0
 # Multiplies Weapon.AttackSpeed (attacks/sec) before the cooldown is derived from it;

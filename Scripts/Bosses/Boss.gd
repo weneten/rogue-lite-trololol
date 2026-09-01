@@ -79,8 +79,9 @@ func apply_data(data: BossData) -> void:
 		return
 
 	if health != null:
-		health.max_health = data.max_health
-		health.revive(data.max_health)
+		var max_hp: int = maxi(1, roundi(data.max_health * Difficulty.enemy_health_multiplier(GameManager.difficulty)))
+		health.max_health = max_hp
+		health.revive(max_hp)
 
 	var sheet_ok = apply_sprite_sheet(data)
 	if sprite != null:
@@ -138,7 +139,16 @@ func apply_phase_sprite_sheet(phase: BossPhaseData) -> bool:
 # the resource rather than a duplicated set of attack patterns.
 func get_phase_damage_multiplier() -> float:
 	var phase = get_current_phase()
-	return maxf(0.0, phase.damage_multiplier) if phase != null else 1.0
+	var phase_multiplier = maxf(0.0, phase.damage_multiplier) if phase != null else 1.0
+	return phase_multiplier * Difficulty.enemy_damage_multiplier(GameManager.difficulty)
+
+# The boss's move speed for this run. Bosses read this instead of data.move_speed
+# so the difficulty's speed floor reaches them too.
+func get_move_speed() -> float:
+	if data == null:
+		return 0.0
+
+	return Difficulty.enemy_speed(GameManager.difficulty, data.move_speed, GameManager.player_base_speed)
 
 # Faces the sprite at a world point (sheets are drawn facing right).
 func face_toward(point: Vector2) -> void:
@@ -185,7 +195,7 @@ func _physics_process(delta: float) -> void:
 
 func process_chase(delta: float, player: Node2D, has_live_target: bool) -> void:
 	if has_live_target:
-		var speed = data.move_speed * get_phase_move_multiplier()
+		var speed = get_move_speed() * get_phase_move_multiplier()
 		velocity = (player.global_position - global_position).normalized() * speed
 	else:
 		velocity = Vector2.ZERO

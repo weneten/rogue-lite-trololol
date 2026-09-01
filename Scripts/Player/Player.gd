@@ -79,16 +79,21 @@ func _ready() -> void:
 func apply_character_data() -> void:
 	var data: CharacterData = character_data if character_data != null else GameManager.selected_character
 	if data == null:
+		# Arena.tscn run standalone (see the note above): no Hunter was picked,
+		# so the scene's own defaults stand. The difficulty still has to reach
+		# them, or a hard run started from the admin panel is quietly a normal
+		# one with a hard label on it.
+		apply_run_difficulty(_health.max_health if _health != null else 100)
 		return
 
 	move_speed = data.move_speed
 	apply_character_visual(data)
 
 	if _health != null:
-		_health.max_health = data.max_health
 		_health.armor = data.starting_armor
 		_health.dodge_chance = data.starting_dodge_chance
-		_health.revive(data.max_health)
+
+	apply_run_difficulty(data.max_health)
 
 	if _stats != null:
 		_stats.apply_extra_crit(data.starting_crit_chance, 0.0)
@@ -110,6 +115,23 @@ func apply_character_data() -> void:
 				_stats.active_passive = passive
 		else:
 			push_warning("[Player] Unknown PassiveId '%s' on CharacterData '%s'." % [data.passive_id, data.character_name])
+
+# Publishes the Hunter's starting speed and applies the run difficulty's cut of
+# their health and damage. Separate from apply_character_data because a
+# standalone Arena run has no CharacterData but still has a difficulty.
+func apply_run_difficulty(base_max_health: int) -> void:
+	# Published before anything spawns: "Dark is the Night" pegs enemy speed to
+	# the Hunter's, and enemies ask GameManager, not the Player node.
+	GameManager.player_base_speed = move_speed
+
+	var difficulty: int = GameManager.difficulty
+	if _health != null:
+		var max_hp: int = maxi(1, roundi(base_max_health * Difficulty.player_health_multiplier(difficulty)))
+		_health.max_health = max_hp
+		_health.revive(max_hp)
+
+	if _stats != null:
+		_stats.difficulty_damage_multiplier = Difficulty.player_damage_multiplier(difficulty)
 
 # Swaps in this Hunter's sprite sheet (same Assets/sprites JSON+PNG pipeline the enemies use,
 # hence the shared EnemySpriteAnimator). Hunters without a sheet — or a sheet that fails to

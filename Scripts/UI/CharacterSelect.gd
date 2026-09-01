@@ -53,6 +53,8 @@ var _lore_label: Label
 var _stats_label: Label
 var _passive_label: Label
 var _difficulty_label: Label
+var _mode_button: Button
+var _mode_note: Label
 var _begin_button: Button
 var _back_button: Button
 var _meta_currency_label: Label
@@ -105,6 +107,7 @@ func _ready() -> void:
 		_begin_button.pressed.connect(_on_begin_pressed)
 
 	_ensure_coop_buttons.call_deferred()
+	_ensure_mode_control.call_deferred()
 
 	if _back_button != null:
 		_back_button.pressed.connect(_on_back_pressed)
@@ -489,6 +492,62 @@ func _ensure_coop_buttons() -> void:
 	join.text = "JOIN COVEN"
 	join.pressed.connect(_on_join_pressed)
 	footer.add_child(join)
+
+# The run's difficulty, built alongside the co-op buttons rather than authored
+# in the scene, for the same reason: it is a row that has to slot in above the
+# footer whichever way the scene was last edited.
+func _ensure_mode_control() -> void:
+	if _begin_button == null:
+		return
+
+	var footer := _begin_button.get_parent()
+	var rows := footer.get_parent() if footer != null else null
+	if rows == null or rows.get_node_or_null("ModeRow") != null:
+		return
+
+	var row := HBoxContainer.new()
+	row.name = "ModeRow"
+	row.add_theme_constant_override("separation", 14)
+	rows.add_child(row)
+	# Directly above the footer, so the last thing read before BEGIN is what
+	# the player is about to sign up for.
+	rows.move_child(row, footer.get_index())
+
+	_mode_note = Label.new()
+	_mode_note.name = "ModeNote"
+	_mode_note.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_mode_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_mode_note.theme_type_variation = &"SmallLabel"
+	row.add_child(_mode_note)
+
+	_mode_button = Button.new()
+	_mode_button.name = "ModeButton"
+	_mode_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_mode_button.pressed.connect(_on_mode_pressed)
+	UIAnim.juice_button(_mode_button)
+	row.add_child(_mode_button)
+
+	GameManager.difficulty = MetaSave.get_preferred_difficulty()
+	_refresh_mode()
+
+func _on_mode_pressed() -> void:
+	GameManager.set_difficulty(Difficulty.next(GameManager.difficulty))
+	MetaSave.set_preferred_difficulty(GameManager.difficulty)
+	_refresh_mode()
+	UIAnim.punch(_mode_button)
+
+func _refresh_mode() -> void:
+	var level: int = GameManager.difficulty
+	var harsh := not Difficulty.is_default(level)
+
+	if _mode_button != null:
+		_mode_button.text = Difficulty.display_name(level).to_upper()
+		_mode_button.modulate = Color(1.0, 0.62, 0.6) if harsh else Color.WHITE
+		_mode_button.tooltip_text = Difficulty.description(level)
+
+	if _mode_note != null:
+		_mode_note.text = "%s  %s" % [Difficulty.tagline(level), Difficulty.description(level)]
+		_mode_note.modulate = Color(1.0, 0.66, 0.64) if harsh else Color(0.72, 0.68, 0.76)
 
 func _on_begin_pressed() -> void:
 	if _selected == null or not MetaSave.is_character_unlocked(_selected.character_name):

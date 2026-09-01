@@ -5,6 +5,11 @@ extends Node
 # Registered as an autoload singleton (see project.godot [autoload]).
 
 signal enemy_killed(enemy, currency_reward, experience_reward)
+# Raised by WaveManager the moment the wave loop arms itself in the arena —
+# once per run, whether the player came through CharacterSelect or booted
+# Arena.tscn directly. Anything holding per-run state clears it here.
+signal run_started()
+
 signal wave_start(wave_number)
 signal wave_end(wave_number)
 signal player_level_up(new_level)

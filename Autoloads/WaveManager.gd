@@ -89,6 +89,9 @@ func _begin_gameplay() -> void:
 	_inter_wave_time_remaining = initial_delay_seconds
 	_enemy_pool = null
 	_pool_parent = null
+	if EventBus != null:
+		EventBus.run_started.emit()
+
 	print("[WaveManager] Gameplay started — wave loop armed.")
 
 func _stop_gameplay() -> void:
@@ -152,8 +155,22 @@ func _process_active_wave(delta: float) -> void:
 			_spawn_time_remaining = _get_spawn_interval_for_wave(current_wave)
 
 	if _wave_time_remaining <= 0:
+		# On difficulties that hold the wave open for the boss, the timer runs
+		# out but the wave does not: it ends when the boss falls. Regular spawns
+		# are already paused by BossManager for the encounter, so the arena does
+		# not keep filling while the player is busy.
+		if _waiting_on_boss():
+			return
+
 		end_wave()
 		_inter_wave_time_remaining = time_between_waves
+
+# True while a boss is alive and this difficulty refuses to end the wave first.
+func _waiting_on_boss() -> bool:
+	if not Difficulty.wave_waits_for_boss(GameManager.difficulty):
+		return false
+
+	return BossManager != null and BossManager.is_boss_active
 
 func start_next_wave() -> void:
 	current_wave += 1
@@ -227,7 +244,8 @@ func _get_spawn_interval_for_wave(wave: int) -> float:
 # Risk/reward relics (see PlayerStats.enemy_density_multiplier). Reads 1.0 when
 # no player is in the tree, so menus and standalone scenes are unaffected.
 func _density_multiplier() -> float:
-	return PlayerStats.instance.enemy_density_multiplier if PlayerStats.instance != null else 1.0
+	var relics: float = PlayerStats.instance.enemy_density_multiplier if PlayerStats.instance != null else 1.0
+	return relics * Difficulty.enemy_density_multiplier(GameManager.difficulty)
 
 func _count_alive_enemies() -> int:
 	var tree: SceneTree = get_tree()

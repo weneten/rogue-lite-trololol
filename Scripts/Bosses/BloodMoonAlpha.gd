@@ -18,8 +18,13 @@ class_name BloodMoonAlpha
 const CLAW_ARC_DEGREES := 105.0
 const POUNCE_LANE_WIDTH := 52.0
 const POUNCE_SPEED := 760.0
-const POUNCE_DURATION := 0.28
 const POUNCE_CONTACT_RADIUS := 46.0
+# Last stretch of the wind-up, during which the lane stops following and just
+# fills. Without it the leap lands wherever the player is standing at the
+# instant it fires, which is not an attack anyone can read.
+const POUNCE_LOCK_SECONDS := 0.18
+# Safety cap on a leap: a charge blocked by a wall has to end sometime.
+const POUNCE_MAX_SECONDS := 0.9
 const RAMPAGE_WINDUP := 0.32
 const RAMPAGE_INTERVAL := 0.44
 const HOWL_HASTE_SECONDS := 6.0
@@ -53,8 +58,22 @@ var _frenzy_announced: bool
 # just drew instead of teleporting to the end of it.
 var _charge_remaining: float
 var _charge_direction: Vector2 = Vector2.RIGHT
+# Where the drawn lane ends. The leap stops here rather than running for a
+# fixed time, so the distance he covers is the distance he showed.
+var _charge_target: Vector2
 var _charge_damage: int
 var _charge_hit: bool
+
+# The lane currently being drawn for a leap, and the attack that owns it, so
+# the wind-up can keep re-aiming both at the player.
+var _pounce_lane: BossAoeTelegraph
+var _pounce_attack: BossAttackPatternData
+# Where that lane points, held on the boss rather than read back off the decal.
+# The telegraph frees itself on its own clock, which is usually a frame or two
+# before the physics wind-up ends, and reading a freed node put the leap back
+# on a fresh aim — the original bug in a new hat.
+var _pounce_aim: Vector2 = Vector2.RIGHT
+var _pounce_reach: float
 
 var _haste_remaining: float
 
@@ -149,6 +168,13 @@ func begin_telegraph(attack: BossAttackPatternData, player: Node2D) -> void:
 	if attack == null or player == null:
 		return
 
+	# The leap's aim belongs to the leap. A wind-up that never resolved — the
+	# player died mid-cast, say — would otherwise leave it set and hand a stale
+	# heading to the next one.
+	if attack.attack_id != "pounce":
+		_pounce_lane = null
+		_pounce_attack = null
+
 	var to_player = player.global_position - global_position
 	var facing = to_player.normalized() if to_player.length_squared() > 0.0001 else Vector2.RIGHT
 
@@ -159,9 +185,13 @@ func begin_telegraph(attack: BossAttackPatternData, player: Node2D) -> void:
 				attack.windup_seconds, roundi(attack.damage), self, false)
 
 		"pounce":
-			active_telegraph = BossAoeTelegraph.spawn_lane(
-				self, global_position, facing, _pounce_length(attack, to_player),
+			_pounce_attack = attack
+			_pounce_aim = facing
+			_pounce_reach = _pounce_length(attack, to_player)
+			_pounce_lane = BossAoeTelegraph.spawn_lane(
+				self, global_position, facing, _pounce_reach,
 				POUNCE_LANE_WIDTH, attack.windup_seconds, roundi(attack.damage), self, false)
+			active_telegraph = _pounce_lane
 
 		"howl":
 			# Centred on him and damage-free: the threat is the pack, not the noise.
@@ -176,6 +206,27 @@ func begin_telegraph(attack: BossAttackPatternData, player: Node2D) -> void:
 
 		_:
 			super.begin_telegraph(attack, player)
+
+# The lane follows the player while he gathers himself, then locks for the last
+# stretch. Aiming once at the start was the bug: he drew a lane one way and
+# leapt another, because the leap re-aimed at execution time and the decal did
+# not.
+func process_windup(delta: float, player: Node2D, has_live_target: bool) -> void:
+	# Track while he gathers himself, then lock for the last stretch. Aiming
+	# once at the start was the bug: he drew a lane one way and leapt another,
+	# because the leap re-aimed at execution time and the decal did not.
+	if _pounce_attack != null and player != null and windup_remaining > POUNCE_LOCK_SECONDS:
+		var to_player := player.global_position - global_position
+		if to_player.length_squared() > 0.0001:
+			_pounce_aim = to_player.normalized()
+
+		_pounce_reach = _pounce_length(_pounce_attack, to_player)
+		if _pounce_lane != null and is_instance_valid(_pounce_lane):
+			_pounce_lane.retarget(global_position, _pounce_aim, _pounce_reach)
+
+		face_toward(player.global_position)
+
+	super.process_windup(delta, player, has_live_target)
 
 # ---------------------------------------------------------------------------
 # Attacks
@@ -225,9 +276,17 @@ func _execute_claw_combo(attack: BossAttackPatternData, player: Node2D) -> void:
 			maxi(1, roundi(attack.damage * 0.8)), self, true))
 
 func _execute_pounce(attack: BossAttackPatternData, player: Node2D) -> void:
-	var to_player = player.global_position - global_position
-	var facing = to_player.normalized() if to_player.length_squared() > 0.0001 else Vector2.RIGHT
-	var length = _pounce_length(attack, to_player)
+	# Straight off the aim the lane was drawn with, never a fresh look at the
+	# player: the decal is the promise, and this is what keeps it.
+	var facing := _pounce_aim
+	var length := _pounce_reach
+	if _pounce_attack == null:
+		var to_player := player.global_position - global_position
+		facing = to_player.normalized() if to_player.length_squared() > 0.0001 else Vector2.RIGHT
+		length = _pounce_length(attack, to_player)
+
+	_pounce_lane = null
+	_pounce_attack = null
 	_launch_charge(facing, length, roundi(attack.damage))
 	# He lands next to the player with his weight already forward — the swipe
 	# that follows is the point of the leap.
@@ -297,7 +356,11 @@ func _rampage_step(step: int, total: int, damage: int, max_range: float) -> void
 # ---------------------------------------------------------------------------
 func _launch_charge(direction: Vector2, length: float, damage: int) -> void:
 	_charge_direction = direction
-	_charge_remaining = POUNCE_DURATION
+	_charge_target = global_position + direction * length
+	# A time cap only, so a leap into a wall cannot run forever. The leap
+	# actually ends on arrival, which is what makes the distance he covers
+	# the distance the lane showed.
+	_charge_remaining = minf(POUNCE_MAX_SECONDS, length / POUNCE_SPEED + 0.06)
 	_charge_damage = damage
 	_charge_hit = false
 	# Anyone still standing on the drawn lane eats it immediately; the contact
@@ -320,7 +383,21 @@ func process_recover(delta: float, player: Node2D, has_live_target: bool) -> voi
 
 	_charge_remaining -= delta
 	recover_remaining -= delta
-	velocity = _charge_direction * POUNCE_SPEED
+
+	var to_target := _charge_target - global_position
+	var step := POUNCE_SPEED * delta
+	if to_target.length() <= step:
+		# Final stride: land exactly on the end of the lane. Divided by delta so
+		# move_and_slide still resolves it as movement, which means a wall stops
+		# him here the same way it would mid-leap.
+		velocity = to_target / maxf(delta, 0.0001)
+		_charge_remaining = 0.0
+	elif _charge_remaining <= 0.0:
+		# Time cap hit, so something is in the way. Stop where he actually is
+		# rather than snapping to a point he never reached.
+		velocity = Vector2.ZERO
+	else:
+		velocity = to_target.normalized() * POUNCE_SPEED
 
 	if not _charge_hit and player != null \
 			and global_position.distance_to(player.global_position) <= POUNCE_CONTACT_RADIUS:
@@ -338,7 +415,7 @@ func process_chase(delta: float, player: Node2D, has_live_target: bool) -> void:
 	# He arcs in on his prey and circles once he is on top of it. He never
 	# retreats: an earlier version backed off inside its own attack range,
 	# which read as the wolf losing its nerve and walking off mid-fight.
-	var speed = data.move_speed * get_phase_move_multiplier()
+	var speed = get_move_speed() * get_phase_move_multiplier()
 	var to_player = player.global_position - global_position
 	var dist = to_player.length()
 	var dir = to_player / dist if dist > 0.001 else Vector2.RIGHT

@@ -154,7 +154,12 @@ func _update_wave_timer() -> void:
 		return
 
 	if WaveManager.is_wave_active:
-		_timer_label.text = "%.0fs" % maxf(0.0, WaveManager.wave_time_remaining)
+		# On difficulties where the wave waits for the boss, the timer has
+		# already run out and would sit at a stuck "0s" for the whole fight.
+		if BossManager != null and BossManager.is_boss_active and WaveManager.wave_time_remaining <= 0.0:
+			_timer_label.text = "SLAY IT"
+		else:
+			_timer_label.text = "%.0fs" % maxf(0.0, WaveManager.wave_time_remaining)
 	else:
 		_timer_label.text = "Next wave in %.0fs" % maxf(0.0, WaveManager.time_until_next_wave)
 

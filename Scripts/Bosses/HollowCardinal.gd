@@ -109,7 +109,7 @@ func _execute_summon_cultists(attack: BossAttackPatternData) -> void:
 func process_chase(delta: float, player: Node2D, has_live_target: bool) -> void:
 	# Prefers mid-range kiting.
 	if has_live_target and player != null:
-		var speed = data.move_speed * get_phase_move_multiplier()
+		var speed = get_move_speed() * get_phase_move_multiplier()
 		var dist = global_position.distance_to(player.global_position)
 		var dir = (player.global_position - global_position).normalized()
 		var preferred = 220.0
