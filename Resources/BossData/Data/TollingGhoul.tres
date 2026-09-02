@@ -1,0 +1,127 @@
+[gd_resource type="Resource" script_class="BossData" load_steps=12 format=3 uid="uid://bossdata_tollghoul"]
+
+[ext_resource type="Script" path="res://Resources/BossData/BossData.gd" id="1_bossdata"]
+[ext_resource type="Script" path="res://Resources/BossData/BossPhaseData.gd" id="2_phase"]
+[ext_resource type="Script" path="res://Resources/BossData/BossAttackPatternData.gd" id="3_atk"]
+[ext_resource type="PackedScene" uid="uid://c8boss7ghoul" path="res://Scenes/Bosses/TollingGhoul.tscn" id="4_scene"]
+
+[sub_resource type="Resource" id="atk_slam"]
+script = ExtResource("3_atk")
+attack_id = "quake_slam"
+windup_seconds = 1.15
+recovery_seconds = 0.45
+cooldown_seconds = 3.6
+damage = 22.0
+radius = 260.0
+range = 62.0
+speed = 0.0
+count = 1
+duration = 2.4
+heal_fraction = 0.0
+
+[sub_resource type="Resource" id="atk_whirl"]
+script = ExtResource("3_atk")
+attack_id = "bell_whirlwind"
+windup_seconds = 1.0
+recovery_seconds = 0.5
+cooldown_seconds = 6.5
+damage = 15.0
+radius = 165.0
+range = 0.0
+speed = 0.0
+count = 1
+duration = 2.6
+heal_fraction = 0.0
+
+[sub_resource type="Resource" id="atk_combo"]
+script = ExtResource("3_atk")
+attack_id = "toll_combo"
+windup_seconds = 0.75
+recovery_seconds = 0.5
+cooldown_seconds = 5.0
+damage = 16.0
+radius = 74.0
+range = 250.0
+speed = 0.0
+count = 3
+duration = 0.0
+heal_fraction = 0.0
+
+[sub_resource type="Resource" id="atk_slam_p2"]
+script = ExtResource("3_atk")
+attack_id = "quake_slam"
+windup_seconds = 0.95
+recovery_seconds = 0.4
+cooldown_seconds = 2.9
+damage = 24.0
+radius = 300.0
+range = 74.0
+speed = 0.0
+count = 1
+duration = 2.6
+heal_fraction = 0.0
+
+[sub_resource type="Resource" id="atk_whirl_p2"]
+script = ExtResource("3_atk")
+attack_id = "bell_whirlwind"
+windup_seconds = 0.8
+recovery_seconds = 0.45
+cooldown_seconds = 5.2
+damage = 16.0
+radius = 190.0
+range = 0.0
+speed = 0.0
+count = 1
+duration = 3.4
+heal_fraction = 0.0
+
+[sub_resource type="Resource" id="atk_combo_p2"]
+script = ExtResource("3_atk")
+attack_id = "toll_combo"
+windup_seconds = 0.6
+recovery_seconds = 0.45
+cooldown_seconds = 4.2
+damage = 17.0
+radius = 82.0
+range = 300.0
+speed = 0.0
+count = 3
+duration = 0.0
+heal_fraction = 0.0
+
+[sub_resource type="Resource" id="phase_dirge"]
+script = ExtResource("2_phase")
+phase_name = "Dirge"
+enter_hp_fraction = 1.0
+move_speed_multiplier = 1.0
+attack_cooldown_multiplier = 1.0
+damage_multiplier = 1.0
+attacks = [SubResource("atk_slam"), SubResource("atk_whirl"), SubResource("atk_combo")]
+
+[sub_resource type="Resource" id="phase_peal"]
+script = ExtResource("2_phase")
+phase_name = "Cracked Peal"
+enter_hp_fraction = 0.5
+move_speed_multiplier = 1.2
+attack_cooldown_multiplier = 0.8
+damage_multiplier = 1.15
+attacks = [SubResource("atk_slam_p2"), SubResource("atk_whirl_p2"), SubResource("atk_combo_p2")]
+
+[resource]
+script = ExtResource("1_bossdata")
+boss_name = "The Tolling Ghoul"
+boss_scene = ExtResource("4_scene")
+sprite_color = Color(1, 1, 1, 1)
+sprite_sheet_path = "res://assets/sprites/bosses/tolling_ghoul/tolling_ghoul.png"
+sprite_json_path = "res://assets/sprites/bosses/tolling_ghoul/tolling_ghoul.json"
+sprite_scale = 2.2
+attack_anim_name = "attack"
+max_health = 1600
+move_speed = 82.0
+contact_damage = 14.0
+contact_damage_cooldown = 1.0
+phases = [SubResource("phase_dirge"), SubResource("phase_peal")]
+wave_trigger = 25
+currency_reward = 240
+experience_reward = 120
+ability_ids = PackedStringArray("quake_slam", "bell_whirlwind", "toll_combo")
