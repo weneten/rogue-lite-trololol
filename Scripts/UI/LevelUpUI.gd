@@ -23,6 +23,8 @@ var _choice_descriptions: Array[Label] = []
 var _current_choices: Array[UpgradeData] = []
 var _choices_container: Control
 var _header: Control
+# Only ever built for a Jester run; null for every other Hunter.
+var _blood_boon_button: Button
 var is_replica: bool = false
 
 func _ready() -> void:
@@ -66,6 +68,7 @@ func _ready() -> void:
 func _on_player_level_up(new_level: int) -> void:
 	AudioManager.play_sfx("ui_levelup")
 	_roll_choices()
+	_refresh_blood_boon_option()
 
 	if _root_panel != null:
 		_root_panel.visible = true
@@ -84,6 +87,55 @@ func _on_player_level_up(new_level: int) -> void:
 	_focus_first_choice()
 	if NetSession != null:
 		NetSession.broadcast_intermission("boon", {"boons": _boon_snapshot()})
+
+# ------------------------------------------------------------- blood boon cash-in
+
+# The Jester can refuse the boon entirely and take Blood Boons for it instead — the same
+# XP-for-spins trade the Ossuary exchange offers, taken at the moment the level is handed
+# out. Built lazily and only when a Jester is in the run; no other Hunter ever sees it.
+func _refresh_blood_boon_option() -> void:
+	var passive := BloodBoonSlotsPassive.instance
+	if passive == null or is_replica:
+		return
+
+	var payout := BloodBoonEconomy.get_level_trade_payout(passive.current_wave())
+
+	if _blood_boon_button == null or not is_instance_valid(_blood_boon_button):
+		if _choices_container == null:
+			return
+
+		var column: VBoxContainer = _choices_container.get_parent() as VBoxContainer
+		if column == null:
+			return
+
+		_blood_boon_button = Button.new()
+		_blood_boon_button.name = "BloodBoonTrade"
+		_blood_boon_button.pressed.connect(_on_blood_boon_trade_pressed)
+		UIAnim.juice_button(_blood_boon_button)
+		column.add_child(_blood_boon_button)
+
+	_blood_boon_button.text = "REFUSE THE BOON — TAKE %d BLOOD BOONS" % payout
+	_blood_boon_button.tooltip_text = "Skip this upgrade and feed the Bleeding Wheel instead."
+	_blood_boon_button.visible = true
+
+func _on_blood_boon_trade_pressed() -> void:
+	var passive := BloodBoonSlotsPassive.instance
+	if passive == null:
+		return
+
+	passive.add_coins(BloodBoonEconomy.get_level_trade_payout(passive.current_wave()))
+	AudioManager.play_sfx("ui_purchase")
+
+	# Same close path a normal pick takes: hide once the queue is empty, then hand the
+	# intermission on so the shop still opens.
+	var more_boons := PlayerStats.instance != null and PlayerStats.instance.pending_boons > 0
+	if not more_boons:
+		if _root_panel != null:
+			_root_panel.visible = false
+		UIAnim.release_focus(get_tree())
+
+	if PlayerStats.instance != null:
+		PlayerStats.instance.confirm_upgrade_selected()
 
 func _focus_first_choice() -> void:
 	for button in _choice_buttons:

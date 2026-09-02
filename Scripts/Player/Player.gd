@@ -98,6 +98,9 @@ func apply_character_data() -> void:
 	if _stats != null:
 		_stats.apply_extra_crit(data.starting_crit_chance, 0.0)
 		_stats.set_magic_damage_multiplier(data.starting_magic_power)
+		# Luck is a real stat now (shop rarity, and the Jester's whole wheel), so a
+		# Hunter authored with a Luck baseline actually starts with it.
+		_stats.apply_luck(data.starting_luck)
 
 	# Replaces whatever Weapon.tscn child was hardcoded on Player.tscn (e.g. the default
 	# RustyScythe) with this Hunter's own loadout instead of stacking on top of it.

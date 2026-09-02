@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cvibv81b2ft7t"
-path="res://.godot/imported/holy_water_flask.png-d9b641afe5f8e1305f986f25d5702916.ctex"
+path="res://.godot/imported/holy_water_flask.png-571c68e2e6885e10f9817ea383bbf64f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/weapons/holy_water_flask.png"
-dest_files=["res://.godot/imported/holy_water_flask.png-d9b641afe5f8e1305f986f25d5702916.ctex"]
+source_file="res://Assets/sprites/weapons/holy_water_flask.png"
+dest_files=["res://.godot/imported/holy_water_flask.png-571c68e2e6885e10f9817ea383bbf64f.ctex"]
 
 [params]
 

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://duy55qq1oclxl"
-path="res://.godot/imported/moonlit_duelist_portrait.png-4922322206a63ad814b3ce19bd6dd346.ctex"
+path="res://.godot/imported/moonlit_duelist_portrait.png-06be11d97dc1232142e7b03d06af80ae.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/characters/moonlit_duelist/moonlit_duelist_portrait.png"
-dest_files=["res://.godot/imported/moonlit_duelist_portrait.png-4922322206a63ad814b3ce19bd6dd346.ctex"]
+source_file="res://Assets/sprites/characters/moonlit_duelist/moonlit_duelist_portrait.png"
+dest_files=["res://.godot/imported/moonlit_duelist_portrait.png-06be11d97dc1232142e7b03d06af80ae.ctex"]
 
 [params]
 

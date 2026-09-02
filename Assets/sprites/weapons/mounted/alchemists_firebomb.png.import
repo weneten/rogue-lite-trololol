@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c8bs3p2y8wwmg"
-path="res://.godot/imported/alchemists_firebomb.png-285e9ba4081ac1ec1939204faba29ba4.ctex"
+path="res://.godot/imported/alchemists_firebomb.png-7523ec7fa3b3d029b72b0ed4d4d8ca54.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/weapons/mounted/alchemists_firebomb.png"
-dest_files=["res://.godot/imported/alchemists_firebomb.png-285e9ba4081ac1ec1939204faba29ba4.ctex"]
+source_file="res://Assets/sprites/weapons/mounted/alchemists_firebomb.png"
+dest_files=["res://.godot/imported/alchemists_firebomb.png-7523ec7fa3b3d029b72b0ed4d4d8ca54.ctex"]
 
 [params]
 

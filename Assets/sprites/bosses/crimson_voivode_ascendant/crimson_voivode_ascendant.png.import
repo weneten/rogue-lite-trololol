@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ch8rv4r75382s"
-path="res://.godot/imported/crimson_voivode_ascendant.png-3cc9a83e54c8d60fd235ce4e6e13c52d.ctex"
+path="res://.godot/imported/crimson_voivode_ascendant.png-ba8940afeff8f1c27fd052a5824a0e44.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/bosses/crimson_voivode_ascendant/crimson_voivode_ascendant.png"
-dest_files=["res://.godot/imported/crimson_voivode_ascendant.png-3cc9a83e54c8d60fd235ce4e6e13c52d.ctex"]
+source_file="res://Assets/sprites/bosses/crimson_voivode_ascendant/crimson_voivode_ascendant.png"
+dest_files=["res://.godot/imported/crimson_voivode_ascendant.png-ba8940afeff8f1c27fd052a5824a0e44.ctex"]
 
 [params]
 

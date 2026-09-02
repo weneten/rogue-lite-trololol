@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bqcfqnrbe0oqr"
-path="res://.godot/imported/vial_of_vigor.png-5594211578df75ac4ac5c12b48526382.ctex"
+path="res://.godot/imported/vial_of_vigor.png-7db33ab6079e1a44cfe777107524f94f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/items/vial_of_vigor.png"
-dest_files=["res://.godot/imported/vial_of_vigor.png-5594211578df75ac4ac5c12b48526382.ctex"]
+source_file="res://Assets/sprites/items/vial_of_vigor.png"
+dest_files=["res://.godot/imported/vial_of_vigor.png-7db33ab6079e1a44cfe777107524f94f.ctex"]
 
 [params]
 

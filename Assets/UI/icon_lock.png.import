@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://2di16gkevi8h"
-path="res://.godot/imported/icon_lock.png-ab3ca4cfc1a22ab6c668390d170e9088.ctex"
+path="res://.godot/imported/icon_lock.png-af6901bfe058ea3fed331e2a5d5ac1f2.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/UI/icon_lock.png"
-dest_files=["res://.godot/imported/icon_lock.png-ab3ca4cfc1a22ab6c668390d170e9088.ctex"]
+source_file="res://Assets/UI/icon_lock.png"
+dest_files=["res://.godot/imported/icon_lock.png-af6901bfe058ea3fed331e2a5d5ac1f2.ctex"]
 
 [params]
 

@@ -40,7 +40,7 @@ class BodySpec:
     skin: Ramp = field(default_factory=lambda: P.R_FLESH)
     accent: Ramp = field(default_factory=lambda: P.R_GOLD)
 
-    head: str = "hood"      # hood hat helm skull bare crown mask mitre veil rat
+    head: str = "hood"      # hood hat helm skull bare crown mask mitre veil rat jester
     cape: str = "cloak"     # none cloak tatters wings shroud coat
     weapon: str = "scythe"  # see weapons.held()
     build: float = 1.0      # limb thickness
@@ -949,6 +949,28 @@ def _draw_head(c: Canvas, pose: Pose, spec: BodySpec, s: float) -> None:
             spec.cloth.core,
         )
         c.line((hx - r * 0.3, hy - r * 0.7), (hx - r * 0.1, hy - r * 2.9), spec.accent.core)
+    elif kind == "jester":
+        # Belled cap: a dome and three drooping lobes, one forward, one back,
+        # one standing up. Nothing else in the cast has anything above the
+        # skull that hangs, so the silhouette reads as the Jester long before
+        # the motley colours do.
+        c.ellipse(hx, hy - r * 0.35, r * 0.95, r * 0.8, spec.cloth.dark)
+        c.ellipse(hx - 0.5, hy - r * 0.55, r * 0.7, r * 0.5, spec.cloth.core)
+        # Each lobe leaves the skull, rises, then falls away from it. Drawn as
+        # two capsules rather than one so the horn actually droops instead of
+        # sticking out like a spike.
+        for mid, tip in (
+            ((hx + r * 1.6, hy - r * 1.5), (hx + r * 2.5, hy + r * 0.3)),
+            ((hx - r * 1.7, hy - r * 1.5), (hx - r * 2.6, hy + r * 0.2)),
+            ((hx - r * 0.2, hy - r * 2.2), (hx - r * 1.0, hy - r * 3.0)),
+        ):
+            c.capsule((hx, hy - r * 0.8), mid, r * 0.34, r * 0.2, spec.cloth.core)
+            c.capsule(mid, tip, r * 0.2, r * 0.1, spec.cloth.dark)
+            # The bell on the end: a bright core with a dim pixel under it. Two
+            # pixels, and they catch the eye every time he moves.
+            c.set(round(tip[0]), round(tip[1]), spec.accent.core)
+            c.set(round(tip[0]), round(tip[1]) + 1, spec.accent.dark)
+        c.hline(round(hx - r * 0.95), round(hx + r * 0.95), round(hy + r * 0.15), spec.accent.dark)
     elif kind == "mask":
         # Plague beak.
         c.polygon(

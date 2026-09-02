@@ -39,8 +39,8 @@ class_name CharacterData
 # Baseline multiplier applied only to WeaponClass.Magic weapons (see PlayerStats.MagicDamageMultiplier).
 @export var starting_magic_power: float = 1.0
 
-# Legacy stat carried over from the stage-6 stub; not yet consumed by any system
-# (reserved for future loot-luck/drop-rarity tuning).
+# Baseline Luck (PlayerStats.luck), applied in Player.apply_character_data. Biases the
+# shop toward rarer stock and, for the Jester, the Bleeding Wheel toward better faces.
 @export var starting_luck: float = 0.0
 
 @export var starting_weapons: Array[WeaponData] = []

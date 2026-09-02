@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bh22wnpf1lal5"
-path="res://.godot/imported/dire_wolf_portrait.png-899f8b8b81c43fbf63b455f0772d30bd.ctex"
+path="res://.godot/imported/dire_wolf_portrait.png-dbcbc0c075f29d14be0fd1b92052f07a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/enemies/dire_wolf/dire_wolf_portrait.png"
-dest_files=["res://.godot/imported/dire_wolf_portrait.png-899f8b8b81c43fbf63b455f0772d30bd.ctex"]
+source_file="res://Assets/sprites/enemies/dire_wolf/dire_wolf_portrait.png"
+dest_files=["res://.godot/imported/dire_wolf_portrait.png-dbcbc0c075f29d14be0fd1b92052f07a.ctex"]
 
 [params]
 

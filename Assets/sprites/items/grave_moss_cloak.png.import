@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b652pldmedknc"
-path="res://.godot/imported/grave_moss_cloak.png-810df29e1afb614793fdccb710072532.ctex"
+path="res://.godot/imported/grave_moss_cloak.png-deab7cdc73e8c242bf648af1c8a2cf07.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/items/grave_moss_cloak.png"
-dest_files=["res://.godot/imported/grave_moss_cloak.png-810df29e1afb614793fdccb710072532.ctex"]
+source_file="res://Assets/sprites/items/grave_moss_cloak.png"
+dest_files=["res://.godot/imported/grave_moss_cloak.png-deab7cdc73e8c242bf648af1c8a2cf07.ctex"]
 
 [params]
 

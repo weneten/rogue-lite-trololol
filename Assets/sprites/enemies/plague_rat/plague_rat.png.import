@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cwl8sl6k5143r"
-path="res://.godot/imported/plague_rat.png-0483a77d212f3da2c784997e66476661.ctex"
+path="res://.godot/imported/plague_rat.png-e3115c4b42da732aaf050c7fe95a1925.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/enemies/plague_rat/plague_rat.png"
-dest_files=["res://.godot/imported/plague_rat.png-0483a77d212f3da2c784997e66476661.ctex"]
+source_file="res://Assets/sprites/enemies/plague_rat/plague_rat.png"
+dest_files=["res://.godot/imported/plague_rat.png-e3115c4b42da732aaf050c7fe95a1925.ctex"]
 
 [params]
 

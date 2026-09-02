@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dejqfoimtxyyx"
-path="res://.godot/imported/gilded_fang.png-a01ed44c85d1ae8d2045a2181c1f895f.ctex"
+path="res://.godot/imported/gilded_fang.png-1719dc2cf37a63359b097381e092016d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/items/gilded_fang.png"
-dest_files=["res://.godot/imported/gilded_fang.png-a01ed44c85d1ae8d2045a2181c1f895f.ctex"]
+source_file="res://Assets/sprites/items/gilded_fang.png"
+dest_files=["res://.godot/imported/gilded_fang.png-1719dc2cf37a63359b097381e092016d.ctex"]
 
 [params]
 

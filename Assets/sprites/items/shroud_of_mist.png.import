@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://da51tabnmnkg2"
-path="res://.godot/imported/shroud_of_mist.png-64c9bc4d141240561c7318fca01d12cf.ctex"
+path="res://.godot/imported/shroud_of_mist.png-df4e92d304ce8f0e2c6e597c2913e0d7.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/items/shroud_of_mist.png"
-dest_files=["res://.godot/imported/shroud_of_mist.png-64c9bc4d141240561c7318fca01d12cf.ctex"]
+source_file="res://Assets/sprites/items/shroud_of_mist.png"
+dest_files=["res://.godot/imported/shroud_of_mist.png-df4e92d304ce8f0e2c6e597c2913e0d7.ctex"]
 
 [params]
 

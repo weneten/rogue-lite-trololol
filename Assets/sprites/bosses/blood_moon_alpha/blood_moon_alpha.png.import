@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://gtbk76hhaohy"
-path="res://.godot/imported/blood_moon_alpha.png-cba1e6bf353d5f519ae7b749c13f7c66.ctex"
+path="res://.godot/imported/blood_moon_alpha.png-a8b6af6ceda8b2cb64d1344dd8d99a75.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/bosses/blood_moon_alpha/blood_moon_alpha.png"
-dest_files=["res://.godot/imported/blood_moon_alpha.png-cba1e6bf353d5f519ae7b749c13f7c66.ctex"]
+source_file="res://Assets/sprites/bosses/blood_moon_alpha/blood_moon_alpha.png"
+dest_files=["res://.godot/imported/blood_moon_alpha.png-a8b6af6ceda8b2cb64d1344dd8d99a75.ctex"]
 
 [params]
 

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://btd0k4aley187"
-path="res://.godot/imported/iron_maiden_pin.png-0219edadc189c8b2490f295860626b42.ctex"
+path="res://.godot/imported/iron_maiden_pin.png-b4f951567f214cefb06b923f7d8c5649.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/items/iron_maiden_pin.png"
-dest_files=["res://.godot/imported/iron_maiden_pin.png-0219edadc189c8b2490f295860626b42.ctex"]
+source_file="res://Assets/sprites/items/iron_maiden_pin.png"
+dest_files=["res://.godot/imported/iron_maiden_pin.png-b4f951567f214cefb06b923f7d8c5649.ctex"]
 
 [params]
 

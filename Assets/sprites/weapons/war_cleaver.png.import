@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ca632wqayir4e"
-path="res://.godot/imported/war_cleaver.png-2ed460b2a0940dc58dd407148ad2e0f2.ctex"
+path="res://.godot/imported/war_cleaver.png-d6b554a69f845dc73636b294fb7b9646.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/weapons/war_cleaver.png"
-dest_files=["res://.godot/imported/war_cleaver.png-2ed460b2a0940dc58dd407148ad2e0f2.ctex"]
+source_file="res://Assets/sprites/weapons/war_cleaver.png"
+dest_files=["res://.godot/imported/war_cleaver.png-d6b554a69f845dc73636b294fb7b9646.ctex"]
 
 [params]
 

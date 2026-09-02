@@ -45,6 +45,7 @@ const BUILT_IN_CHARACTER_PATHS: Array[String] = [
 	"res://Resources/CharacterData/Data/MoonlitDuelist.tres",
 	"res://Resources/CharacterData/Data/Alchemist.tres",
 	"res://Resources/CharacterData/Data/CursedNoble.tres",
+	"res://Resources/CharacterData/Data/Jester.tres",
 ]
 
 var _roster_container: VBoxContainer

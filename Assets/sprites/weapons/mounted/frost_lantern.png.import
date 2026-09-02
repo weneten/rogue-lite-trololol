@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dtmgp4h11kcby"
-path="res://.godot/imported/frost_lantern.png-49f8a067f74b78b2c01cf72edcf8c338.ctex"
+path="res://.godot/imported/frost_lantern.png-db720c25fff3874f7101fb853597f2ba.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/weapons/mounted/frost_lantern.png"
-dest_files=["res://.godot/imported/frost_lantern.png-49f8a067f74b78b2c01cf72edcf8c338.ctex"]
+source_file="res://Assets/sprites/weapons/mounted/frost_lantern.png"
+dest_files=["res://.godot/imported/frost_lantern.png-db720c25fff3874f7101fb853597f2ba.ctex"]
 
 [params]
 

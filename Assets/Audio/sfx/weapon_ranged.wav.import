@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://dwub7fs6bkw30"
-path="res://.godot/imported/weapon_ranged.wav-c39785795ce5c3f27ea81c9066c99967.sample"
+path="res://.godot/imported/weapon_ranged.wav-99d220682c594b002540d9309ca12824.sample"
 
 [deps]
 
-source_file="res://assets/Audio/sfx/weapon_ranged.wav"
-dest_files=["res://.godot/imported/weapon_ranged.wav-c39785795ce5c3f27ea81c9066c99967.sample"]
+source_file="res://Assets/Audio/sfx/weapon_ranged.wav"
+dest_files=["res://.godot/imported/weapon_ranged.wav-99d220682c594b002540d9309ca12824.sample"]
 
 [params]
 

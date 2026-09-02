@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://s0y746ckc2fr"
-path="res://.godot/imported/charm_backing.png-2e06f417c44f8333e47955e6ae228e04.ctex"
+path="res://.godot/imported/charm_backing.png-ab969cfa88e85d72498975dab9a17f52.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/cosmetics/charm_backing.png"
-dest_files=["res://.godot/imported/charm_backing.png-2e06f417c44f8333e47955e6ae228e04.ctex"]
+source_file="res://Assets/sprites/cosmetics/charm_backing.png"
+dest_files=["res://.godot/imported/charm_backing.png-ab969cfa88e85d72498975dab9a17f52.ctex"]
 
 [params]
 

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bwmgdewdchvp2"
-path="res://.godot/imported/pyromancer_portrait.png-4130b89b5218fd50e5a1f5ca6df8eda3.ctex"
+path="res://.godot/imported/pyromancer_portrait.png-56b98e8f613cd2d47232ad3657f71363.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/characters/pyromancer/pyromancer_portrait.png"
-dest_files=["res://.godot/imported/pyromancer_portrait.png-4130b89b5218fd50e5a1f5ca6df8eda3.ctex"]
+source_file="res://Assets/sprites/characters/pyromancer/pyromancer_portrait.png"
+dest_files=["res://.godot/imported/pyromancer_portrait.png-56b98e8f613cd2d47232ad3657f71363.ctex"]
 
 [params]
 

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://4ynuijhtlr2a"
-path="res://.godot/imported/bloated_corpse_portrait.png-4bab79eafe686d910f1b7f21e336c869.ctex"
+path="res://.godot/imported/bloated_corpse_portrait.png-aeffb42c592b8e67da1f916fac12b79b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/enemies/bloated_corpse/bloated_corpse_portrait.png"
-dest_files=["res://.godot/imported/bloated_corpse_portrait.png-4bab79eafe686d910f1b7f21e336c869.ctex"]
+source_file="res://Assets/sprites/enemies/bloated_corpse/bloated_corpse_portrait.png"
+dest_files=["res://.godot/imported/bloated_corpse_portrait.png-aeffb42c592b8e67da1f916fac12b79b.ctex"]
 
 [params]
 

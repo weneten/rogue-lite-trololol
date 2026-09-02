@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ryq0u6okfg6n"
-path="res://.godot/imported/silver_kris_dagger.png-f7e275d94092ead4d921fa3ddb0b9425.ctex"
+path="res://.godot/imported/silver_kris_dagger.png-dc9a674bd2c71a877013ef9b1e83ffcc.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/weapons/mounted/silver_kris_dagger.png"
-dest_files=["res://.godot/imported/silver_kris_dagger.png-f7e275d94092ead4d921fa3ddb0b9425.ctex"]
+source_file="res://Assets/sprites/weapons/mounted/silver_kris_dagger.png"
+dest_files=["res://.godot/imported/silver_kris_dagger.png-dc9a674bd2c71a877013ef9b1e83ffcc.ctex"]
 
 [params]
 
