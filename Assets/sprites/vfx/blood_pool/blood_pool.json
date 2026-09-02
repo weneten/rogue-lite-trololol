@@ -1,0 +1,83 @@
+{
+  "image": "blood_pool.png",
+  "frameWidth": 128,
+  "frameHeight": 128,
+  "columns": 6,
+  "rows": 4,
+  "facing": "right",
+  "pixelArt": true,
+  "origin": {
+    "x": 64.0,
+    "y": 75.30558375634517
+  },
+  "animations": {
+    "pool": {
+      "row": 0,
+      "from": 0,
+      "to": 23,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "frameCount": 24,
+      "fps": 12,
+      "loop": true
+    },
+    "idle": {
+      "row": 0,
+      "from": 0,
+      "to": 23,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "frameCount": 24,
+      "fps": 12,
+      "loop": true
+    }
+  }
+}

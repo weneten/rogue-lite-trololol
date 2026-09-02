@@ -58,7 +58,7 @@ var _step_telegraph: BossAoeTelegraph
 var _nova_damage: int
 var _nova_radius: float
 
-var _aura: BloodField
+var _aura: BloodPulseAura
 
 # Where the pools will land, decided when the markers go down. Recomputing them
 # at execution time would have put the pools wherever the player had run to,
@@ -179,7 +179,7 @@ func _execute_blood_aura(attack: BossAttackPatternData) -> void:
 	if _aura != null and is_instance_valid(_aura):
 		_aura.queue_free()
 
-	_aura = BloodField.spawn_aura(
+	_aura = BloodPulseAura.spawn(
 		self, self, attack.radius,
 		maxi(1, roundi(attack.damage)),
 		attack.duration if attack.duration > 0.0 else 5.0,
@@ -411,4 +411,9 @@ func _on_died(source: Node) -> void:
 func _pool_spot(attack: BossAttackPatternData, player: Node2D, index: int, count: int) -> Vector2:
 	var spread = attack.range if attack.range > 0.0 else 130.0
 	var angle = TAU * index / count + float(index) * 0.37
+	# A slight in-and-out wobble on the same ring. Pulling every other one right
+	# in was the first attempt and it was worse: at these counts it built a
+	# second wall behind the first instead of leaving anywhere to stand.
+	spread *= 0.88 if index % 2 == 1 else 1.1
+
 	return player.global_position + Vector2(spread, 0).rotated(angle)

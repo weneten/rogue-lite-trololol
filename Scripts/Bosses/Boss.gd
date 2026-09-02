@@ -377,6 +377,13 @@ func tick_contact_damage(delta: float, has_live_target: bool) -> void:
 	if not has_live_target or contact_hitbox == null or data == null:
 		return
 
+	# A boss that has made itself intangible turns this Area2D off — the Voivode
+	# does it mid shadow step, the Belfry Tyrant while he is aloft. Asking a
+	# disabled area what it overlaps is an error per frame for the whole
+	# manoeuvre, and the answer would be "nothing" regardless.
+	if not contact_hitbox.monitoring:
+		return
+
 	contact_cooldown_remaining -= delta
 	if contact_cooldown_remaining > 0:
 		return

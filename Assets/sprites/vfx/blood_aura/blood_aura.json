@@ -1,0 +1,59 @@
+{
+  "image": "blood_aura.png",
+  "frameWidth": 160,
+  "frameHeight": 160,
+  "columns": 4,
+  "rows": 3,
+  "facing": "right",
+  "pixelArt": true,
+  "origin": {
+    "x": 80.0,
+    "y": 86.3023872679045
+  },
+  "animations": {
+    "pulse": {
+      "row": 0,
+      "from": 0,
+      "to": 11,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "frameCount": 12,
+      "fps": 14,
+      "loop": false
+    },
+    "idle": {
+      "row": 0,
+      "from": 0,
+      "to": 11,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "frameCount": 12,
+      "fps": 14,
+      "loop": false
+    }
+  }
+}
