@@ -64,9 +64,33 @@ func _exit_tree() -> void:
 	if instance == self:
 		instance = null
 
-# Instantiates a new Weapon.tscn mounted on the owner body. Fails (returns false) if no slot is free.
+# The equipped Weapon carrying this exact WeaponData, or null.
+func find_weapon(data: WeaponData) -> Weapon:
+	if data == null:
+		return null
+
+	for weapon in _equipped_weapons:
+		if is_instance_valid(weapon) and weapon.data == data:
+			return weapon
+
+	return null
+
+# Mounts a new Weapon.tscn on the owner body — or, if this weapon is already
+# carried, levels that one instead. Buying the same scythe twice used to hand
+# you two scythes in two slots, which is strictly worse than one better scythe
+# and quietly punished the player for a purchase that looked like an upgrade.
+#
+# Returns false only when nothing happened: no slot free for a new weapon, or
+# the carried one is already at MAX_LEVEL.
 func try_add_weapon(data: WeaponData) -> bool:
-	if data == null or not has_free_slot or _owner_body == null:
+	if data == null or _owner_body == null:
+		return false
+
+	var carried := find_weapon(data)
+	if carried != null:
+		return carried.level_up()
+
+	if not has_free_slot:
 		return false
 
 	var weapon: Weapon = weapon_scene.instantiate() as Weapon

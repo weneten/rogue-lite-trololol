@@ -256,8 +256,10 @@ func _roll_offers(fresh: bool) -> void:
 
 	if shop_pool != null:
 		weapons = shop_pool.weapon_pool.duplicate()
+		# Owned relics stay in the draw: they stack now, so a second copy is a
+		# real offer rather than a card spent on something you cannot use.
 		for candidate in shop_pool.passive_pool:
-			if candidate != null and not GameManager.is_passive_item_owned(candidate.id):
+			if candidate != null:
 				relics.append(candidate)
 
 	# A locked card keeps its offer, and its offer must not be drawn again for
@@ -277,11 +279,12 @@ func _roll_offers(fresh: bool) -> void:
 		if pick_weapon and not weapons.is_empty():
 			var weapon = _draw_by_rarity(weapons)
 			weapons.erase(weapon)
-			card.show_weapon(weapon, ShopEconomy.get_weapon_price(weapon))
+			card.show_weapon(weapon, _weapon_offer_price(weapon), _owned_weapon_level(weapon))
 		elif not relics.is_empty():
 			var relic = _draw_by_rarity(relics)
 			relics.erase(relic)
-			card.show_relic(relic, ShopEconomy.get_passive_price(relic))
+			card.show_relic(relic, ShopEconomy.get_passive_price(relic),
+				GameManager.get_passive_item_count(relic.id))
 		else:
 			card.clear()
 
@@ -340,17 +343,48 @@ func _on_buy(card_index: int) -> void:
 	else:
 		_buy_relic(card)
 
+# The level of the carried copy of `data`, or 0 when it is not carried. Every
+# question the shop asks about a weapon offer starts here.
+static func _owned_weapon_level(data: WeaponData) -> int:
+	var inventory := WeaponInventory.instance
+	if inventory == null:
+		return 0
+
+	var carried := inventory.find_weapon(data)
+	return carried.level if carried != null else 0
+
+# What this card costs: the plain price for a weapon the Hunter does not carry,
+# the escalating upgrade price for one he does.
+static func _weapon_offer_price(data: WeaponData) -> int:
+	var level := _owned_weapon_level(data)
+	if level > 0:
+		return ShopEconomy.get_weapon_upgrade_price(data, level)
+
+	return ShopEconomy.get_weapon_price(data)
+
 func _buy_weapon(card: ShopCard) -> void:
 	var data: WeaponData = card.offer
-	if WeaponInventory.instance == null or not WeaponInventory.instance.has_free_slot:
+	var inventory := WeaponInventory.instance
+	if inventory == null:
 		UIAnim.shake(card)
 		return
 
-	if not GameManager.try_spend_currency(ShopEconomy.get_weapon_price(data)):
+	var carried: Weapon = inventory.find_weapon(data)
+	# Upgrading costs no slot, so a full loadout only blocks weapons that are
+	# not already in it.
+	if carried == null and not inventory.has_free_slot:
 		UIAnim.shake(card)
 		return
 
-	WeaponInventory.instance.try_add_weapon(data)
+	if carried != null and not carried.can_level_up():
+		UIAnim.shake(card)
+		return
+
+	if not GameManager.try_spend_currency(_weapon_offer_price(data)):
+		UIAnim.shake(card)
+		return
+
+	inventory.try_add_weapon(data)
 	AudioManager.play_sfx("ui_purchase")
 	UIAnim.punch(card)
 	card.clear()
@@ -494,9 +528,15 @@ func _refresh_relic_tray() -> void:
 	if _empty_relics_label != null:
 		_empty_relics_label.visible = owned.is_empty()
 
+	# One entry per distinct relic with a xN badge, not one icon per copy: five
+	# of the same charm would otherwise push everything else out of the tray.
+	var seen := {}
 	for item in owned:
-		if item == null:
+		if item == null or seen.has(item.id):
 			continue
+
+		seen[item.id] = true
+		var count := GameManager.get_passive_item_count(item.id)
 
 		var icon := TextureRect.new()
 		icon.texture = item.icon
@@ -506,6 +546,16 @@ func _refresh_relic_tray() -> void:
 		icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		icon.tooltip_text = "%s\n%s" % [item.display_name, item.stat_line()]
 		_relic_tray.add_child(icon)
+
+		if count > 1:
+			var badge := Label.new()
+			badge.text = "x%d" % count
+			badge.theme_type_variation = &"StatLabel"
+			badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			badge.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+			badge.offset_left = -18.0
+			badge.offset_top = -14.0
+			icon.add_child(badge)
 
 # ---------------------------------------------------------------------- stats
 
@@ -695,17 +745,22 @@ func _update_affordability() -> void:
 		return
 
 	var currency := GameManager.currency
-	var slots_full: bool = WeaponInventory.instance != null and not WeaponInventory.instance.has_free_slot
+	var inventory := WeaponInventory.instance
+	var slots_full: bool = inventory != null and not inventory.has_free_slot
 
 	for card in _cards:
 		if card.offer == null:
 			continue
 
 		if card.is_weapon:
-			var price := ShopEconomy.get_weapon_price(card.offer)
-			if slots_full:
+			var carried: Weapon = inventory.find_weapon(card.offer) if inventory != null else null
+			if carried != null and not carried.can_level_up():
+				card.set_max_level()
+			elif carried == null and slots_full:
+				# Only a weapon he is not already carrying needs a free slot.
 				card.set_slots_full()
 			else:
+				var price := _weapon_offer_price(card.offer)
 				card.set_affordable(currency >= price, price)
 		else:
 			card.set_affordable(currency >= ShopEconomy.get_passive_price(card.offer))

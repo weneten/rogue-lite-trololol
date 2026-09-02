@@ -200,12 +200,18 @@ func to_net() -> Dictionary:
 	}
 
 
-func show_weapon(data: WeaponData, price: int) -> void:
+# `owned_level` is 0 when the Hunter is not carrying this weapon, otherwise the
+# level of the one they have. A card offering an upgrade has to say so: the
+# price is different, the effect is different, and it does not cost a slot.
+func show_weapon(data: WeaponData, price: int, owned_level: int = 0) -> void:
 	offer = data
 	is_weapon = true
 	visible = true
 
-	_kind_label.text = "WEAPON - %s" % RARITY_NAME[clampi(data.rarity_tier, 0, 4)].to_upper()
+	if owned_level > 0:
+		_kind_label.text = "UPGRADE - LV %d > %d" % [owned_level, owned_level + 1]
+	else:
+		_kind_label.text = "WEAPON - %s" % RARITY_NAME[clampi(data.rarity_tier, 0, 4)].to_upper()
 	_name_label.text = data.name
 	_icon.texture = data.icon
 	_stats_label.text = _weapon_stats(data)
@@ -214,12 +220,17 @@ func show_weapon(data: WeaponData, price: int) -> void:
 	_apply_rarity(data.rarity_tier)
 
 
-func show_relic(data: PassiveItemData, price: int) -> void:
+# `owned_count` is how many copies the Hunter already carries. Relics stack, so
+# a second one is a real purchase and the card says which copy it would be.
+func show_relic(data: PassiveItemData, price: int, owned_count: int = 0) -> void:
 	offer = data
 	is_weapon = false
 	visible = true
 
-	_kind_label.text = "RELIC - %s" % RARITY_NAME[clampi(data.rarity_tier, 0, 4)].to_upper()
+	if owned_count > 0:
+		_kind_label.text = "RELIC - STACK %d > %d" % [owned_count, owned_count + 1]
+	else:
+		_kind_label.text = "RELIC - %s" % RARITY_NAME[clampi(data.rarity_tier, 0, 4)].to_upper()
 	_name_label.text = data.display_name
 	_icon.texture = data.icon
 	_stats_label.text = data.stat_line()
@@ -265,6 +276,19 @@ func set_slots_full() -> void:
 	buy_button.disabled = true
 	buy_button.text = "SLOTS FULL"
 	buy_button.tooltip_text = "Sell a weapon first"
+	modulate.a = 0.55
+
+
+# A weapon already carried at MAX_LEVEL cannot be bought again, and that is a
+# third distinct reason from "too expensive" and "no slots" — none of the three
+# has the same fix.
+func set_max_level() -> void:
+	if offer == null:
+		return
+
+	buy_button.disabled = true
+	buy_button.text = "MAX LV"
+	buy_button.tooltip_text = "This weapon is fully upgraded"
 	modulate.a = 0.55
 
 

@@ -36,6 +36,20 @@ static func get_weapon_price(data) -> int:
 	return maxi(1, data.shop_cost * WEAPON_COST_MULTIPLIER + _rarity_bonus(data.rarity_tier))
 
 
+# Levelling a weapon you already carry. Priced off the same base as buying it,
+# but climbing steeply: an upgrade skips the slot cost entirely, so without this
+# the cheapest route to a strong loadout would be one weapon bought five times.
+const WEAPON_UPGRADE_GROWTH = 0.75
+
+
+static func get_weapon_upgrade_price(data, current_level: int) -> int:
+	if data == null:
+		return 0
+
+	var steps: int = maxi(0, current_level - 1)
+	return maxi(1, roundi(get_weapon_price(data) * (1.0 + WEAPON_UPGRADE_GROWTH * (steps + 1))))
+
+
 static func get_weapon_sell_value(data) -> int:
 	return roundi(get_weapon_price(data) * WEAPON_SELL_REFUND_FRACTION)
 

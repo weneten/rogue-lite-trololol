@@ -50,6 +50,64 @@ var _visual: WeaponVisual
 # zero like everything else.
 var damage_this_wave: int = 0
 
+# Buying a weapon you already carry sharpens that one instead of taking a second
+# slot. Everything below reads its numbers through the accessors rather than off
+# `data` directly, because `data` is a shared Resource — the same WeaponData
+# object is handed to every Hunter and every run, so writing a level into it
+# would upgrade the weapon for everybody, permanently, including next session.
+var level: int = 1
+
+# Per level past the first, added rather than compounded: five levels of a
+# compounding 28% is nearly four times the damage, which turns one lucky shop
+# into the whole run.
+const DAMAGE_PER_LEVEL := 0.28
+const ATTACK_SPEED_PER_LEVEL := 0.10
+# Reach and blast radius grow slowest. A weapon that outranges the screen stops
+# being a weapon choice and becomes an aura.
+const AREA_PER_LEVEL := 0.06
+# Multi-shot weapons gain a projectile at levels 3 and 5.
+const PROJECTILE_EVERY_LEVELS := 2
+const MAX_LEVEL := 5
+
+func get_level_scale(per_level: float) -> float:
+	return 1.0 + float(level - 1) * per_level
+
+func get_damage() -> float:
+	return data.damage * get_level_scale(DAMAGE_PER_LEVEL) if data != null else 0.0
+
+func get_attack_speed() -> float:
+	return data.attack_speed * get_level_scale(ATTACK_SPEED_PER_LEVEL) if data != null else 1.0
+
+func get_range() -> float:
+	return data.range * get_level_scale(AREA_PER_LEVEL) if data != null else 0.0
+
+func get_aoe_radius() -> float:
+	if data == null:
+		return 0.0
+
+	var base: float = data.aoe_radius if data.aoe_radius > 0.0 else data.range
+	return base * get_level_scale(AREA_PER_LEVEL)
+
+func get_projectile_count() -> int:
+	if data == null:
+		return 1
+
+	return maxi(1, data.projectile_count + (level - 1) / PROJECTILE_EVERY_LEVELS)
+
+func can_level_up() -> bool:
+	return level < MAX_LEVEL
+
+func level_up() -> bool:
+	if not can_level_up():
+		return false
+
+	level += 1
+	# The cooldown in flight was sized by the old attack speed. Left alone, the
+	# first swing after an upgrade still comes at the old pace, which reads as
+	# the purchase not having taken.
+	_cooldown_remaining = minf(_cooldown_remaining, 1.0 / maxf(0.01, get_attack_speed()))
+	return true
+
 func _ready() -> void:
 	_owner_body = get_node_or_null(owner_body_path) as Node2D if owner_body_path else get_parent() as Node2D
 	_melee_hitbox = get_node_or_null(melee_hitbox_path) as Area2D
@@ -121,7 +179,7 @@ func _process(delta: float) -> void:
 	_attack(target)
 	if NetSession != null and NetSession.is_active:
 		NetSession.note_swing()
-	_cooldown_remaining = 1.0 / maxf(0.01, data.attack_speed * (_owner_stats.attack_speed_multiplier if _owner_stats else 1.0))
+	_cooldown_remaining = 1.0 / maxf(0.01, get_attack_speed() * (_owner_stats.attack_speed_multiplier if _owner_stats else 1.0))
 
 # Summon weapons have no carried copy — the Familiar IS the visible thing, and
 # drawing a whistle in the player's hand as well just added clutter.
@@ -181,7 +239,8 @@ func _exit_tree() -> void:
 
 # Nearest live TargetGroup member within Data.Range, or null if none in range.
 func _find_nearest_target() -> Node2D:
-	return find_nearest(_owner_body, target_group, data.range * data.range, false)
+	var reach := get_range()
+	return find_nearest(_owner_body, target_group, reach * reach, false)
 
 # Nearest live TargetGroup member still on camera. Range is ignored — this is
 # only for facing. Returns null when every enemy is off-screen (or dead/pooled),
@@ -275,7 +334,7 @@ func _perform_melee_attack() -> void:
 	if _owner_body == null or data == null:
 		return
 
-	var range = maxf(8.0, data.range)
+	var range = maxf(8.0, get_range())
 	var range_sq = range * range
 	var origin = _owner_body.global_position
 
@@ -317,7 +376,7 @@ func _try_damage_target(body: Node2D) -> bool:
 
 	var damage_multiplier = _compute_damage_multiplier(body)
 	var final_damage = maxi(1, roundi(
-		data.damage * damage_multiplier * (crit_multiplier if is_crit else 1.0)))
+		get_damage() * damage_multiplier * (crit_multiplier if is_crit else 1.0)))
 
 	health.take_damage(final_damage, _owner_body)
 	_record_damage(final_damage)
@@ -338,7 +397,7 @@ func _fire_projectiles(target: Node2D) -> void:
 		return
 
 	var base_direction = (target.global_position - _spawn_point.global_position).normalized()
-	var count = maxi(1, data.projectile_count)
+	var count = get_projectile_count()
 	var spread_rad = deg_to_rad(data.spread)
 
 	var crit_chance = data.crit_chance + (_owner_stats.extra_crit_chance if _owner_stats else 0.0)
@@ -360,7 +419,7 @@ func _fire_projectiles(target: Node2D) -> void:
 			direction,
 			_projectile_pool,
 			_owner_body,
-			data.damage * damage_multiplier,
+			get_damage() * damage_multiplier,
 			crit_chance,
 			crit_multiplier,
 			data.knockback,
@@ -379,7 +438,7 @@ func _fire_projectiles(target: Node2D) -> void:
 # works for weapons with no travelling projectile at all.
 func _perform_area_attack(primary_target: Node2D) -> void:
 	var origin = _owner_body.global_position if data.aoe_centered_on_self else primary_target.global_position
-	var radius = data.aoe_radius if data.aoe_radius > 0.0 else data.range
+	var radius = get_aoe_radius()
 	var radius_sq = radius * radius
 
 	var crit_chance = data.crit_chance + (_owner_stats.extra_crit_chance if _owner_stats else 0.0)
@@ -396,7 +455,7 @@ func _perform_area_attack(primary_target: Node2D) -> void:
 
 		var is_crit = randf() < crit_chance
 		var damage_multiplier = _compute_damage_multiplier(body)
-		var final_damage = roundi(data.damage * damage_multiplier * (crit_multiplier if is_crit else 1.0))
+		var final_damage = roundi(get_damage() * damage_multiplier * (crit_multiplier if is_crit else 1.0))
 		health.take_damage(final_damage, _owner_body)
 		_record_damage(final_damage)
 		if _owner_stats:
@@ -427,7 +486,7 @@ func _place_trap() -> void:
 		_owner_body.global_position,
 		_trap_pool,
 		_owner_body,
-		data.damage * damage_multiplier,
+		get_damage() * damage_multiplier,
 		crit_chance,
 		crit_multiplier,
 		target_group,

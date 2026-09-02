@@ -82,14 +82,27 @@ func _on_wave_end(wave_number: int) -> void:
 	# Rewards clearing the wave itself, on top of whatever was earned killing enemies during it.
 	add_currency(ShopEconomy.get_wave_end_bonus(wave_number))
 
+# Kept as the plain yes/no question now that get_passive_item_count answers the
+# interesting one. Nothing in the shop asks this any more — relics stack, so
+# "owns one" stopped being a reason to do anything differently.
 func is_passive_item_owned(passive_id: String) -> bool:
+	return get_passive_item_count(passive_id) > 0
+
+# How many copies of a relic the Hunter is carrying. Relics stack, so "do you
+# own it" and "how many" are different questions and the shop asks both.
+func get_passive_item_count(passive_id: String) -> int:
+	var count := 0
 	for item in _owned_passive_items:
 		if item != null and item.id == passive_id:
-			return true
-	return false
+			count += 1
 
+	return count
+
+# Appends unconditionally: a second copy of a relic is a second copy of its
+# effect. The guard that used to sit here silently swallowed the purchase, so a
+# player who bought a duplicate paid for nothing.
 func register_passive_item(item: PassiveItemData) -> void:
-	if item == null or is_passive_item_owned(item.id):
+	if item == null:
 		return
 
 	_owned_passive_items.append(item)
