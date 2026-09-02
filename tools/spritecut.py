@@ -30,6 +30,10 @@ from pathlib import Path
 from PIL import Image
 
 # How far a pixel may sit from the corner colour and still count as backdrop.
+# Right for the pale sheets this was written against. A sheet drawn on a near
+# black backdrop needs far less: the character's own shadows are within 34 of
+# black too, and the flood walks straight through them and hollows the figure
+# out. Pass a tighter value to strip_background for those.
 BG_TOLERANCE = 34
 # Vertical run of empty rows that ends a band of figures. Kept short because
 # painted ground shadows sit in the gap between two rows of figures and break
@@ -44,15 +48,15 @@ SPLIT_RATIO = 1.55
 SHADOW_SATURATION = 0.20
 
 
-def _is_background(pixel, reference) -> bool:
+def _is_background(pixel, reference, tolerance: int = BG_TOLERANCE) -> bool:
     return (
-        abs(pixel[0] - reference[0]) <= BG_TOLERANCE
-        and abs(pixel[1] - reference[1]) <= BG_TOLERANCE
-        and abs(pixel[2] - reference[2]) <= BG_TOLERANCE
+        abs(pixel[0] - reference[0]) <= tolerance
+        and abs(pixel[1] - reference[1]) <= tolerance
+        and abs(pixel[2] - reference[2]) <= tolerance
     )
 
 
-def strip_background(image: Image.Image) -> Image.Image:
+def strip_background(image: Image.Image, tolerance: int = BG_TOLERANCE) -> Image.Image:
     """Flood the backdrop away from every border pixel, leaving alpha 0."""
     image = image.convert("RGBA")
     width, height = image.size
@@ -78,7 +82,7 @@ def strip_background(image: Image.Image) -> Image.Image:
             continue
 
         seen[index] = 1
-        if not _is_background(px[x, y], reference):
+        if not _is_background(px[x, y], reference, tolerance):
             continue
 
         px[x, y] = (0, 0, 0, 0)

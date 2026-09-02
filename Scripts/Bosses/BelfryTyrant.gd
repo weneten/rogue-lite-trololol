@@ -14,6 +14,12 @@ class_name BelfryTyrant
 # The dive is the reason he is a kiter rather than a chaser: he keeps his
 # distance and shells you, and the only way he closes is by falling on you.
 #
+# The manoeuvre is three named rows on the sheet rather than one: "crouch" while
+# he gathers himself, "takeoff" as he climbs, "dive" on the way down. They used
+# to be one row played three times, which read as the same twitch happening for
+# three unrelated reasons. play_named falls back to the attack row on a sheet
+# that has none of them, so this is safe for art that never gained the poses.
+#
 # While aloft he is untargetable — Weapon.is_live_candidate skips anything
 # whose node is hidden, so hiding the body is all it takes. Contact damage and
 # his collider go with it, so the player can run through the space he left.
@@ -87,6 +93,8 @@ func begin_telegraph(attack: BossAttackPatternData, player: Node2D) -> void:
 			# warning is the marker that appears once he is off the screen.
 			active_telegraph = BossAoeTelegraph.spawn(
 				self, global_position, 70.0, attack.windup_seconds, 0, self, false)
+			if sprite_animator != null:
+				sprite_animator.play_named("crouch")
 
 		_:
 			super.begin_telegraph(attack, player)
@@ -157,7 +165,7 @@ func _begin_ascent(aloft_seconds: float) -> void:
 	velocity = Vector2.ZERO
 
 	if sprite_animator != null:
-		sprite_animator.play_named("dash")
+		sprite_animator.play_named("takeoff")
 
 	_aloft_seconds = aloft_seconds
 
@@ -211,7 +219,7 @@ func _tick_aloft(player: Node2D) -> void:
 	_set_sprite_alpha(1.0)
 	visible = true
 	if sprite_animator != null:
-		sprite_animator.play_named("dash")
+		sprite_animator.play_named("dive")
 
 func _tick_diving() -> void:
 	var fall := 1.0 - clampf(_flight_timer / DIVE_SECONDS, 0.0, 1.0)
