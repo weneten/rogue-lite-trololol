@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://d2suna27rng4g"
-path="res://.godot/imported/panel_ornate.png-3080ad016133d4cb51cdf15ed920d07c.ctex"
+path="res://.godot/imported/panel_ornate.png-626bde6072979b204abc65caf8ec46fd.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/UI/panel_ornate.png"
-dest_files=["res://.godot/imported/panel_ornate.png-3080ad016133d4cb51cdf15ed920d07c.ctex"]
+source_file="res://Assets/UI/panel_ornate.png"
+dest_files=["res://.godot/imported/panel_ornate.png-626bde6072979b204abc65caf8ec46fd.ctex"]
 
 [params]
 

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://joxwqn1yheyx"
-path="res://.godot/imported/bone_bow.png-8e6ea63a9e4daf17c5ba6794b5b67373.ctex"
+path="res://.godot/imported/bone_bow.png-b0f73ca18b946c557d67bdebdd7f8bdd.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/weapons/mounted/bone_bow.png"
-dest_files=["res://.godot/imported/bone_bow.png-8e6ea63a9e4daf17c5ba6794b5b67373.ctex"]
+source_file="res://Assets/sprites/weapons/mounted/bone_bow.png"
+dest_files=["res://.godot/imported/bone_bow.png-b0f73ca18b946c557d67bdebdd7f8bdd.ctex"]
 
 [params]
 

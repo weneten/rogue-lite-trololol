@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://d0pjucnp0glwg"
-path="res://.godot/imported/sisters_poultice.png-cb48213888722afb51e2192f6f4246af.ctex"
+path="res://.godot/imported/sisters_poultice.png-5a27909e025dc2e9e50c0cbce6f7a18c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/items/sisters_poultice.png"
-dest_files=["res://.godot/imported/sisters_poultice.png-cb48213888722afb51e2192f6f4246af.ctex"]
+source_file="res://Assets/sprites/items/sisters_poultice.png"
+dest_files=["res://.godot/imported/sisters_poultice.png-5a27909e025dc2e9e50c0cbce6f7a18c.ctex"]
 
 [params]
 

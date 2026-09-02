@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://cbc8cvywsfrph"
-path="res://.godot/imported/weapon_cursed.wav-407193cf1986bbe248113154fc3dc513.sample"
+path="res://.godot/imported/weapon_cursed.wav-263d77192ea73284eaa1feb655b8dc71.sample"
 
 [deps]
 
-source_file="res://assets/Audio/sfx/weapon_cursed.wav"
-dest_files=["res://.godot/imported/weapon_cursed.wav-407193cf1986bbe248113154fc3dc513.sample"]
+source_file="res://Assets/Audio/sfx/weapon_cursed.wav"
+dest_files=["res://.godot/imported/weapon_cursed.wav-263d77192ea73284eaa1feb655b8dc71.sample"]
 
 [params]
 

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dhd3p32tx3kcw"
-path="res://.godot/imported/tarot_of_the_hanged.png-967fc576c2bb9a58a91148233280eb99.ctex"
+path="res://.godot/imported/tarot_of_the_hanged.png-6dca936a13b11947004fa3d21f1f0a1d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/items/tarot_of_the_hanged.png"
-dest_files=["res://.godot/imported/tarot_of_the_hanged.png-967fc576c2bb9a58a91148233280eb99.ctex"]
+source_file="res://Assets/sprites/items/tarot_of_the_hanged.png"
+dest_files=["res://.godot/imported/tarot_of_the_hanged.png-6dca936a13b11947004fa3d21f1f0a1d.ctex"]
 
 [params]
 

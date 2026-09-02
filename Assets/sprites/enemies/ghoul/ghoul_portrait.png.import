@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bm5v5osisj025"
-path="res://.godot/imported/ghoul_portrait.png-afd7a22acd7c0dcef27e747b063fcecd.ctex"
+path="res://.godot/imported/ghoul_portrait.png-74f909af5862b9fffd8556d2160ed485.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/enemies/ghoul/ghoul_portrait.png"
-dest_files=["res://.godot/imported/ghoul_portrait.png-afd7a22acd7c0dcef27e747b063fcecd.ctex"]
+source_file="res://Assets/sprites/enemies/ghoul/ghoul_portrait.png"
+dest_files=["res://.godot/imported/ghoul_portrait.png-74f909af5862b9fffd8556d2160ed485.ctex"]
 
 [params]
 

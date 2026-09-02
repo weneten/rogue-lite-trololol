@@ -26,5 +26,7 @@ static func create(passive_id: String) -> PassiveAbility:
 			return PotionThrowDebuffPassive.new()
 		"curse_lift_scaling":
 			return CurseLiftScalingPassive.new()
+		"blood_boon_slots":
+			return BloodBoonSlotsPassive.new()
 		_:
 			return null

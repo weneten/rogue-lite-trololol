@@ -146,6 +146,16 @@ CHARACTERS = [
         ),
         WeaponStyle(P.R_BONE, P.R_LEATHER, P.R_RUST, P.CRIMSON), "slash",
     ),
+    _c(
+        "jester", "Jester",
+        BodySpec(
+            cloth=Ramp(P.rgb("5a1230"), outline=P.rgb("1a0510")), armor=P.R_GOLD,
+            skin=P.R_FLESH_PALE, accent=P.R_GOLD,
+            head="jester", cape="tatters", weapon="none", stature=0.96, build=0.82,
+            eye=P.AMBER, tall_collar=True, amulet=True, aura=P.AMBER,
+        ),
+        WeaponStyle(P.R_GOLD, P.R_WOOD, P.R_SILVER, P.AMBER), "slash",
+    ),
 ]
 
 # ---------------------------------------------------------------------------

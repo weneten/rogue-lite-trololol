@@ -54,6 +54,8 @@ var _empty_relics_label: Label
 var _stat_grid: GridContainer
 
 var _cards: Array[ShopCard] = []
+# Only ever built for a Jester run; null for every other Hunter.
+var _blood_boon_exchange: BloodBoonExchange
 var _rerolls_this_visit: int = 0
 var _open: bool = false
 var _pending_wave: int = 0
@@ -153,6 +155,7 @@ func _open_shop(wave_number: int) -> void:
 	_roll_offers(true)
 	_refresh_trays()
 	_refresh_stats()
+	_refresh_blood_boon_exchange()
 	_refresh_reroll_cost()
 	_on_currency_changed(GameManager.currency if GameManager != null else 0)
 
@@ -391,6 +394,33 @@ func _sell_weapon(slot_index: int) -> void:
 		_refresh_stats()
 		_update_affordability()
 		_push_net()
+
+# -------------------------------------------------------------- blood boon counter
+
+# The Jester's Blood Boon exchange, added to the left column on the first shop visit of a
+# Jester run and absent entirely for every other Hunter. Built here rather than authored
+# into ShopUI.tscn so ten of the eleven Hunters do not pay for a panel they never see.
+func _refresh_blood_boon_exchange() -> void:
+	if is_replica or BloodBoonSlotsPassive.instance == null:
+		return
+
+	if _blood_boon_exchange != null and is_instance_valid(_blood_boon_exchange):
+		_blood_boon_exchange.refresh()
+		return
+
+	if _root_panel == null:
+		return
+
+	var left_column: VBoxContainer = _root_panel.get_node_or_null("Content/Rows/Body/LeftColumn") as VBoxContainer
+	if left_column == null:
+		return
+
+	_blood_boon_exchange = BloodBoonExchange.new()
+	_blood_boon_exchange.name = "BloodBoonExchange"
+	left_column.add_child(_blood_boon_exchange)
+	# Directly under the loadout, above the stat block: it is a purchase, and purchases
+	# belong next to the rest of the spending.
+	left_column.move_child(_blood_boon_exchange, mini(1, left_column.get_child_count() - 1))
 
 # ---------------------------------------------------------------------- trays
 

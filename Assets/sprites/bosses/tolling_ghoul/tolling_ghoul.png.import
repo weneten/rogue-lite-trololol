@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b7gg5gbnkse6w"
-path="res://.godot/imported/tolling_ghoul.png-65d1663c6bd2d0c37dcd87481e08cfab.ctex"
+path="res://.godot/imported/tolling_ghoul.png-8a9b92580623ba609ec999f02c9dbcf4.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/bosses/tolling_ghoul/tolling_ghoul.png"
-dest_files=["res://.godot/imported/tolling_ghoul.png-65d1663c6bd2d0c37dcd87481e08cfab.ctex"]
+source_file="res://Assets/sprites/bosses/tolling_ghoul/tolling_ghoul.png"
+dest_files=["res://.godot/imported/tolling_ghoul.png-8a9b92580623ba609ec999f02c9dbcf4.ctex"]
 
 [params]
 

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://mqyxejnuna13"
-path="res://.godot/imported/spellblade_of_ash.png-05b7d0a8c3409374544c3a9016664557.ctex"
+path="res://.godot/imported/spellblade_of_ash.png-668757e7e39d53f98585da96991cb557.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/weapons/spellblade_of_ash.png"
-dest_files=["res://.godot/imported/spellblade_of_ash.png-05b7d0a8c3409374544c3a9016664557.ctex"]
+source_file="res://Assets/sprites/weapons/spellblade_of_ash.png"
+dest_files=["res://.godot/imported/spellblade_of_ash.png-668757e7e39d53f98585da96991cb557.ctex"]
 
 [params]
 

@@ -17,6 +17,7 @@ static var _default_unlocked_characters: Array[String] = [
 	"Moonlit Duelist",
 	"Alchemist",
 	"Cursed Noble",
+	"Jester",
 ]
 
 static var meta_currency: int = 0

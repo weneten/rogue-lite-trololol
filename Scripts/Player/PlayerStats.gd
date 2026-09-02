@@ -138,6 +138,60 @@ func try_level_up() -> void:
 		pending_boons += 1
 		EventBus.xp_changed.emit(current_xp, xp_to_next_level, level)
 
+# ------------------------------------------------------------------- xp as currency
+
+# Total XP the run has banked, counting every level already climbed plus the progress
+# toward the next one. The level curve is a formula rather than a running total, so this
+# re-derives it instead of tracking a second number that could drift out of sync.
+func total_xp_banked() -> int:
+	var total := current_xp
+	for l in range(1, level):
+		total += calculate_xp_requirement(l, base_xp_to_level, xp_growth_per_level)
+	return total
+
+# Level a run would be at holding `total` XP. Static so the Jester's exchange can show
+# "you will be level 2" before anything is actually spent.
+static func level_for_total_xp(total: int, base_xp: int, growth_rate: float) -> int:
+	var remaining := maxi(0, total)
+	var result := 1
+	while true:
+		var requirement := calculate_xp_requirement(result, base_xp, growth_rate)
+		if remaining < requirement:
+			return result
+		remaining -= requirement
+		result += 1
+	return result
+
+func preview_level_after_spending(xp_amount: int) -> int:
+	return level_for_total_xp(total_xp_banked() - maxi(0, xp_amount), base_xp_to_level, xp_growth_per_level)
+
+# Burns banked XP, re-deriving level and progress from what is left. Levels can go *down* —
+# that is the point of the Jester's exchange. Upgrades already picked are kept (there is no
+# un-picking a boon); only boons still queued are given back, and the levels themselves have
+# to be earned again.
+func spend_xp(amount: int) -> bool:
+	if amount <= 0:
+		return false
+
+	var total := total_xp_banked()
+	if total < amount:
+		return false
+
+	var remaining := total - amount
+	var new_level := level_for_total_xp(remaining, base_xp_to_level, xp_growth_per_level)
+
+	for l in range(1, new_level):
+		remaining -= calculate_xp_requirement(l, base_xp_to_level, xp_growth_per_level)
+
+	var level_delta := new_level - level
+	if level_delta < 0:
+		pending_boons = maxi(0, pending_boons + level_delta)
+
+	level = new_level
+	current_xp = maxi(0, remaining)
+	EventBus.xp_changed.emit(current_xp, xp_to_next_level, level)
+	return true
+
 # Starts the first queued boon screen. Returns false when there is nothing to pick.
 func pop_next_boon() -> bool:
 	if pending_boons <= 0:

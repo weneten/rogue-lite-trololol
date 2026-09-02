@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ba3mk6grmabya"
-path="res://.godot/imported/grave_warden_portrait.png-9799f323a5f15ad87068a8c5356c35f9.ctex"
+path="res://.godot/imported/grave_warden_portrait.png-58e5a0f169b8957b82b56e91d29f3b60.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/characters/grave_warden/grave_warden_portrait.png"
-dest_files=["res://.godot/imported/grave_warden_portrait.png-9799f323a5f15ad87068a8c5356c35f9.ctex"]
+source_file="res://Assets/sprites/characters/grave_warden/grave_warden_portrait.png"
+dest_files=["res://.godot/imported/grave_warden_portrait.png-58e5a0f169b8957b82b56e91d29f3b60.ctex"]
 
 [params]
 

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://j8aa2doxfc3o"
-path="res://.godot/imported/pallbearers_oath.png-149379c61235040a4d640cc903ce3f07.ctex"
+path="res://.godot/imported/pallbearers_oath.png-26d2f68d21035e4d541b6c2ab34133e6.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/items/pallbearers_oath.png"
-dest_files=["res://.godot/imported/pallbearers_oath.png-149379c61235040a4d640cc903ce3f07.ctex"]
+source_file="res://Assets/sprites/items/pallbearers_oath.png"
+dest_files=["res://.godot/imported/pallbearers_oath.png-26d2f68d21035e4d541b6c2ab34133e6.ctex"]
 
 [params]
 

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bdbwep1vf75ry"
-path="res://.godot/imported/moonwell_shard.png-def8d5cf5cd0b1d2d471c2af6cb58dde.ctex"
+path="res://.godot/imported/moonwell_shard.png-0e7d32eb32f539104ee6651c15dda088.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/items/moonwell_shard.png"
-dest_files=["res://.godot/imported/moonwell_shard.png-def8d5cf5cd0b1d2d471c2af6cb58dde.ctex"]
+source_file="res://Assets/sprites/items/moonwell_shard.png"
+dest_files=["res://.godot/imported/moonwell_shard.png-0e7d32eb32f539104ee6651c15dda088.ctex"]
 
 [params]
 

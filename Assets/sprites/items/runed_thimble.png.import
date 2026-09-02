@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://djcay6uwv7m42"
-path="res://.godot/imported/runed_thimble.png-d857d7fd26fffada2f1e3ed4d7611837.ctex"
+path="res://.godot/imported/runed_thimble.png-90cfed5a3b7c130f6f7e80185c4b49c2.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/items/runed_thimble.png"
-dest_files=["res://.godot/imported/runed_thimble.png-d857d7fd26fffada2f1e3ed4d7611837.ctex"]
+source_file="res://Assets/sprites/items/runed_thimble.png"
+dest_files=["res://.godot/imported/runed_thimble.png-90cfed5a3b7c130f6f7e80185c4b49c2.ctex"]
 
 [params]
 

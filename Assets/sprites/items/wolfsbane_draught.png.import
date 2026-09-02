@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dm7j6la5klyhj"
-path="res://.godot/imported/wolfsbane_draught.png-8e205cc06b99a6b3432a6519645bb2b9.ctex"
+path="res://.godot/imported/wolfsbane_draught.png-7ecb91784702003cefaf79c0522de58c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/items/wolfsbane_draught.png"
-dest_files=["res://.godot/imported/wolfsbane_draught.png-8e205cc06b99a6b3432a6519645bb2b9.ctex"]
+source_file="res://Assets/sprites/items/wolfsbane_draught.png"
+dest_files=["res://.godot/imported/wolfsbane_draught.png-7ecb91784702003cefaf79c0522de58c.ctex"]
 
 [params]
 

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://i1uuahp6y2n4"
-path="res://.godot/imported/bloodstained_crusader_portrait.png-4f51666c0889d99ca191b3bc99a0065d.ctex"
+path="res://.godot/imported/bloodstained_crusader_portrait.png-483ea5c5657518015a7d13c8bfb7129c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/characters/bloodstained_crusader/bloodstained_crusader_portrait.png"
-dest_files=["res://.godot/imported/bloodstained_crusader_portrait.png-4f51666c0889d99ca191b3bc99a0065d.ctex"]
+source_file="res://Assets/sprites/characters/bloodstained_crusader/bloodstained_crusader_portrait.png"
+dest_files=["res://.godot/imported/bloodstained_crusader_portrait.png-483ea5c5657518015a7d13c8bfb7129c.ctex"]
 
 [params]
 
