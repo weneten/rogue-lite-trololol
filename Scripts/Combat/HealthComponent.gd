@@ -24,6 +24,19 @@ var incoming_damage_multiplier: float = 1.0
 var current_health: int
 var is_dead: bool = false
 
+# While true, take_damage does nothing at all. Set and cleared by whoever owns
+# the window — today that is the Player's dash, for exactly as long as the roll
+# animation runs. It lives here rather than in Player because damage arrives
+# from everywhere: contact hitboxes, boss AoE resolution, telegraphs that expire
+# on their own clock, projectiles. Gating the one funnel they all pour into is
+# the only version that cannot be forgotten by the next thing that deals damage.
+#
+# Deliberately a plain flag with no timer of its own: the owner ticks it down in
+# its own _physics_process, so the window stops with the game when the tree
+# pauses, and an enemy HealthComponent pays nothing per frame for a feature only
+# the player has.
+var is_invulnerable: bool = false
+
 # Fired on every HP change (damage or heal) with the resulting value.
 signal health_changed(current_health: int, max_health: int)
 
@@ -39,6 +52,11 @@ func _ready() -> void:
 # triggers die() exactly once. No-op once dead or fully dodged.
 func take_damage(amount: int, source: Node = null) -> void:
 	if is_dead or amount <= 0:
+		return
+
+	# Ahead of the dodge roll: a hit that was never going to land should not
+	# also spend the dodge chance that would have saved the next one.
+	if is_invulnerable:
 		return
 
 	if dodge_chance > 0.0 and randf() < dodge_chance:
@@ -85,5 +103,9 @@ func die(source: Node = null) -> void:
 # Resets is_dead and restores HP. Used by respawning actors (e.g. TargetDummy) — never called on Player/normal enemies which stay dead.
 func revive(to_health: Variant = null) -> void:
 	is_dead = false
+	# Cleared here as well as by the owner: a hunter revived for the next wave
+	# while a dash window was open would otherwise come back permanently
+	# untouchable, because nothing is left running to close it.
+	is_invulnerable = false
 	current_health = clampi(to_health if to_health != null else max_health, 0, max_health)
 	health_changed.emit(current_health, max_health)

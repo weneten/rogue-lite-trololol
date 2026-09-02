@@ -33,6 +33,23 @@ func get_has_frames() -> bool:
 func get_sprite() -> AnimatedSprite2D:
 	return _sprite
 
+# How long a named row runs for, in seconds, or 0 when this sheet has no such
+# row. Lets a caller time something against the animation instead of against a
+# constant that has to be kept in step with the artwork by hand.
+func get_animation_length(anim_name: String) -> float:
+	if _sprite == null or _sprite.sprite_frames == null:
+		return 0.0
+
+	if not _sprite.sprite_frames.has_animation(anim_name):
+		return 0.0
+
+	var count := _sprite.sprite_frames.get_frame_count(anim_name)
+	var speed := _sprite.sprite_frames.get_animation_speed(anim_name)
+	if count <= 0 or speed <= 0.01:
+		return 0.0
+
+	return count / speed
+
 func _ready() -> void:
 	_resolve_sprite()
 	if _sprite != null:
@@ -160,12 +177,8 @@ func play_death_async() -> void:
 	_one_shot_playing = true
 	_sprite.play("death")
 
-	var timeout = 1.2
-	if _sprite.sprite_frames.has_animation("death"):
-		var count = _sprite.sprite_frames.get_frame_count("death")
-		var speed = _sprite.sprite_frames.get_animation_speed("death")
-		if speed > 0.01:
-			timeout = maxf(0.35, count / speed + 0.15)
+	var length := get_animation_length("death")
+	var timeout := maxf(0.35, length + 0.15) if length > 0.0 else 1.2
 
 	var timer = get_tree().create_timer(timeout)
 	await timer.timeout

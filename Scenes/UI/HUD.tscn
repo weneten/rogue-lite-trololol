@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://g2h4u6d8n1r3s"]
+[gd_scene load_steps=10 format=3 uid="uid://g2h4u6d8n1r3s"]
 
 [ext_resource type="Script" path="res://Scripts/UI/HUD.gd" id="1_hud"]
 [ext_resource type="Theme" path="res://Assets/UI/nightbane_theme.tres" id="2_theme"]
@@ -8,6 +8,7 @@
 [ext_resource type="Texture2D" path="res://Assets/UI/icon_time.png" id="6_time"]
 [ext_resource type="Texture2D" path="res://Assets/UI/icon_xp.png" id="7_xp"]
 [ext_resource type="Texture2D" path="res://Assets/UI/vignette.png" id="8_vignette"]
+[ext_resource type="Texture2D" path="res://Assets/UI/icon_speed.png" id="9_dash"]
 
 [node name="HUD" type="CanvasLayer"]
 script = ExtResource("1_hud")
@@ -26,6 +27,11 @@ damage_flash_path = NodePath("Root/DamageFlash")
 vitals_panel_path = NodePath("Root/Margin/Columns/Left/Vitals")
 weapon_bar_path = NodePath("Root/WeaponBarAnchor/WeaponBar")
 weapon_slots_path = NodePath("Root/WeaponBarAnchor/WeaponBar/WeaponSlots")
+dash_panel_path = NodePath("Root/DashAnchor/DashPanel")
+dash_icon_path = NodePath("Root/DashAnchor/DashPanel/Slot/Icon")
+dash_shade_path = NodePath("Root/DashAnchor/DashPanel/Slot/Shade")
+dash_label_path = NodePath("Root/DashAnchor/DashPanel/Slot/Remaining")
+dash_key_label_path = NodePath("Root/DashAnchor/DashPanel/Slot/KeyHint")
 
 [node name="Root" type="Control" parent="."]
 layout_mode = 3
@@ -273,6 +279,80 @@ theme_type_variation = &"DarkPanel"
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 12
+
+[node name="DashAnchor" type="Control" parent="Root"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 18.0
+offset_top = -80.0
+offset_right = 80.0
+offset_bottom = -14.0
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="DashPanel" type="PanelContainer" parent="Root/DashAnchor"]
+layout_mode = 1
+anchors_preset = 0
+offset_right = 62.0
+offset_bottom = 66.0
+mouse_filter = 2
+theme_type_variation = &"DarkPanel"
+
+[node name="Slot" type="Control" parent="Root/DashAnchor/DashPanel"]
+custom_minimum_size = Vector2(46, 46)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Icon" type="TextureRect" parent="Root/DashAnchor/DashPanel/Slot"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("9_dash")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Shade" type="ColorRect" parent="Root/DashAnchor/DashPanel/Slot"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+color = Color(0.03, 0.02, 0.04, 0.72)
+
+[node name="Remaining" type="Label" parent="Root/DashAnchor/DashPanel/Slot"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+text = "5"
+
+[node name="KeyHint" type="Label" parent="Root/DashAnchor/DashPanel/Slot"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -13.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_type_variation = &"SmallLabel"
+horizontal_alignment = 1
+text = "SPACE"
 
 [node name="OffscreenArrows" type="Control" parent="Root"]
 layout_mode = 1

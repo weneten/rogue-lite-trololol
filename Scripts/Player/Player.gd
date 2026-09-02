@@ -9,6 +9,25 @@ class_name Player
 
 @export var move_speed: float = 300.0
 
+@export_group("Dash")
+# A roll, not a blink. He travels at this multiple of his own speed — so a fast
+# Hunter rolls further than a slow one — for exactly as long as the dash row on
+# his sheet runs, and nothing can touch him for that window. Tying the i-frames
+# to the animation rather than to a number here is the whole point: what the
+# player sees is the rule.
+# Shortens the roll by covering less ground rather than by ending sooner: the
+# i-frames are the animation, so cutting the duration would quietly cut the
+# invulnerability with it. At the default 300 speed this is ~135px of travel.
+@export var dash_speed_multiplier: float = 1.8
+# Measured from the moment the roll ends, not from the moment it starts, so this
+# really is the gap between one dash and the next. Long enough that a dash is a
+# decision about one attack rather than a second movement key.
+@export var dash_cooldown: float = 5.0
+
+# Used when the Hunter has no sheet at all (procedural skin) or a sheet without
+# a dash row. Every authored Hunter sheet runs 4 frames at 16 fps, which is this.
+const DASH_FALLBACK_SECONDS := 0.25
+
 # Character
 # Wired in the editor for quick standalone testing of Arena.tscn; in the normal flow
 # this is left null and GameManager.selected_character (set by CharacterSelect) is used
@@ -40,6 +59,13 @@ var _sprite_animator: EnemySpriteAnimator
 var _fallback_polygon: Node2D
 var _procedural_sprite: Sprite2D
 var _body_shape: CollisionShape2D
+
+var _dash_remaining: float = 0.0
+var _dash_cooldown_remaining: float = 0.0
+var _dash_direction: Vector2 = Vector2.RIGHT
+# Last direction actually held. A dash pressed while standing still goes this
+# way rather than nowhere, which is what makes it usable as a retreat.
+var _facing_direction: Vector2 = Vector2.RIGHT
 
 func _ready() -> void:
 	# Lets Enemy.cs (and anything else) find the player via GetFirstNodeInGroup instead of
@@ -192,14 +218,43 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		return
 
+	_dash_cooldown_remaining = maxf(0.0, _dash_cooldown_remaining - delta)
+
 	var effective_speed: float = move_speed * (_stats.move_speed_multiplier if _stats != null else 1.0)
 	var input_direction: Vector2 = Input.get_vector("move_left", "move_right", "move_up", "move_down")
-	velocity = input_direction * effective_speed
+	var moving: bool = input_direction.length_squared() > 0.01
+	if moving:
+		_facing_direction = input_direction.normalized()
+
+	var was_dashing: bool = _dash_remaining > 0.0
+	if was_dashing:
+		# The roll commits: steering out of it mid-way would make the i-frames a
+		# free 0.25s of walking anywhere rather than a read on one attack.
+		_dash_remaining -= delta
+		velocity = _dash_direction * effective_speed * dash_speed_multiplier
+	else:
+		velocity = input_direction * effective_speed
+
 	move_and_slide()
+
+	# Only on the frame the roll actually runs out. Closing the window every
+	# frame instead would quietly cancel i-frames granted by anything else.
+	var still_dashing: bool = _dash_remaining > 0.0
+	if was_dashing and not still_dashing:
+		end_dash()
+
+	# The roll drives the look only while it is still running. Feeding it the
+	# dash heading on the frame it ends made a standing Hunter flash one frame
+	# of the run cycle before settling back to idle.
+	if still_dashing:
+		input_direction = _dash_direction
+		moving = true
 
 	if _sprite_animator != null:
 		_sprite_animator.set_facing(input_direction.x)
-		_sprite_animator.update_locomotion(input_direction.length_squared() > 0.01)
+		# No-op while the dash one-shot is playing, which is exactly the window
+		# the roll occupies — the animator refuses to overwrite a one-shot.
+		_sprite_animator.update_locomotion(moving)
 
 	if NetSession != null and NetSession.is_active:
 		var hp := _health.current_health if _health != null else 0
@@ -222,9 +277,55 @@ func on_weapon_attack(target: Node2D = null) -> void:
 	_sprite_animator.set_facing(target.global_position.x - global_position.x)
 
 func _unhandled_input(event: InputEvent) -> void:
+	# _unhandled_input rather than polling: a focused Control eats the key first,
+	# so Space still confirms a menu without also rolling the Hunter underneath
+	# it. Menus that do not take focus pause the tree, which stops this node.
+	if event.is_action_pressed("dash"):
+		try_start_dash()
+
 	if enable_debug_damage_key and event.is_action_pressed("debug_damage_test"):
 		if _health != null:
 			_health.take_damage(debug_damage_amount, self)
+
+# Space. Refused while a roll is already running, while it is on cooldown, and
+# while dead; nothing else blocks it.
+func try_start_dash() -> void:
+	if _dash_remaining > 0.0 or _dash_cooldown_remaining > 0.0:
+		return
+
+	if _health == null or _health.is_dead:
+		return
+
+	var input_direction: Vector2 = Input.get_vector("move_left", "move_right", "move_up", "move_down")
+	_dash_direction = input_direction.normalized() if input_direction.length_squared() > 0.01 else _facing_direction
+	_facing_direction = _dash_direction
+	_dash_remaining = dash_duration()
+	# Counted from the end of the roll, hence the roll's own length on top.
+	_dash_cooldown_remaining = dash_cooldown + _dash_remaining
+	_health.is_invulnerable = true
+
+	if _sprite_animator != null:
+		_sprite_animator.play_named("dash")
+
+# The length of this Hunter's dash row. The i-frames are the animation, so this
+# is the one number the whole feature is measured in.
+func dash_duration() -> float:
+	var length: float = _sprite_animator.get_animation_length("dash") if _sprite_animator != null else 0.0
+	return length if length > 0.0 else DASH_FALLBACK_SECONDS
+
+func end_dash() -> void:
+	_dash_remaining = 0.0
+	if _health != null:
+		_health.is_invulnerable = false
+
+# True while the roll is running. Read by UI and by anything that wants to know
+# whether a hit was dodged rather than missed.
+func get_is_dashing() -> bool:
+	return _dash_remaining > 0.0
+
+# 0 when the dash is ready, otherwise seconds until it is.
+func get_dash_cooldown_remaining() -> float:
+	return maxf(0.0, _dash_cooldown_remaining - _dash_remaining)
 
 func on_health_damaged(amount: int, source: Node) -> void:
 	if _sprite_animator != null:
@@ -253,7 +354,14 @@ func _on_wave_start(_wave_number: int) -> void:
 
 # Co-op: downed hunters sit out the rest of the round, then return at full HP.
 func respawn_for_wave() -> void:
+	# Always closed, never carried: an i-frame window left open across a wave
+	# boundary would have nothing left running to shut it.
+	end_dash()
 	if _health != null and _health.is_dead:
+		# Only a hunter who actually went down gets their dash handed back.
+		# This runs for everyone on every wave_start, so clearing it here
+		# unconditionally quietly refunded the cooldown between waves.
+		_dash_cooldown_remaining = 0.0
 		_health.revive(_health.max_health)
 	collision_layer = 2
 	if _body_shape != null:
@@ -261,6 +369,7 @@ func respawn_for_wave() -> void:
 	restore_after_intermission()
 
 func on_health_died(source: Node) -> void:
+	end_dash()
 	# Fire-and-forget: the death anim just needs to run out, nothing waits on it (physics is
 	# already frozen above, and the game-over UI is driven by EventBus).
 	collision_layer = 0

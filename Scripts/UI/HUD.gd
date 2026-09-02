@@ -20,6 +20,11 @@ class_name HUD
 @export var vitals_panel_path: NodePath
 @export var weapon_bar_path: NodePath
 @export var weapon_slots_path: NodePath
+@export var dash_panel_path: NodePath
+@export var dash_icon_path: NodePath
+@export var dash_shade_path: NodePath
+@export var dash_label_path: NodePath
+@export var dash_key_label_path: NodePath
 
 @export_group("Weapon Bar")
 # The counters climb constantly during a fight; refreshing them every frame is
@@ -58,6 +63,12 @@ var _weapon_slots: HBoxContainer
 var _weapon_rows: Array = []
 var _weapon_bar_cooldown: float = 0.0
 var _arrow_frame: int = 0
+var _dash_panel: Control
+var _dash_icon: TextureRect
+var _dash_shade: ColorRect
+var _dash_label: Label
+var _dash_key_label: Label
+var _player: Player
 
 func _ready() -> void:
 	_health_bar = get_node_or_null(health_bar_path)
@@ -75,6 +86,11 @@ func _ready() -> void:
 	_vitals_panel = get_node_or_null(vitals_panel_path)
 	_weapon_bar = get_node_or_null(weapon_bar_path)
 	_weapon_slots = get_node_or_null(weapon_slots_path)
+	_dash_panel = get_node_or_null(dash_panel_path)
+	_dash_icon = get_node_or_null(dash_icon_path)
+	_dash_shade = get_node_or_null(dash_shade_path)
+	_dash_label = get_node_or_null(dash_label_path)
+	_dash_key_label = get_node_or_null(dash_key_label_path)
 	_arrow_texture = load("res://Assets/UI/icon_skull.png") as Texture2D
 
 	if _banner != null:
@@ -105,6 +121,61 @@ func _process(delta: float) -> void:
 	if _weapon_bar_cooldown <= 0.0:
 		_weapon_bar_cooldown = weapon_bar_refresh_seconds
 		_update_weapon_bar()
+
+	# Every frame, unlike the weapon counters: a five second cooldown is
+	# something the player times a dodge against, so a quarter-second refresh
+	# would be the difference between rolling and eating the hit.
+	_update_dash_indicator()
+
+# Bottom-left dash charge. A dark shade covers the icon when the dash is spent
+# and drains downward as it recharges, so the amount of icon showing is the
+# amount of dash you have — readable without reading the number next to it.
+func _update_dash_indicator() -> void:
+	if _dash_panel == null:
+		return
+
+	var player := _resolve_player()
+	if player == null:
+		_dash_panel.visible = false
+		return
+
+	_dash_panel.visible = true
+
+	var remaining: float = player.get_dash_cooldown_remaining()
+	var total: float = maxf(0.01, player.dash_cooldown)
+	var fraction: float = clampf(remaining / total, 0.0, 1.0)
+
+	if _dash_shade != null:
+		# Anchored to the bottom: covers the whole slot at 1.0, nothing at 0.0.
+		_dash_shade.anchor_top = 1.0 - fraction
+		_dash_shade.visible = fraction > 0.0
+
+	var ready: bool = remaining <= 0.0
+	if _dash_label != null:
+		_dash_label.visible = not ready
+		if not ready:
+			# One decimal under a second, whole seconds above: a counter ticking
+			# tenths for five seconds is noise, tenths at the end are the cue.
+			_dash_label.text = "%.1f" % remaining if remaining < 1.0 else "%d" % ceili(remaining)
+
+	if _dash_icon != null:
+		if ready:
+			# A slow breath so a ready dash reads as ready at a glance, in the
+			# corner of the eye, while something else has the player's attention.
+			var beat: float = 0.86 + 0.14 * sin(_pulse_time * 4.0)
+			_dash_icon.modulate = Color(beat, beat, beat, 1.0)
+		else:
+			_dash_icon.modulate = Color(0.55, 0.55, 0.62, 1.0)
+
+	if _dash_key_label != null:
+		_dash_key_label.modulate = Color(1, 1, 1, 0.75 if ready else 0.35)
+
+func _resolve_player() -> Player:
+	if _player != null and is_instance_valid(_player):
+		return _player
+
+	_player = get_tree().get_first_node_in_group("Player") as Player
+	return _player
 
 func _ensure_arrow_layer() -> void:
 	if _arrow_layer != null:
