@@ -36,7 +36,7 @@ const PROFILES := {
 	Level.DARK_NIGHT: {
 		"name": "Dark is the Night!",
 		"tagline": "Whatever is behind you is barely slower than you.",
-		"description": "Enemies: double health, +120% damage, 94% of your speed, half again as many. You: 55% health, 75% damage. A boss every third wave, and the wave does not end until it falls.",
+		"description": "Enemies: double health, +120% damage, 94% of your speed, half again as many. You: 55% health, 75% damage. A boss every third wave, drawn at random and never the same one twice in a row, and the wave does not end until it falls.",
 		"enemy_health": 2.0,
 		# +120% damage dealt, i.e. 2.2x what the archetype does.
 		"enemy_damage": 2.2,

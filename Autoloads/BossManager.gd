@@ -3,6 +3,11 @@ extends Node
 # Spawns bosses when the matching wave starts. Self-subscribes to EventBus.wave_start —
 # does NOT edit WaveManager trigger logic. Pauses normal wave spawns via WaveManager.spawns_paused
 # for the duration of the encounter.
+#
+# Two ways a boss gets chosen, depending on the difficulty. On the authored
+# schedule each boss owns a wave number and always turns up on it. On a
+# difficulty with boss_every_waves set, every boss wave instead deals from a
+# shuffled deck of the whole roster — see _pick_boss_for_wave.
 
 # True while a boss fight is live. Parallel systems may read this.
 var is_boss_active: bool
@@ -15,6 +20,12 @@ var is_boss_active: bool
 var _active_boss: Boss
 var _active_data: BossData
 var _triggered_waves: Array[int] = []
+
+# Shuffled draw pile, used only by difficulties that spawn bosses on a cadence.
+# Emptied and reshuffled as it runs out, so a long run keeps getting fights
+# while never repeating one before the rest of the roster has had its turn.
+var _boss_deck: Array[BossData] = []
+var _last_drawn: BossData
 
 func _ready() -> void:
 	if boss_roster == null or boss_roster.is_empty():
@@ -51,6 +62,11 @@ func _exit_tree() -> void:
 # 10/15/20 before — obvious the moment a difficulty puts one on every third.
 func _on_run_started() -> void:
 	_triggered_waves.clear()
+	# The deck is per-run for the same reason: "not the same boss twice" is a
+	# promise about one run, and a pile left half-dealt would carry the last
+	# run's exclusions into the next one.
+	_boss_deck.clear()
+	_last_drawn = null
 	_end_encounter(false)
 
 func _on_wave_start(wave_number: int) -> void:
@@ -61,44 +77,96 @@ func _on_wave_start(wave_number: int) -> void:
 	if _triggered_waves.has(wave_number):
 		return
 
-	var match: BossData = _find_boss_for_wave(wave_number)
+	if not _is_boss_wave(wave_number):
+		return
+
+	var match: BossData = _pick_boss_for_wave(wave_number)
 	if match == null:
 		return
 
 	_triggered_waves.append(wave_number)
-	spawn_boss(match)
+	spawn_boss(match, wave_number)
 
-func _find_boss_for_wave(wave_number: int) -> BossData:
+# Whether a boss belongs on this wave at all. Deliberately free of side effects,
+# so the caller can ask before committing to a draw.
+func _is_boss_wave(wave_number: int) -> bool:
+	if boss_roster == null or wave_number <= 0:
+		return false
+
+	var interval: int = Difficulty.boss_every_waves(GameManager.difficulty)
+	if interval > 0 and wave_number % interval == 0:
+		return true
+
+	for data: BossData in boss_roster:
+		if data != null and data.wave_trigger == wave_number:
+			return true
+
+	return false
+
+# Which boss shows up. On the authored schedule that is whoever owns the wave.
+# On a difficulty that promises "a boss every N waves" it is a draw from the
+# deck instead — including on the authored waves, which is the part that makes
+# the no-repeat rule mean anything: leaving wave 10 hard-wired to the Blood Moon
+# Alpha would hand it to you a second time whenever the deck had already dealt
+# it, which is exactly what the deck exists to prevent.
+func _pick_boss_for_wave(wave_number: int) -> BossData:
 	if boss_roster == null:
 		return null
+
+	if Difficulty.boss_every_waves(GameManager.difficulty) > 0:
+		return _draw_boss()
 
 	for data: BossData in boss_roster:
 		if data != null and data.wave_trigger == wave_number:
 			return data
 
-	return _find_recurring_boss(wave_number)
+	return null
 
-# Difficulties that promise "a boss every N waves" fill the gaps between the
-# authored encounters by cycling the roster, so the third, sixth and ninth wave
-# each get one even though nobody wrote a boss for them.
-func _find_recurring_boss(wave_number: int) -> BossData:
-	var interval: int = Difficulty.boss_every_waves(GameManager.difficulty)
-	if interval <= 0 or wave_number <= 0 or wave_number % interval != 0:
+# Draws the next boss off the pile, refilling it when it runs dry. A deck rather
+# than a plain random pick: rolling each boss wave independently would happily
+# serve the same fight three times before touching the rest of the roster, and a
+# fixed cycle (what this used to do) means the second run is the first one over
+# again. Dealing a shuffled deck is the only one of the three that is both a
+# surprise and fair.
+func _draw_boss() -> BossData:
+	if _boss_deck.is_empty():
+		_refill_boss_deck()
+
+	if _boss_deck.is_empty():
 		return null
 
-	var pool: Array[BossData] = []
+	_last_drawn = _boss_deck.pop_back()
+	return _last_drawn
+
+func _refill_boss_deck() -> void:
+	_boss_deck.clear()
 	for data: BossData in boss_roster:
 		if data != null:
-			pool.append(data)
+			_boss_deck.append(data)
 
-	if pool.is_empty():
-		return null
+	_boss_deck.shuffle()
 
-	return pool[(wave_number / interval - 1) % pool.size()]
+	# The seam between two decks is the one place a repeat can still slip
+	# through: the last card of the old pile and the first of the new one are
+	# shuffled independently of each other. If the new pile opens with the boss
+	# that just fell, trade it with someone further down.
+	if _boss_deck.size() > 1 and _boss_deck.back() == _last_drawn:
+		var top := _boss_deck.size() - 1
+		var other := randi() % top
+		var swap := _boss_deck[other]
+		_boss_deck[other] = _boss_deck[top]
+		_boss_deck[top] = swap
 
-func spawn_boss(data: BossData) -> void:
+# `wave_number` is the wave this actually happened on, which is no longer the
+# same thing as the boss's own wave_trigger now that a deck difficulty can deal
+# any boss to any boss wave. Defaults back to the trigger for callers that have
+# no wave in hand — the admin panel's force-spawn.
+func spawn_boss(data: BossData, wave_number: int = -1) -> void:
 	if data == null:
 		return
+
+	if wave_number < 0:
+		wave_number = data.wave_trigger
 
 	if data.boss_scene == null:
 		push_error("[BossManager] BossData '%s' has no BossScene." % data.boss_name)
@@ -129,8 +197,8 @@ func spawn_boss(data: BossData) -> void:
 	if WaveManager != null:
 		WaveManager.spawns_paused = true
 
-	EventBus.boss_encounter_start.emit(data.boss_name, data.wave_trigger)
-	print("[BossManager] Spawned %s on wave %d." % [data.boss_name, data.wave_trigger])
+	EventBus.boss_encounter_start.emit(data.boss_name, wave_number)
+	print("[BossManager] Spawned %s on wave %d." % [data.boss_name, wave_number])
 
 func _on_boss_encounter_end(boss_name: String, defeated: bool) -> void:
 	_end_encounter(defeated)
@@ -162,11 +230,16 @@ func _end_encounter(defeated: bool) -> void:
 	else:
 		print("[BossManager] Boss encounter ended (not defeated) — wave spawns resumed.")
 
-# Debug / tests: force a roster entry by wave trigger.
+# Debug / tests: force whoever the given wave would produce. On a deck
+# difficulty this really does draw a card, so what you preview is what that
+# wave would actually have given you.
 func debug_spawn_boss_for_wave(wave_number: int) -> void:
-	var data: BossData = _find_boss_for_wave(wave_number)
+	if not _is_boss_wave(wave_number):
+		return
+
+	var data: BossData = _pick_boss_for_wave(wave_number)
 	if data != null:
-		spawn_boss(data)
+		spawn_boss(data, wave_number)
 
 # Admin panel: start any encounter on demand, even one already fought this run
 # or one whose boss is still on the field. Clears the live fight first so two
