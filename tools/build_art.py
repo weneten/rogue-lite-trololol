@@ -10,6 +10,7 @@ Groups:
     items    32x32 shop relic icons
     cosmetics  loadout aura and charm chrome worn by the Hunter
     ui       panels, buttons, bars, icons, backdrop, vignette
+    slots    the Jester's slot machine cabinet, lever and blood
     font     bitmap font atlases + .fnt descriptors
     theme    the Godot Theme resource
     arena    floor / wall tiles and props
@@ -25,7 +26,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from pixelforge import arena, cast, cosmetics, font, items, sheets, theme, ui, weapons  # noqa: E402
+from pixelforge import arena, cast, cosmetics, font, items, sheets, slots, theme, ui, weapons  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -73,6 +74,11 @@ def build_theme() -> None:
     print(f"  {theme.export(ROOT).relative_to(ROOT)}")
 
 
+def build_slots() -> None:
+    slots.export(ROOT)
+    print("  slot cabinet, lever frames, blood")
+
+
 def build_arena() -> None:
     arena.export(ROOT)
     print("  floor tiles, wall tiles, props")
@@ -84,13 +90,14 @@ GROUPS = {
     "items": build_items,
     "cosmetics": build_cosmetics,
     "ui": build_ui,
+    "slots": build_slots,
     "font": build_font,
     "theme": build_theme,
     "arena": build_arena,
 }
 
 # The theme references the font atlases and UI textures, so it goes last.
-ORDER = ["font", "ui", "arena", "weapons", "items", "cosmetics", "sprites", "theme"]
+ORDER = ["font", "ui", "slots", "arena", "weapons", "items", "cosmetics", "sprites", "theme"]
 
 
 def main(argv: list[str]) -> int:
