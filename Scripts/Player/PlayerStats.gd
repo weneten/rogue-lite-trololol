@@ -30,6 +30,16 @@ var damage_multiplier: float = 1.0
 var difficulty_damage_multiplier: float = 1.0
 # Multiplies Player.MoveSpeed; read by Player.cs. Starts at 1 (no bonus).
 var move_speed_multiplier: float = 1.0
+
+# Slow applied from outside, by something currently doing it to him — today the
+# Dark is the Night wardens channelling from across the arena. 1.0 is unslowed.
+#
+# Deliberately NOT folded into move_speed_multiplier. That one is the sum of the
+# Hunter's own upgrades, and it is what the wardens read to decide whether he is
+# too fast. Slowing him through the same number would make the test chase its
+# own tail: slow him, he falls under the threshold, they leave, he speeds up,
+# they come back — a Hunter stuttering in and out of a mechanic forever.
+var external_speed_multiplier: float = 1.0
 # Multiplies Weapon.AttackSpeed (attacks/sec) before the cooldown is derived from it;
 # read by Weapon.cs. Driven by the Moonlit Duelist's dual-wield passive. Starts at 1.
 var attack_speed_multiplier: float = 1.0

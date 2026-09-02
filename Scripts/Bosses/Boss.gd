@@ -42,6 +42,12 @@ var enemy_scene: PackedScene
 # Minions spawned this fight; freed when the boss dies.
 var spawned_minions: Array[Node] = []
 
+# The wave this fight actually started on, which on a difficulty that deals
+# bosses from a deck is no longer the same thing as data.wave_trigger. Set by
+# BossManager before initialize; 0 means "nobody said", and the scaling is then
+# a no-op.
+var spawn_wave: int = 0
+
 func _ready() -> void:
 	add_to_group("Enemy")
 	add_to_group("Boss")
@@ -79,7 +85,9 @@ func apply_data(data: BossData) -> void:
 		return
 
 	if health != null:
-		var max_hp: int = maxi(1, roundi(data.max_health * Difficulty.enemy_health_multiplier(GameManager.difficulty)))
+		var max_hp: int = maxi(1, roundi(data.max_health
+			* Difficulty.enemy_health_multiplier(GameManager.difficulty)
+			* get_wave_health_multiplier()))
 		health.max_health = max_hp
 		health.revive(max_hp)
 
@@ -140,7 +148,22 @@ func apply_phase_sprite_sheet(phase: BossPhaseData) -> bool:
 func get_phase_damage_multiplier() -> float:
 	var phase = get_current_phase()
 	var phase_multiplier = maxf(0.0, phase.damage_multiplier) if phase != null else 1.0
-	return phase_multiplier * Difficulty.enemy_damage_multiplier(GameManager.difficulty)
+	return phase_multiplier 		* Difficulty.enemy_damage_multiplier(GameManager.difficulty) 		* get_wave_damage_multiplier()
+
+# How much bigger this boss is for having turned up when it did. Both return 1.0
+# on difficulties that do not scale bosses by wave, so the authored numbers are
+# the numbers everywhere else.
+func get_wave_health_multiplier() -> float:
+	if not Difficulty.boss_wave_scaling(GameManager.difficulty):
+		return 1.0
+
+	return EnemyScaling.boss_health_multiplier(spawn_wave)
+
+func get_wave_damage_multiplier() -> float:
+	if not Difficulty.boss_wave_scaling(GameManager.difficulty):
+		return 1.0
+
+	return EnemyScaling.boss_damage_multiplier(spawn_wave)
 
 # The boss's move speed for this run. Bosses read this instead of data.move_speed
 # so the difficulty's speed floor reaches them too.

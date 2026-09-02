@@ -28,6 +28,7 @@ WaveManager="*res://Autoloads/WaveManager.gd"
 BossManager="*res://Autoloads/BossManager.gd"
 AudioManager="*res://Autoloads/AudioManager.gd"
 NetSession="*res://Autoloads/NetSession.gd"
+DarkMages="*res://Autoloads/DarkMages.gd"
 
 [audio]
 

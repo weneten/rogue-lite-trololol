@@ -188,6 +188,8 @@ func spawn_boss(data: BossData, wave_number: int = -1) -> void:
 
 	var boss: Boss = instance as Boss
 	boss.global_position = spawn_pos
+	# Before initialize: apply_data sizes its health off this.
+	boss.spawn_wave = wave_number
 	boss.initialize(data)
 
 	_active_boss = boss

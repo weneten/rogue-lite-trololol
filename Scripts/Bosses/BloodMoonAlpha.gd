@@ -15,7 +15,11 @@ class_name BloodMoonAlpha
 # is coming but never what — a boss whose attacks cannot be told apart is a
 # boss you can only fight by running away from.
 
-const CLAW_ARC_DEGREES := 105.0
+# Widened along with the reach in the .tres. Not widened as far as the reach
+# grew, though: the swipe is meant to have two answers — step out of the arc, or
+# get behind him — and past about 130 degrees the sideways step stops existing
+# and only the one answer is left.
+const CLAW_ARC_DEGREES := 125.0
 const POUNCE_LANE_WIDTH := 52.0
 const POUNCE_SPEED := 760.0
 const POUNCE_CONTACT_RADIUS := 46.0

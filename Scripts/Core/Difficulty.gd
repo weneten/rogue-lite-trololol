@@ -32,11 +32,16 @@ const PROFILES := {
 		# 0 means bosses only appear on their own wave_trigger.
 		"boss_every_waves": 0,
 		"wave_waits_for_boss": false,
+		# Bosses only ever appear on their own wave, so scaling them by it would
+		# just re-tune three fixed encounters nobody asked to have re-tuned.
+		"boss_wave_scaling": false,
+		# 0 disables the wardens entirely.
+		"overspeed_threshold": 0.0,
 	},
 	Level.DARK_NIGHT: {
 		"name": "Dark is the Night!",
 		"tagline": "Whatever is behind you is barely slower than you.",
-		"description": "Enemies: double health, +120% damage, 94% of your speed, half again as many. You: 55% health, 75% damage. A boss every third wave, drawn at random and never the same one twice in a row, and the wave does not end until it falls.",
+		"description": "Enemies: double health, +120% damage, 94% of your speed, half again as many. You: 55% health, 75% damage. A boss every third wave, drawn at random and never the same one twice in a row, and the wave does not end until it falls. Bosses grow with the wave they arrive on. Outrun the night by more than a quarter and it sends something to slow you down.",
 		"enemy_health": 2.0,
 		# +120% damage dealt, i.e. 2.2x what the archetype does.
 		"enemy_damage": 2.2,
@@ -49,6 +54,11 @@ const PROFILES := {
 		"enemy_density": 1.5,
 		"boss_every_waves": 3,
 		"wave_waits_for_boss": true,
+		# A boss can land on wave 3 or wave 30 here, so it has to be worth the
+		# wave it lands on.
+		"boss_wave_scaling": true,
+		# Move speed multiplier past which the dark mages start arriving.
+		"overspeed_threshold": 1.25,
 	},
 }
 
@@ -84,6 +94,14 @@ static func boss_every_waves(level: int) -> int:
 
 static func wave_waits_for_boss(level: int) -> bool:
 	return profile(level)["wave_waits_for_boss"]
+
+static func boss_wave_scaling(level: int) -> bool:
+	return profile(level)["boss_wave_scaling"]
+
+# The move-speed multiplier a Hunter has to exceed before the dark mages take an
+# interest. 0 means this difficulty never sends them.
+static func overspeed_threshold(level: int) -> float:
+	return profile(level)["overspeed_threshold"]
 
 # The speed an enemy or boss should move at, given the Hunter's starting speed.
 # Returns `authored_speed` unchanged on difficulties that do not override it.

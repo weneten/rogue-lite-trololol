@@ -8,25 +8,36 @@ Writes over Assets/sprites/bosses/blood_moon_alpha/, on purpose: the .tres, the
 the whole swap.
 
 The source is a directional sheet — six labelled rows, and each row holds the
-same animation three times over: facing the camera, in profile, and from
-behind. EnemySpriteAnimator has no notion of facing beyond flipping horizontally,
-so only one of those three can be used, and the choice is not free:
+same animation three times over: facing the camera, in profile, and from behind.
+EnemySpriteAnimator has no notion of facing beyond flipping horizontally, so
+exactly one of those three can be used.
 
-* The front group is the only one drawn for all six rows. The profile group has
-  no hurt frames at all and exactly one usable attack pose, and the back group
-  would have the boss fighting with his back turned. So the standing animations
-  are all front.
-* The profile group earns its place in one animation. Its run is the wolf
-  dropping to all fours and sprinting, which is precisely what the Alpha does
-  when he pounces — and `dash` is a one-shot played while the leap carries him,
-  the one moment his body genuinely leads. resolve_facing_x already turns him to
-  face the landing, so the profile art points the right way on its own.
+This sheet is built from the PROFILE group, so the Alpha turns to face whatever
+he is chasing, like every other sheet in the project. The front group is the
+only one the artist drew for all six rows, and building from it was the obvious
+first move — but it leaves a boss who stares at the camera while he circles you,
+which is precisely the thing side-on art exists to avoid.
 
-Two frames in the source resist slicing and are simply not used: the walk row's
-profile pair touch and come out as one 280px blob, and the attack row's profile
-slash detaches into a floating set of claws. Neither is in the layout, and
-build_sheet scales from the frames a layout actually names, so leaving them
-alone costs nothing.
+Two of the six rows have no profile art at all, so they are composed here:
+
+* hurt   — the profile idle, flashed pale for a frame. The artist drew flinches
+           only face-on, and one frame of a wolf abruptly turning to camera and
+           back is worse than no flinch at all.
+* death  — the artist drew the stagger face-on but the corpse in profile, so the
+           stagger is dropped and he goes down from a standing profile frame
+           straight into the five-frame collapse. At 9 fps that is a drop, which
+           is what it should look like.
+
+The attack is the lunge: he gathers (a sprint frame reads as the crouch), throws
+himself forward, holds a beat so the hit is visible, and comes back up. Only two
+distinct poses, because the profile group contains only one attack drawing — but
+a lunge is a lunge, and it points the right way.
+
+Three source frames resist slicing and are simply not used: the walk row's
+profile pair touch and come out as one 280px blob, the attack row's profile slash
+detaches into a floating set of claws, and one label erase leaves a single-pixel
+speck. None is in the layout, and build_sheet scales from the frames a layout
+actually names, so leaving them alone costs nothing.
 """
 from __future__ import annotations
 
@@ -105,29 +116,38 @@ def slice_wolf(path: Path) -> tuple[Image.Image, list[dict]]:
 
 
 def layout() -> list[dict]:
-    """Front group unless noted; see the module docstring for why."""
+    """Profile group throughout; see the module docstring for the two exceptions.
+
+    Frame map, for reading the indices below: 0-8 idle, 9-17 walk, 18-26 run,
+    27-35 attack, 36-41 hurt, 42-49 death — and within each row of nine, the
+    middle three are the profile ones.
+    """
     return [
+        # Standing side-on. The three barely differ; that is the breathing.
         {"name": "idle", "fps": 6, "loop": True,
-         "frames": [("w", 0), ("w", 1), ("w", 2)]},
-        {"name": "run", "fps": 10, "loop": True,
-         "frames": [("w", 18), ("w", 19), ("w", 20)]},
-        # 29 carries the drawn slash arc, so it is the frame the hit lands on.
+         "frames": [("w", 3), ("w", 4), ("w", 5)]},
+        # Down on all fours at full stretch. He is a wolf, so this is how he
+        # covers ground, and it is the best drawing on the sheet.
+        {"name": "run", "fps": 11, "loop": True,
+         "frames": [("w", 21), ("w", 22), ("w", 23)]},
+        # Gather, throw, hold, recover. 21 is a sprint frame doing duty as the
+        # crouch, and 30 is the one profile strike the artist drew.
         {"name": "attack", "fps": 12, "loop": False, "aliases": ATTACK_ALIASES,
-         "frames": [("w", 27), ("w", 28), ("w", 29), ("w", 32)]},
+         "frames": [("w", 21), ("w", 30), ("w", 30), ("w", 3)]},
+        # Composed: no profile flinch exists. See the module docstring.
         {"name": "hurt", "fps": 12, "loop": False,
-         "frames": [("w", 36), ("w", 37)],
-         # Lighter than the ghoul's flash: this pelt is charcoal, and the same
-         # 0.35 that read as a flinch on pale skin washed the wolf out to a
-         # silhouette.
-         "tint": [(PALE, 0.22), None]},
-        # Staggers, falls, and settles: three on his feet and five on the floor.
+         "frames": [("w", 3), ("w", 4)],
+         # Far lighter than the ghoul's flash. That one is a face-on wolf lit
+         # from the front, so it is already the palest thing on the sheet;
+         # anything above about 0.15 stops reading as a flinch and starts
+         # reading as a ghost.
+         "tint": [(PALE, 0.15), None]},
+        # On his feet, then the five-frame collapse the artist drew in profile.
         {"name": "death", "fps": 9, "loop": False,
-         "frames": [("w", 42), ("w", 43), ("w", 44), ("w", 45),
-                    ("w", 46), ("w", 47), ("w", 48), ("w", 49)]},
-        # The profile sprint — the pounce, and the only place the side group is
-        # both complete and the right thing to be looking at.
-        {"name": "dash", "fps": 14, "loop": False,
-         "frames": [("w", 21), ("w", 22), ("w", 23), ("w", 22)]},
+         "frames": [("w", 4), ("w", 45), ("w", 46), ("w", 47), ("w", 48), ("w", 49)]},
+        # The pounce: the same gather, then the lunge carried through the leap.
+        {"name": "dash", "fps": 11, "loop": False,
+         "frames": [("w", 21), ("w", 30), ("w", 30)]},
     ]
 
 

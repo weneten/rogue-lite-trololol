@@ -224,6 +224,10 @@ func _physics_process(delta: float) -> void:
 	_dash_cooldown_remaining = maxf(0.0, _dash_cooldown_remaining - delta)
 
 	var effective_speed: float = move_speed * (_stats.move_speed_multiplier if _stats != null else 1.0)
+	# Outside slows land after his own upgrades, so the dash carries them too:
+	# a rolled escape from a warden should not be a way to ignore the warden.
+	if _stats != null:
+		effective_speed *= _stats.external_speed_multiplier
 	var input_direction: Vector2 = Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	var moving: bool = input_direction.length_squared() > 0.01
 	if moving:

@@ -1,7 +1,7 @@
 {
   "frameWidth": 128,
   "frameHeight": 128,
-  "columns": 8,
+  "columns": 6,
   "rows": 6,
   "facing": "right",
   "pixelArt": true,
@@ -25,26 +25,26 @@
     },
     "run": {
       "row": 1,
-      "from": 8,
-      "to": 10,
+      "from": 6,
+      "to": 8,
       "frames": [
-        8,
-        9,
-        10
+        6,
+        7,
+        8
       ],
       "frameCount": 3,
-      "fps": 10,
+      "fps": 11,
       "loop": true
     },
     "attack": {
       "row": 2,
-      "from": 16,
-      "to": 19,
+      "from": 12,
+      "to": 15,
       "frames": [
-        16,
-        17,
-        18,
-        19
+        12,
+        13,
+        14,
+        15
       ],
       "frameCount": 4,
       "fps": 12,
@@ -52,13 +52,13 @@
     },
     "attack_slash": {
       "row": 2,
-      "from": 16,
-      "to": 19,
+      "from": 12,
+      "to": 15,
       "frames": [
-        16,
-        17,
-        18,
-        19
+        12,
+        13,
+        14,
+        15
       ],
       "frameCount": 4,
       "fps": 12,
@@ -66,13 +66,13 @@
     },
     "attack_whip": {
       "row": 2,
-      "from": 16,
-      "to": 19,
+      "from": 12,
+      "to": 15,
       "frames": [
-        16,
-        17,
-        18,
-        19
+        12,
+        13,
+        14,
+        15
       ],
       "frameCount": 4,
       "fps": 12,
@@ -80,13 +80,13 @@
     },
     "attack_orbs": {
       "row": 2,
-      "from": 16,
-      "to": 19,
+      "from": 12,
+      "to": 15,
       "frames": [
-        16,
-        17,
-        18,
-        19
+        12,
+        13,
+        14,
+        15
       ],
       "frameCount": 4,
       "fps": 12,
@@ -94,13 +94,13 @@
     },
     "shield_bash": {
       "row": 2,
-      "from": 16,
-      "to": 19,
+      "from": 12,
+      "to": 15,
       "frames": [
-        16,
-        17,
-        18,
-        19
+        12,
+        13,
+        14,
+        15
       ],
       "frameCount": 4,
       "fps": 12,
@@ -108,13 +108,13 @@
     },
     "chain_swing": {
       "row": 2,
-      "from": 16,
-      "to": 19,
+      "from": 12,
+      "to": 15,
       "frames": [
-        16,
-        17,
-        18,
-        19
+        12,
+        13,
+        14,
+        15
       ],
       "frameCount": 4,
       "fps": 12,
@@ -122,13 +122,13 @@
     },
     "attack_spin": {
       "row": 2,
-      "from": 16,
-      "to": 19,
+      "from": 12,
+      "to": 15,
       "frames": [
-        16,
-        17,
-        18,
-        19
+        12,
+        13,
+        14,
+        15
       ],
       "frameCount": 4,
       "fps": 12,
@@ -136,13 +136,13 @@
     },
     "attack_nova": {
       "row": 2,
-      "from": 16,
-      "to": 19,
+      "from": 12,
+      "to": 15,
       "frames": [
-        16,
-        17,
-        18,
-        19
+        12,
+        13,
+        14,
+        15
       ],
       "frameCount": 4,
       "fps": 12,
@@ -150,13 +150,13 @@
     },
     "attack_cross": {
       "row": 2,
-      "from": 16,
-      "to": 19,
+      "from": 12,
+      "to": 15,
       "frames": [
-        16,
-        17,
-        18,
-        19
+        12,
+        13,
+        14,
+        15
       ],
       "frameCount": 4,
       "fps": 12,
@@ -164,11 +164,11 @@
     },
     "hurt": {
       "row": 3,
-      "from": 24,
-      "to": 25,
+      "from": 18,
+      "to": 19,
       "frames": [
-        24,
-        25
+        18,
+        19
       ],
       "frameCount": 2,
       "fps": 12,
@@ -176,34 +176,31 @@
     },
     "death": {
       "row": 4,
-      "from": 32,
-      "to": 39,
+      "from": 24,
+      "to": 29,
       "frames": [
-        32,
-        33,
-        34,
-        35,
-        36,
-        37,
-        38,
-        39
+        24,
+        25,
+        26,
+        27,
+        28,
+        29
       ],
-      "frameCount": 8,
+      "frameCount": 6,
       "fps": 9,
       "loop": false
     },
     "dash": {
       "row": 5,
-      "from": 40,
-      "to": 43,
+      "from": 30,
+      "to": 32,
       "frames": [
-        40,
-        41,
-        42,
-        43
+        30,
+        31,
+        32
       ],
-      "frameCount": 4,
-      "fps": 14,
+      "frameCount": 3,
+      "fps": 11,
       "loop": false
     }
   },
