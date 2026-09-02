@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="CharacterData" load_steps=3 format=3 uid="uid://c1r34ap3r0011"]
+
+[ext_resource type="Script" path="res://Resources/CharacterData/CharacterData.gd" id="1_cd"]
+[ext_resource type="Resource" uid="uid://lp8t3v7y1b4d6f" path="res://Resources/WeaponData/Data/HexedRevolver.tres" id="2_hexed"]
+
+[resource]
+script = ExtResource("1_cd")
+sprite_scale = 2.0
+attack_anim_name = "attack"
+sprite_json_path = "res://Assets/sprites/characters/jester/jester.json"
+sprite_sheet_path = "res://Assets/sprites/characters/jester/jester.png"
+character_name = "Jester"
+lore_blurb = "He wagered the court, the crown, and finally himself. The wheel he carries has paid out every time since — and it has never once let him forget who is holding the debt."
+max_health = 80
+move_speed = 310.0
+starting_armor = 0
+starting_dodge_chance = 0.08
+starting_crit_chance = 0.05
+starting_magic_power = 1.0
+starting_luck = 6.0
+starting_weapons = Array[Resource]([ExtResource("2_hexed")])
+passive_id = "blood_boon_slots"
+passive_name = "The Bleeding Wheel"
+passive_description = "Carries a slot machine. Spins cost Blood Boons (10 to start, buy more with gold or XP between waves). Every spin lands three of a kind — jackpot executes the strongest enemy, 666 turns on him. Luck buys better odds and bigger numbers, his own included."
+passive_value_a = 0.0
+passive_value_b = 0.0
+difficulty_rating = 4
