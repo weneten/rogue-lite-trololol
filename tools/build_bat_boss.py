@@ -251,7 +251,7 @@ def main() -> None:
     rows = layout(spans)
     columns = max(len(entry["frames"]) for entry in rows)
 
-    out_dir = ROOT / "assets" / "sprites" / "bosses" / NAME
+    out_dir = ROOT / "Assets" / "sprites" / "bosses" / NAME
     out_dir.mkdir(parents=True, exist_ok=True)
 
     sheet, meta = build_sheet({"b": (image, frames)}, rows, CELL, columns, FEET_MARGIN)

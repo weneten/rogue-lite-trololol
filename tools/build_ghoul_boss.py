@@ -262,7 +262,7 @@ def main() -> None:
     print(f"  {len(frames)} frames, tallest {max(f['h'] for f in frames)}px, "
           f"widest {max(f['w'] for f in frames)}px")
 
-    out_dir = ROOT / "assets" / "sprites" / "bosses" / NAME
+    out_dir = ROOT / "Assets" / "sprites" / "bosses" / NAME
     out_dir.mkdir(parents=True, exist_ok=True)
 
     sheet, meta = build_sheet({"g": (image, frames)}, layout(), CELL, COLUMNS, FEET_MARGIN)

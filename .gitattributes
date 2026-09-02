@@ -1,0 +1,25 @@
+# Godot writes every file below with LF endings. This repo is cloned on Windows
+# with core.autocrlf=true, which rewrites them to CRLF on checkout — so the
+# editor rewrote them straight back to LF on every session and git reported all
+# ~220 .import files as modified forever. That churn is what dragged the whole
+# Assets tree into commits it had nothing to do with, and what turned a routine
+# merge into a 221-file diff.
+#
+# Pinning them to LF costs nothing on Windows (every editor here handles LF) and
+# keeps `git status` honest about what actually changed.
+*.import   text eol=lf
+*.uid      text eol=lf
+*.gd       text eol=lf
+*.tscn     text eol=lf
+*.tres     text eol=lf
+*.godot    text eol=lf
+*.cfg      text eol=lf
+*.json     text eol=lf
+*.py       text eol=lf
+
+# Binary, so git never tries to merge or convert them.
+*.png      binary
+*.wav      binary
+*.ogg      binary
+*.ttf      binary
+*.fnt      binary
