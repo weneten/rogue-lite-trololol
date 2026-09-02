@@ -355,6 +355,12 @@ func _rampage_step(step: int, total: int, damage: int, max_range: float) -> void
 # Charge
 # ---------------------------------------------------------------------------
 func _launch_charge(direction: Vector2, length: float, damage: int) -> void:
+	# He drops to all fours for the leap. That pose is a row of its own on the
+	# sheet, and this is the one moment it is the right thing to be looking at —
+	# resolve_facing_x already turns him to face where he is going.
+	if sprite_animator != null:
+		sprite_animator.play_named("dash")
+
 	_charge_direction = direction
 	_charge_target = global_position + direction * length
 	# A time cap only, so a leap into a wall cannot run forever. The leap
