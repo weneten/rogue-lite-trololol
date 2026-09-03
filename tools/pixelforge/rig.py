@@ -196,10 +196,20 @@ def build_pose(
     mouth_open = 0.0
     # Lateral weight shift, shoulder-line rotation and how far the head
     # leads the spine. Small numbers, but they are the difference between
-    # a rig moving and a body moving.
+    # a rig moving and a body moving. `sway` moves the upper body over the
+    # hips, NOT the whole figure — sliding the character sideways takes the
+    # planted feet with it, which in the character-select panel (a still
+    # sprite at 3x zoom) read as the Hunter shuffling on the spot.
     sway = 0.0
     twist = 0.0
     head_lead = 0.0
+    # Ribcage lift. Breathing raises the chest, not the pelvis; driving it
+    # off `bob` lifted the hips and took the feet off the floor with them.
+    chest_rise = 0.0
+    # How hard the support foot is held to the ground line, 0..1. 1 pins it
+    # exactly; below 1 the figure keeps some of its own vertical travel, which
+    # is what gives a run its flight phase. 0 disables the pin entirely.
+    foot_plant = 1.0
 
     if anim == "idle":
         # Three waves, not one. Every joint used to ride the same sine, which
@@ -210,10 +220,14 @@ def build_pose(
         breath = math.sin(t * math.tau)
         settle = math.sin((t - 0.14) * math.tau)   # spine follows the lungs
         drift = math.sin((t - 0.28) * math.tau)    # limbs and cloth trail both
-        bob = -0.5 - breath * 1.4
+        # The pelvis barely moves; the ribcage does the breathing. Lifting the
+        # hips instead pulled both feet off the floor for half the loop, and
+        # then sank them through it for the other half.
+        bob = -0.3 - breath * 0.35
+        chest_rise = 0.55 + breath * 0.85
         # Weight rocks between the feet. A hand's width of travel is enough at
         # this size and it is what stops the stance reading as bolted down.
-        sway = drift * 0.9
+        sway = drift * 0.7
         twist = drift * 2.4
         head_lead = settle * 0.6
         arm_b_u = 16 + drift * 5
@@ -222,7 +236,10 @@ def build_pose(
         arm_f_f = 16 + settle * 3
         weapon_angle = -74 + drift * 5
         cape_sway = drift * 2.1
-        thigh_b, thigh_f = -4.0, 4.0
+        # A degree of stance change either way. The foot pin turns it into a
+        # small vertical settle that is driven by the legs rather than painted
+        # on over them.
+        thigh_b, thigh_f = -4.0 + drift * 1.2, 4.0 + drift * 1.2
         shin_b, shin_f = 4.0, -2.0
         wing_flap = math.sin(t * math.tau) * 0.85
         if spec.hover:
@@ -242,14 +259,21 @@ def build_pose(
         thigh_f = math.sin(ph) * swing_amt
         thigh_b = math.sin(ph + math.pi) * swing_amt
         # Knees only bend on the recovery half of the stride.
-        shin_f = max(0.0, -math.sin(ph - 0.6)) * 30.0
-        shin_b = max(0.0, -math.sin(ph + math.pi - 0.6)) * 30.0
-        # Weight curve, one per footfall: lowest just after each contact
-        # (ph 0 and pi), highest at the pass between them. The old
-        # `-abs(sin(2*ph))` bottomed out at the passes as well as the
-        # contacts, so the hip dipped four times per stride and the run
-        # jittered instead of bounding.
-        bob = -(1.0 - math.cos((ph - 0.35) * 2.0)) * 0.5 * 4.0 - 0.4
+        # Deep enough that the swing foot visibly clears the floor. Now that
+        # the pin moves the body instead of the boots, the knee bend is the
+        # only thing lifting that foot, so it has to do the whole job.
+        shin_f = max(0.0, -math.sin(ph - 0.6)) * 44.0
+        shin_b = max(0.0, -math.sin(ph + math.pi - 0.6)) * 44.0
+        # Weight curve, one per footfall. The legs are most spread at ph 90
+        # and 270 — those are the contacts, and the body is lowest there; the
+        # legs cross at ph 0 and 180 and the body is highest. Both previous
+        # curves had this wrong: `-abs(sin(2*ph))` dipped four times per
+        # stride, and the cos form after it was a half-cycle out of phase, so
+        # the body rose into each footfall instead of settling onto it.
+        bob = -(1.0 + math.cos((ph - 0.3) * 2.0)) * 0.5 * 3.0 - 0.4
+        # Planted through the contact, half-free at the pass so the figure
+        # keeps some lift between steps rather than skating along the floor.
+        foot_plant = 0.5 + 0.5 * abs(math.sin(ph))
         lean += 9.0 + math.sin(ph * 2.0) * 1.6
         # Shoulders counter-rotate against the hips — the thing that separates
         # a run from a pair of scissoring legs under a rigid torso.
@@ -268,7 +292,7 @@ def build_pose(
         # well under the base: a running figure's cloak trails behind for the
         # whole stride, and an amplitude that reached zero made it hang dead
         # straight for three frames out of eight.
-        cape_sway = 4.4 + math.sin(ph - 0.35) * 1.6
+        cape_sway = 3.4 + math.sin(ph - 0.35) * 1.4
         wing_flap = math.sin(ph)
         wing_flare = 1.05
         if spec.wingspan > 0.0:
@@ -347,6 +371,9 @@ def build_pose(
         # pushed the legs clean off the bottom of the 64px frame.
         drop = 3.0 * k
         bob = -1.2 * stagger + 10.0 * k
+        # No pin: the whole point is that the body goes down through its own
+        # stance. Holding the feet to the ground line would stand it back up.
+        foot_plant = 0.0
         lean += -6.0 * stagger - 16.0 * k
         sway = -1.8 * stagger - 1.0 * k
         twist = -3.0 * stagger
@@ -409,8 +436,6 @@ def build_pose(
         arm_b_u = lerp(arm_b_u, 12.0, 0.76)
         arm_b_f = lerp(arm_b_f, 34.0, 0.76)
 
-    cx += sway
-
     crouch = max(0.0, min(1.0, spec.crouch))
     feet = feet_y + drop
     ground_y = feet_y
@@ -422,12 +447,16 @@ def build_pose(
     spine_up = lerp(12.0, 5.0, crouch) * s
     spine_out = 10.5 * crouch * s
     hip = (cx, hip_y)
-    chest = (cx + lean_off * 0.75 + spine_out, hip_y - spine_up)
-    neck = (cx + lean_off + spine_out * 1.3, hip_y - lerp(16.0, 7.0, crouch) * s)
+    # `sway` and `chest_rise` ride the spine the same way `lean` does: nothing
+    # below the hips knows about either, so the stance stays where the legs
+    # put it.
+    chest = (cx + lean_off * 0.75 + spine_out + sway * 0.75, hip_y - spine_up - chest_rise)
+    neck = (cx + lean_off + spine_out * 1.3 + sway,
+            hip_y - lerp(16.0, 7.0, crouch) * s - chest_rise * 1.1)
     head_r = 3.9 * s * (1.0 + 0.42 * crouch)
     head = (cx + lean_off * 1.25 + spine_out * 1.75 + math.sin(math.radians(tilt)) * 6.0
-            + head_lead,
-            hip_y - lerp(21.5, 9.5, crouch) * s + abs(tilt) * 0.06)
+            + head_lead + sway * 1.25,
+            hip_y - lerp(21.5, 9.5, crouch) * s + abs(tilt) * 0.06 - chest_rise * 1.15)
 
     if crouch > 0.0:
         # Forelimbs come down to meet the ground the body is now over.
@@ -458,20 +487,47 @@ def build_pose(
         knee_b, foot_b = _leg(hip_b, thigh_b, shin_b, leg_s)
         knee_f, foot_f = _leg(hip_f, thigh_f, shin_f, leg_s)
 
-    if not airborne:
-        # Pin whichever foot is lower to the ground (which sinks with
-        # `drop` during death) so runs don't skate and a collapse pulls the
-        # legs in as the hip drops rather than stretching them out.
-        lowest = max(foot_b[1], foot_f[1])
-        correction = feet - lowest
-        if correction < 0:
-            correction = 0.0
-        foot_b = (foot_b[0], foot_b[1] + correction * 0.85)
-        foot_f = (foot_f[0], foot_f[1] + correction * 0.85)
-        # The hock travels with the paw, otherwise the lower leg stretches.
-        if ankle_b is not None:
-            ankle_b = (ankle_b[0], ankle_b[1] + correction * 0.5)
-            ankle_f = (ankle_f[0], ankle_f[1] + correction * 0.5)
+    if not airborne and foot_plant > 0.0:
+        # Plant the support foot by moving the FIGURE, not the foot.
+        #
+        # The rig is built hip-downward, so the feet land wherever the leg
+        # angles put them: a straight-legged stance reaches ~18*s, a stance
+        # spread 30 degrees only ~15.6*s. Something has to close that gap or
+        # the character walks two and a half pixels above the floor.
+        #
+        # The old code closed it by pushing the feet down and leaving the
+        # knees where they were, which was wrong twice over. The shins
+        # stretched by up to five pixels on a forty-pixel character; and
+        # because it moved BOTH feet by the same amount, neither foot ever
+        # lifted or planted — the legs scissored while the boots stayed glued
+        # together at one height. A shuffle on stilts.
+        #
+        # Translating the whole figure instead keeps every limb its true
+        # length, sits the support foot exactly on the ground line, and leaves
+        # the swing foot the clearance the leg angles actually gave it. The
+        # shift runs both ways, so a stance that would sink through the floor
+        # is lifted out of it as readily as a floating one is set down.
+        shift = (feet - max(foot_b[1], foot_f[1])) * foot_plant
+        if abs(shift) > 0.001:
+            hip = (hip[0], hip[1] + shift)
+            chest = (chest[0], chest[1] + shift)
+            neck = (neck[0], neck[1] + shift)
+            head = (head[0], head[1] + shift)
+            shoulder_b = (shoulder_b[0], shoulder_b[1] + shift)
+            elbow_b = (elbow_b[0], elbow_b[1] + shift)
+            hand_b = (hand_b[0], hand_b[1] + shift)
+            shoulder_f = (shoulder_f[0], shoulder_f[1] + shift)
+            elbow_f = (elbow_f[0], elbow_f[1] + shift)
+            hand_f = (hand_f[0], hand_f[1] + shift)
+            hip_b = (hip_b[0], hip_b[1] + shift)
+            knee_b = (knee_b[0], knee_b[1] + shift)
+            foot_b = (foot_b[0], foot_b[1] + shift)
+            hip_f = (hip_f[0], hip_f[1] + shift)
+            knee_f = (knee_f[0], knee_f[1] + shift)
+            foot_f = (foot_f[0], foot_f[1] + shift)
+            if ankle_b is not None:
+                ankle_b = (ankle_b[0], ankle_b[1] + shift)
+                ankle_f = (ankle_f[0], ankle_f[1] + shift)
 
     return Pose(
         hip=hip, chest=chest, neck=neck, head=head, head_r=head_r,

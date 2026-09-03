@@ -82,10 +82,37 @@ adding an animation:
   rotation and how far the head leads the spine. A few pixels each, and they
   are most of the difference between a rig moving and a body moving. `twist` is
   as much three-quarter turn as a side-on rig can show.
-* **Weight.** The run hip is lowest just after each contact and highest at the
-  pass between them, and the contact shadow tightens with it. The robe hem is
-  carried by the legs inside it, so it parts around the leading foot instead of
-  swinging as a rigid bell.
+* **Weight.** The run hip is lowest at each contact — where the legs are most
+  spread — and highest at the pass where they cross, and the contact shadow
+  tightens with it. The robe hem is carried by the legs inside it, so it parts
+  around the leading foot instead of swinging as a rigid bell.
+
+### The feet are planted by moving the body
+
+The rig is built hip-downward, so the feet land wherever the leg angles put
+them. A straight-legged stance reaches about `18 * stature`; a stance spread
+30° reaches only about `15.6 * stature`. Something has to close that gap, or
+the character walks two and a half pixels above the floor.
+
+`build_pose` closes it by translating the **whole figure** until the lower foot
+sits on the ground line — never by moving the feet. Moving the feet was the
+original approach and it was wrong twice over: the shins stretched by up to
+five pixels on a forty-pixel character, and because it moved *both* feet by the
+same amount neither foot ever lifted or planted. The legs scissored while the
+boots stayed glued together at one height — a shuffle on stilts.
+
+Two consequences worth knowing:
+
+* `foot_plant` (0..1) says how hard the pin holds. The run drops it to 0.5 at
+  the pass so the figure keeps some of its own lift between steps — that is the
+  flight phase. `death` sets it to 0, because the whole point there is that the
+  body goes down through its own stance.
+* Anything that lifts the hips takes the feet off the floor with them, and the
+  pin then cancels it exactly. So idle breathes with `chest_rise`, which raises
+  the ribcage and leaves the pelvis alone, and `sway` rides the spine rather
+  than displacing the whole figure. Sliding the character sideways looks fine
+  in the arena and reads as a shuffle in the character-select panel, which is
+  the same sprite held still at 3x zoom.
 
 Hunter sheets have **no** `attack` row, so they are five rows and their later
 animations sit one row higher. Nothing on the Godot side hardcodes a row: the
