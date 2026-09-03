@@ -87,6 +87,25 @@ adding an animation:
   tightens with it. The robe hem is carried by the legs inside it, so it parts
   around the leading foot instead of swinging as a rigid bell.
 
+### A limb drawn over the torso needs its own edge
+
+In a side view the near arm lies over the chest for its whole length. Three
+things have to be true or it stops reading as an arm:
+
+* **Shoulder spacing tracks the torso.** The chest is `5.6 * s * build` wide,
+  so the shoulders are spaced `8.4 * s * build` — a fixed spacing put the near
+  shoulder well inside the chest, and the wider the character the deeper the
+  arm sank in.
+* **The sleeve is lighter than the coat and drawn on a hard edge** (a slightly
+  fatter capsule in the cloth's outline colour, under the limb). Without both,
+  the arm dissolved into the torso and the only visible part of it was the
+  hand, apparently floating unattached at hip height.
+* **The elbow bends.** Upper arm and forearm nearly collinear draws one
+  unbroken bar, whatever it is shaded.
+
+An arm is about a third of the torso's width. Anything near half reads as a
+panel on the chest rather than a limb beside it.
+
 ### The feet are planted by moving the body
 
 The rig is built hip-downward, so the feet land wherever the leg angles put

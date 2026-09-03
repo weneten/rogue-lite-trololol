@@ -231,9 +231,11 @@ def build_pose(
         twist = drift * 2.4
         head_lead = settle * 0.6
         arm_b_u = 16 + drift * 5
-        arm_f_u = -8 + drift * 4
-        arm_b_f = 20 + settle * 3
-        arm_f_f = 16 + settle * 3
+        arm_f_u = -2 + drift * 4
+        # Enough bend to show an elbow. Upper arm and forearm nearly collinear
+        # drew the whole limb as a single unbroken bar.
+        arm_b_f = 26 + settle * 4
+        arm_f_f = 23 + settle * 4
         weapon_angle = -74 + drift * 5
         cape_sway = drift * 2.1
         # A degree of stance change either way. The foot pin turns it into a
@@ -465,7 +467,13 @@ def build_pose(
         arm_b_f = lerp(arm_b_f, 28.0, crouch * 0.6)
         arm_f_f = lerp(arm_f_f, 26.0, crouch * 0.6)
 
-    sh_dx = 5.8 * s
+    # Shoulder spacing has to track the torso, which is `5.6 * s * build` wide
+    # at the chest. A flat 5.8 put the near shoulder at 2.9*s — well inside
+    # that — so the arm hung straight down the middle of the chest instead of
+    # at its edge, in a tone barely off the coat's. The result read as a panel
+    # on the torso with a hand stuck to the bottom of it, and the wider the
+    # character the deeper the arm sank in.
+    sh_dx = 8.4 * s * spec.build
     # `twist` rotates the shoulder line in plan view: the near shoulder swings
     # further than the far one and both drop slightly as they come forward,
     # which is as much three-quarter turn as a side-on rig can show.
@@ -858,11 +866,16 @@ def _draw_torso(c: Canvas, pose: Pose, spec: BodySpec, s: float) -> None:
         c.set(round(hip[0] + 0.5), round(hip[1] - 1.5), spec.accent.light)
 
     if spec.shoulder_pads:
+        # Seated inboard of the joint. The pads used to be centred on the
+        # shoulders themselves, which was fine while those sat close together;
+        # once shoulder spacing started tracking the torso width the pair drew
+        # as two separate balls floating off either side of the neck.
+        pad_w = min(3.0 * s * spec.build, 4.2 * s)
         for sh in (pose.shoulder_b, pose.shoulder_f):
-            pad_w = min(3.4 * s * spec.build, 4.6 * s)
-            c.ellipse(sh[0] - 0.5, sh[1] - 0.5, pad_w, pad_w * 0.72, spec.armor.dark)
-            c.ellipse(sh[0] - 1.0, sh[1] - 1.2, pad_w * 0.7, pad_w * 0.46, spec.armor.core)
-            c.set(round(sh[0] - 1.5), round(sh[1] - 2.0), spec.armor.hi)
+            px = lerp(chest[0], sh[0], 0.62)
+            c.ellipse(px - 0.5, sh[1] - 0.5, pad_w, pad_w * 0.72, spec.armor.dark)
+            c.ellipse(px - 1.0, sh[1] - 1.2, pad_w * 0.7, pad_w * 0.46, spec.armor.core)
+            c.set(round(px - 1.5), round(sh[1] - 2.0), spec.armor.hi)
 
     if spec.tall_collar:
         c.polygon(
@@ -949,7 +962,7 @@ def _draw_shield(c: Canvas, pose: Pose, spec: BodySpec, s: float) -> None:
     dx, dy = fx - pose.elbow_b[0], fy - pose.elbow_b[1]
     d = math.hypot(dx, dy) or 1.0
     tilt = (dx / d) * 1.6 * s
-    cxp, cyp = fx - 0.3 * s, fy - 1.0 * s
+    cxp, cyp = fx + 3.0 * s, fy - 1.2 * s
 
     w = 3.6 * s
     h = 5.4 * s
@@ -1317,16 +1330,18 @@ def draw_figure(
     # behind, so for half of every stride the only leg reaching was invisible
     # and the run looked like a limp. Still clearly the darker of the two.
     back_trouser = spec.cloth.tinted(P.VOID, 0.48)
-    sleeve = spec.cloth.tinted(P.SMOKE, 0.16)
+    # 0.16 left the near sleeve within a couple of values of the coat behind
+    # it. In a side view that limb lies over the torso for its whole length,
+    # so it needs to be visibly lighter as well as outlined.
+    sleeve = spec.cloth.tinted(P.SMOKE, 0.22)
 
     _draw_leg(layer, spec, s, pose.hip_b, pose.knee_b, pose.ankle_b, pose.foot_b,
               back_trouser, back, 2.5 * s * spec.build, 2.1 * s, 1.7 * s)
-    _limb(layer, pose.shoulder_b, pose.elbow_b, 2.2 * s * spec.build, 1.9 * s, back)
-    _limb(layer, pose.elbow_b, pose.hand_b, 1.9 * s, 1.5 * s, back)
+    _limb(layer, pose.shoulder_b, pose.elbow_b, 1.9 * s * spec.build, 1.6 * s, back)
+    _limb(layer, pose.elbow_b, pose.hand_b, 1.6 * s, 1.35 * s, back)
     if spec.claws:
         layer.circle(pose.hand_b[0], pose.hand_b[1], 1.5 * s, back.dark)
         _draw_claws(layer, pose.elbow_b, pose.hand_b, s, shade(P.R_BONE.dark, -0.3))
-    _draw_shield(layer, pose, spec, s)
 
     _draw_torso(layer, pose, spec, s)
 
@@ -1336,6 +1351,11 @@ def draw_figure(
 
     # Over the near thigh, which is what a surcoat does.
     _draw_tabard(layer, pose, spec, s)
+    # Then the shield over that, but still under the near arm — which is what
+    # keeps it reading as carried on the far side rather than pinned to the
+    # chest. Drawn behind the torso it disappeared completely once the
+    # shoulders moved out to the edge of the body.
+    _draw_shield(layer, pose, spec, s)
 
     if spec.tail:
         tail_a = (pose.hip[0] - 3.0 * s, pose.hip[1])
@@ -1362,10 +1382,23 @@ def draw_figure(
 
     # Sleeve down to the wrist, then a small gloved hand. A full forearm in
     # skin tone reads as a pale smear across a dark torso.
-    _limb(layer, pose.shoulder_f, pose.elbow_f, 2.4 * s * spec.build, 2.0 * s, sleeve)
-    _limb(layer, pose.elbow_f, pose.hand_f, 1.9 * s, 1.5 * s, sleeve)
-    layer.circle(pose.hand_f[0], pose.hand_f[1], 1.5 * s, spec.skin.dark)
-    layer.circle(pose.hand_f[0] - 0.4, pose.hand_f[1] - 0.5, 0.9 * s, spec.skin.core)
+    #
+    # The near arm is laid over the torso, so it is drawn on a hard edge of its
+    # own first. Without it the sleeve dissolved into the coat and the only
+    # part of the limb anyone could see was the hand, apparently floating
+    # unattached at hip height.
+    # An arm is about a third of the torso's width, not two thirds: at the old
+    # radii the near sleeve was almost as wide as the chest it hung over.
+    edge = spec.cloth.outline
+    up_r, fore_r, wrist_r = 2.0 * s * spec.build, 1.6 * s, 1.35 * s
+    hand_r = 1.3 * s
+    layer.capsule(pose.shoulder_f, pose.elbow_f, up_r + 0.6, fore_r + 0.6, edge)
+    layer.capsule(pose.elbow_f, pose.hand_f, fore_r + 0.6, wrist_r + 0.6, edge)
+    layer.circle(pose.hand_f[0], pose.hand_f[1], hand_r + 0.6, edge)
+    _limb(layer, pose.shoulder_f, pose.elbow_f, up_r, fore_r, sleeve)
+    _limb(layer, pose.elbow_f, pose.hand_f, fore_r, wrist_r, sleeve)
+    layer.circle(pose.hand_f[0], pose.hand_f[1], hand_r, spec.skin.dark)
+    layer.circle(pose.hand_f[0] - 0.4, pose.hand_f[1] - 0.5, 0.8 * s, spec.skin.core)
     if spec.claws:
         _draw_claws(layer, pose.elbow_f, pose.hand_f, s, P.R_BONE.dark)
 
