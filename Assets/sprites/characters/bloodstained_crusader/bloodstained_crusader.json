@@ -1,14 +1,14 @@
 {
   "image": "bloodstained_crusader.png",
-  "frameWidth": 64,
-  "frameHeight": 64,
+  "frameWidth": 192,
+  "frameHeight": 128,
   "columns": 6,
-  "rows": 5,
+  "rows": 6,
   "facing": "right",
   "pixelArt": true,
   "origin": {
-    "x": 29.4,
-    "y": 58.0
+    "x": 96.0,
+    "y": 116.0
   },
   "animations": {
     "idle": {
@@ -41,45 +41,60 @@
       "fps": 12,
       "loop": true
     },
-    "hurt": {
+    "dash": {
       "row": 2,
       "from": 12,
-      "to": 13,
+      "to": 16,
       "frames": [
         12,
-        13
+        13,
+        14,
+        15,
+        16
+      ],
+      "frameCount": 5,
+      "fps": 20,
+      "loop": false
+    },
+    "dash_end": {
+      "row": 3,
+      "from": 18,
+      "to": 21,
+      "frames": [
+        18,
+        19,
+        20,
+        21
+      ],
+      "frameCount": 4,
+      "fps": 16,
+      "loop": false
+    },
+    "hurt": {
+      "row": 4,
+      "from": 24,
+      "to": 25,
+      "frames": [
+        24,
+        25
       ],
       "frameCount": 2,
       "fps": 12,
       "loop": false
     },
     "death": {
-      "row": 3,
-      "from": 18,
-      "to": 22,
+      "row": 5,
+      "from": 30,
+      "to": 34,
       "frames": [
-        18,
-        19,
-        20,
-        21,
-        22
+        30,
+        31,
+        32,
+        33,
+        34
       ],
       "frameCount": 5,
       "fps": 9,
-      "loop": false
-    },
-    "dash": {
-      "row": 4,
-      "from": 24,
-      "to": 27,
-      "frames": [
-        24,
-        25,
-        26,
-        27
-      ],
-      "frameCount": 4,
-      "fps": 16,
       "loop": false
     }
   }

@@ -32,6 +32,10 @@ class_name CharacterSelect
 @export var portrait_placeholder_path: NodePath
 # Sprites are 64px; 3x keeps them chunky-but-crisp with Nearest filtering.
 @export var portrait_zoom: float = 3.0
+# The sprite_scale a 64px sheet carries. Hunters drawn on denser sheets run a
+# lower sprite_scale, so the portrait follows it and everyone fills the panel
+# the same way.
+const PORTRAIT_REFERENCE_SPRITE_SCALE: float = 2.0
 
 # Hardcoded paths so roster never depends solely on DirAccess listing.
 const BUILT_IN_CHARACTER_PATHS: Array[String] = [
@@ -376,6 +380,14 @@ func _select_character(data: CharacterData) -> void:
 		else:
 			_unlock_status_label.text = "Unlock for %d Blood Marks." % cost
 
+# Portrait zoom for one Hunter, normalised against the 64px baseline so a sheet
+# with bigger cells does not blow out of the panel.
+func _portrait_scale(data: CharacterData) -> float:
+	var zoom: float = portrait_zoom if portrait_zoom > 0.0 else 1.0
+	var sprite_scale: float = data.sprite_scale if data != null and data.sprite_scale > 0.0 else PORTRAIT_REFERENCE_SPRITE_SCALE
+	return zoom * sprite_scale / PORTRAIT_REFERENCE_SPRITE_SCALE
+
+
 # Shows the selected Hunter's in-game sprite (same sheet Player.cs loads) looping its idle
 # animation, so the roster preview matches what you actually control. Locked Hunters are
 # drawn as a dark silhouette; Hunters without a sheet fall back to the placeholder label.
@@ -389,7 +401,7 @@ func _update_portrait(data: CharacterData, unlocked: bool) -> void:
 	if has_art:
 		_portrait_sprite.sprite_frames = frames
 		_portrait_sprite.offset = SpriteSheetCache.get_sprite_offset(data.sprite_sheet_path)
-		_portrait_sprite.scale = Vector2.ONE * (portrait_zoom if portrait_zoom > 0.0 else 1.0)
+		_portrait_sprite.scale = Vector2.ONE * _portrait_scale(data)
 		# Silhouette while locked — same "???" treatment the roster button gets.
 		_portrait_sprite.modulate = Color.WHITE if unlocked else Color(0.12, 0.1, 0.13, 1.0)
 		var idle_name = "idle" if frames.has_animation("idle") else frames.get_animation_names()[0]
