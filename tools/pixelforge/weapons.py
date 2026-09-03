@@ -411,26 +411,31 @@ def _dice(c, cx, cy, st, k):
 # Thrown dice
 #
 # The pair the Jester actually casts on the floor, as its own little sheet:
-# three tumbling frames, a landing squash, then a blank resting face the game
-# writes the rolled number over. Blank on purpose — Luck can push these dice
-# past d6 to d20, and no pip layout survives that.
+# six pip faces (1-6) the throw can flash at random, then a landing squash.
+# The floating damage/count labels are a separate read; these pips are theatre
+# and do not have to match the numbers that actually land.
 # ---------------------------------------------------------------------------
 DICE_CELL = 16
-DICE_FRAMES = 6
+# Standard d6 layouts, (col, row) on a 3x3 grid. Index 0 is a 1.
+DICE_PIP_LAYOUTS: tuple[tuple[tuple[int, int], ...], ...] = (
+    ((1, 1),),
+    ((0, 0), (2, 2)),
+    ((0, 0), (1, 1), (2, 2)),
+    ((0, 0), (2, 0), (0, 2), (2, 2)),
+    ((0, 0), (2, 0), (1, 1), (0, 2), (2, 2)),
+    ((0, 0), (2, 0), (0, 1), (2, 1), (0, 2), (2, 2)),
+)
+DICE_FRAMES = len(DICE_PIP_LAYOUTS) + 1  # pips, then squash
 
 
 def dice_cast_frames(style: WeaponStyle | None = None) -> list[Canvas]:
     st = style or WeaponStyle(P.R_BONE, P.R_LEATHER, P.R_GOLD, P.AMBER)
     frames: list[Canvas] = []
-    tumble_pips = (
-        [(0, 0), (2, 2)],
-        [(0, 0), (1, 1), (2, 2), (0, 2), (2, 0)],
-        [(1, 1)],
-    )
 
-    for pips in tumble_pips:
+    for pips in DICE_PIP_LAYOUTS:
         c = Canvas(DICE_CELL, DICE_CELL)
-        _die_face(c, 3, 3, 10, st, list(pips))
+        c.ellipse(8, 14, 6, 1.6, with_alpha(P.VOID, 110))
+        _die_face(c, 3, 3, 11, st, list(pips))
         c.outline_pass(P.VOID)
         frames.append(c)
 
@@ -447,17 +452,6 @@ def dice_cast_frames(style: WeaponStyle | None = None) -> list[Canvas]:
     squash.hline(3, 12, 15, with_alpha(P.VOID, 120))
     squash.outline_pass(P.VOID)
     frames.append(squash)
-
-    # Resting, blank: the roll is drawn as a label on top of this.
-    for rim in (None, (st.glow or P.AMBER)):
-        c = Canvas(DICE_CELL, DICE_CELL)
-        c.ellipse(8, 14, 6, 1.6, with_alpha(P.VOID, 110))
-        _die_face(c, 3, 3, 11, st, [])
-        c.rect(5, 5, 7, 7, P.PARCHMENT)
-        if rim is not None:
-            c.rect_outline(2, 2, 13, 13, rim)
-        c.outline_pass(P.VOID)
-        frames.append(c)
 
     return frames
 

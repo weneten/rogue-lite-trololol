@@ -28,11 +28,10 @@ const MIN_DIE_SEPARATION = 44.0
 const NUMBER_ABOVE = 30.0
 # Extra lift during the reveal pop, so the number reads as a callout, not a pip.
 const NUMBER_RISE = 8.0
-# Frames 0-2 tumble (blank cubes), 3 is the landing squash, 4-5 are pip faces.
-# Settled dice use a blank cube; the number floats above rather than fighting pips.
-const TUMBLE_FRAMES: Array[int] = [0, 1, 2]
-const SQUASH_FRAME = 3
-const BLANK_FRAME = 0
+# Sheet: frames 0-5 are pip faces 1-6, 6 is the landing squash. The pips are
+# theatre — they do not have to match the damage/count labels above the cubes.
+const PIP_FRAMES = 6
+const SQUASH_FRAME = 6
 
 # The die ladder Luck climbs. A run starts on d6; every LUCK_PER_DIE_STEP points of Luck
 # is one step right, and a Jester who has hoarded Luck all run is throwing d20s.
@@ -122,7 +121,8 @@ func _spawn_die(sheet: Texture2D, from: Vector2, landing: Vector2, value: String
 		tint: Color, delay: float) -> void:
 	var atlas := AtlasTexture.new()
 	atlas.atlas = sheet
-	atlas.region = Rect2(TUMBLE_FRAMES[0] * CELL, 0, CELL, CELL)
+	var pip_cycle := _shuffled_pip_frames()
+	atlas.region = Rect2(pip_cycle[0] * CELL, 0, CELL, CELL)
 
 	var die := Sprite2D.new()
 	die.texture = atlas
@@ -166,17 +166,18 @@ func _spawn_die(sheet: Texture2D, from: Vector2, landing: Vector2, value: String
 		0.0, 1.0, THROW_SECONDS
 	)
 	tween.parallel().tween_method(
-		func(t: float): _tumble(atlas, t), 0.0, 1.0, THROW_SECONDS
+		func(t: float): _tumble(atlas, t, pip_cycle), 0.0, 1.0, THROW_SECONDS
 	)
 	tween.parallel().tween_property(die, "rotation", randf_range(-TAU, TAU), THROW_SECONDS)
 
-	# Landing: squash for a frame, drop the spin, then a blank face so the number
-	# can sit on the cube without the painted pips contradicting it.
+	# Landing: squash for a frame, drop the spin, then a random 1-6. The face
+	# is flavour; the labels above carry the real hit.
+	var rest_pip: int = randi_range(0, PIP_FRAMES - 1)
 	tween.tween_callback(func():
 		atlas.region = Rect2(SQUASH_FRAME * CELL, 0, CELL, CELL)
 		die.rotation = 0.0)
 	tween.tween_interval(SQUASH_SECONDS)
-	tween.tween_callback(func(): atlas.region = Rect2(BLANK_FRAME * CELL, 0, CELL, CELL))
+	tween.tween_callback(func(): atlas.region = Rect2(rest_pip * CELL, 0, CELL, CELL))
 
 	# Number pops in above the die and rises a little so it isn't glued to the cube.
 	var rest_y: float = label.position.y
@@ -216,11 +217,21 @@ func _place_die(die: Sprite2D, from: Vector2, landing: Vector2, t: float) -> voi
 	var hop := 4.0 * t * (1.0 - t) * 26.0
 	die.global_position = from.lerp(landing, t) - Vector2(0.0, hop)
 
-func _tumble(atlas: AtlasTexture, t: float) -> void:
+# A shuffled 1-6 so the pair doesn't flash the same faces in lockstep.
+func _shuffled_pip_frames() -> Array[int]:
+	var cycle: Array[int] = []
+	for i in range(PIP_FRAMES):
+		cycle.append(i)
+	cycle.shuffle()
+	return cycle
+
+func _tumble(atlas: AtlasTexture, t: float, pip_cycle: Array[int]) -> void:
 	# Fast at first, slower as it loses energy: the frame index is driven by a curve
 	# rather than a constant rate, which is most of what sells a die losing momentum.
+	if pip_cycle.is_empty():
+		return
 	var eased := 1.0 - pow(1.0 - t, 2.0)
-	var index: int = TUMBLE_FRAMES[int(eased * 11.0) % TUMBLE_FRAMES.size()]
+	var index: int = pip_cycle[int(eased * 11.0) % pip_cycle.size()]
 	atlas.region = Rect2(index * CELL, 0, CELL, CELL)
 
 func _vanish() -> void:
