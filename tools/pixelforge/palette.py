@@ -71,6 +71,7 @@ R_FLESH_DEAD = Ramp(FLESH_DEAD, outline=rgb("2c322c"))
 R_FLESH_ROT = Ramp(FLESH_ROT, outline=rgb("232a1a"))
 R_ROT = Ramp(ROT, outline=rgb("141c0e"))
 R_ARCANE = Ramp(ARCANE, outline=rgb("21123d"))
+R_CRIMSON = Ramp(CRIMSON, outline=rgb("3d0a13"))
 R_SPECTRAL = Ramp(SPECTRAL, outline=rgb("0f3b38"))
 
 # -- UI ---------------------------------------------------------------------

@@ -23,6 +23,12 @@ class Entry:
     swing: str = "slash"    # which attack arc to use
     cell: int = 64
     title: str = ""
+    # True when the shipped sheet was cut from supplied artwork by one of the
+    # tools/build_*_boss.py scripts rather than drawn by this rig. Those source
+    # images are not in the repo, so a sheet this rig overwrites cannot be got
+    # back — `build_art.py sprites` skips them. The entry stays here because
+    # everything else still reads it: the arc tint, the swing and the title.
+    external_sheet: bool = False
 
 
 def _c(ident, title, spec, wstyle, swing="slash") -> Entry:
@@ -33,8 +39,8 @@ def _e(ident, title, spec, wstyle, swing="slash", cell=64) -> Entry:
     return Entry(ident, "enemies", spec, wstyle, swing, cell, title)
 
 
-def _b(ident, title, spec, wstyle, swing="smash") -> Entry:
-    return Entry(ident, "bosses", spec, wstyle, swing, 96, title)
+def _b(ident, title, spec, wstyle, swing="smash", external=False) -> Entry:
+    return Entry(ident, "bosses", spec, wstyle, swing, 96, title, external)
 
 
 # ---------------------------------------------------------------------------
@@ -60,11 +66,17 @@ CHARACTERS = [
         WeaponStyle(P.R_RUST, P.R_WOOD, P.R_IRON), "slash",
     ),
     _c(
+        # The heaviest hunter in the roster, and the silhouette says so before
+        # the colours do: helm, pauldrons, a shield on the far arm and a
+        # bone-white surcoat over crimson, which is the only pale torso in a
+        # cast of dark coats.
         "bloodstained_crusader", "Bloodstained Crusader",
         BodySpec(
-            cloth=P.R_CLOTH_CRIMSON, armor=P.R_STEEL, skin=P.R_FLESH, accent=P.R_GOLD,
-            head="helm", cape="cloak", weapon="none", stature=1.1, build=1.25,
+            cloth=P.R_CLOTH_CRIMSON, armor=P.R_STEEL, skin=P.R_FLESH, accent=P.R_CRIMSON,
+            head="helm", cape="cloak", weapon="none", stature=1.1, build=1.3,
             eye=P.CANDLE, shoulder_pads=True,
+            tabard=P.R_CLOTH_BONE, emblem="cross",
+            shield=True,
         ),
         WeaponStyle(P.R_STEEL, P.R_LEATHER, P.R_GOLD, P.CANDLE), "smash",
     ),
@@ -237,6 +249,8 @@ BOSSES = [
         # Wave 10. The only beast rig in the cast: digitigrade legs, a muzzle
         # and a ragged fur outline, so it does not read as one more tall man
         # in a coat next to the Count and the Colossus.
+        # Shipped sheet comes from tools/build_wolf_boss.py, not from this
+        # spec — see Entry.external_sheet.
         "blood_moon_alpha", "The Blood Moon Alpha",
         BodySpec(
             cloth=Ramp(P.rgb("57525f"), outline=P.rgb("120f1a")),
@@ -248,10 +262,13 @@ BOSSES = [
             digitigrade=True, fur=1.0, claws=True, tail=True,
         ),
         WeaponStyle(P.R_BONE, P.R_LEATHER, P.R_RUST, P.AMBER), "slash",
+        external=True,
     ),
     _b(
         # Wave 15. A real bat, not a man in a cape: the Count next door wears
         # wings, this one is built around them.
+        # Shipped sheet comes from tools/build_bat_boss.py, not from this
+        # spec — see Entry.external_sheet.
         "belfry_tyrant", "The Belfry Tyrant",
         BodySpec(
             # Grey-green hide, purple membrane, red lamps: the wings have to be
@@ -267,6 +284,7 @@ BOSSES = [
             amulet=True,
         ),
         WeaponStyle(P.R_BONE, P.R_LEATHER, P.R_SILVER, P.CRIMSON), "cast",
+        external=True,
     ),
     _b(
         "bat_winged_count", "The Bat-Winged Count",
