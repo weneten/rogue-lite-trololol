@@ -231,7 +231,9 @@ def build_pose(
         twist = drift * 2.4
         head_lead = settle * 0.6
         arm_b_u = 16 + drift * 5
-        arm_f_u = -2 + drift * 4
+        # Slightly behind the hip line so the near sleeve rides the coat
+        # instead of poking out in front of it.
+        arm_f_u = -8 + drift * 3
         # Enough bend to show an elbow. Upper arm and forearm nearly collinear
         # drew the whole limb as a single unbroken bar.
         arm_b_f = 26 + settle * 4
@@ -282,7 +284,7 @@ def build_pose(
         twist = -math.sin(ph) * 4.2
         head_lead = math.sin(ph * 2.0) * 0.7
         arm_b_u = 18 + math.sin(ph) * 34
-        arm_f_u = -14 + math.sin(ph + math.pi) * 30
+        arm_f_u = -16 + math.sin(ph + math.pi) * 24
         # The elbow closes on the forward swing and opens on the back swing.
         arm_b_f = 26 + max(0.0, math.sin(ph)) * 16
         arm_f_f = 24 + max(0.0, math.sin(ph + math.pi)) * 14
@@ -469,11 +471,11 @@ def build_pose(
 
     # Shoulder spacing has to track the torso, which is `5.6 * s * build` wide
     # at the chest. A flat 5.8 put the near shoulder at 2.9*s — well inside
-    # that — so the arm hung straight down the middle of the chest instead of
-    # at its edge, in a tone barely off the coat's. The result read as a panel
-    # on the torso with a hand stuck to the bottom of it, and the wider the
-    # character the deeper the arm sank in.
-    sh_dx = 8.4 * s * spec.build
+    # that — so the arm hung down the middle of the chest. 8.4 overshot the
+    # other way: the near limb sat entirely in front of the silhouette and
+    # read as a slab glued to the coat. 6.4 keeps the joint on the chest edge
+    # so the sleeve overlays the torso instead of hanging off it.
+    sh_dx = 6.4 * s * spec.build
     # `twist` rotates the shoulder line in plan view: the near shoulder swings
     # further than the far one and both drop slightly as they come forward,
     # which is as much three-quarter turn as a side-on rig can show.
@@ -1390,7 +1392,7 @@ def draw_figure(
     # An arm is about a third of the torso's width, not two thirds: at the old
     # radii the near sleeve was almost as wide as the chest it hung over.
     edge = spec.cloth.outline
-    up_r, fore_r, wrist_r = 2.0 * s * spec.build, 1.6 * s, 1.35 * s
+    up_r, fore_r, wrist_r = 1.7 * s * spec.build, 1.45 * s, 1.2 * s
     hand_r = 1.3 * s
     layer.capsule(pose.shoulder_f, pose.elbow_f, up_r + 0.6, fore_r + 0.6, edge)
     layer.capsule(pose.elbow_f, pose.hand_f, fore_r + 0.6, wrist_r + 0.6, edge)

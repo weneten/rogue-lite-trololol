@@ -93,9 +93,9 @@ In a side view the near arm lies over the chest for its whole length. Three
 things have to be true or it stops reading as an arm:
 
 * **Shoulder spacing tracks the torso.** The chest is `5.6 * s * build` wide,
-  so the shoulders are spaced `8.4 * s * build` — a fixed spacing put the near
-  shoulder well inside the chest, and the wider the character the deeper the
-  arm sank in.
+  so the shoulders are spaced `6.4 * s * build` — a fixed spacing put the near
+  shoulder well inside the chest, and a wider spacing parked the whole limb
+  in front of the silhouette.
 * **The sleeve is lighter than the coat and drawn on a hard edge** (a slightly
   fatter capsule in the cloth's outline colour, under the limb). Without both,
   the arm dissolved into the torso and the only visible part of it was the
