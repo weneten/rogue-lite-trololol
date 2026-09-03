@@ -412,6 +412,10 @@ func _throw_dice(target: Node2D) -> void:
 
 	var target_count := DiceCast.roll(sides, bonus)
 	var damage_pips := DiceCast.roll(sides, bonus)
+	# The damage die shows the hit that will land (pips × this weapon's damage, plus
+	# the wielder's global multipliers). Crits and per-target bonuses still roll at
+	# settle, so the face is the typical hit, not every possible one.
+	var display_damage := _dice_display_damage(damage_pips)
 
 	var cast := DiceCast.new()
 	cast.name = "DiceCast"
@@ -423,7 +427,13 @@ func _throw_dice(target: Node2D) -> void:
 	host.add_child(cast)
 
 	cast.resolved.connect(func(count: int, pips: int): _resolve_dice(count, pips))
-	cast.begin(_spawn_point.global_position, target.global_position, target_count, damage_pips)
+	cast.begin(_spawn_point.global_position, target.global_position, target_count, damage_pips, display_damage)
+
+# Face value for the damage die: pips × per-pip weapon damage × wielder multipliers.
+# Matches `_resolve_dice` before crit and per-target bonuses (undead, etc.).
+func _dice_display_damage(damage_pips: int) -> int:
+	var pips: float = float(maxi(1, damage_pips))
+	return maxi(1, roundi(get_damage() * pips * _compute_damage_multiplier(null)))
 
 # Applies one settled throw: the nearest `target_count` live enemies in range each take
 # `damage_pips` times this weapon's per-pip damage.
@@ -604,7 +614,7 @@ func _apply_on_hit_lifesteal(damage_dealt: int) -> void:
 # conditionally: magic_damage_multiplier (+ this weapon's own magic_scaling_per_point) for
 # WeaponClass.Magic, cursed_missing_hp_scaling for WeaponClass.Cursed, and undead_damage_multiplier
 # when the target is an EnemyData.is_undead archetype.
-func _compute_damage_multiplier(target: Node2D) -> float:
+func _compute_damage_multiplier(target: Node2D = null) -> float:
 	var multiplier = _owner_stats.damage_multiplier if _owner_stats else 1.0
 	multiplier *= _owner_stats.difficulty_damage_multiplier if _owner_stats else 1.0
 
