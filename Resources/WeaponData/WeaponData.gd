@@ -26,6 +26,10 @@ enum WeaponClass {
 	# Placed hazard (Iron Bear Trap): Weapon.gd drops a Trap.tscn instead of attacking
 	# directly; the trap itself deals the damage/root once a target walks over it.
 	TRAP = 1 << 8,
+	# Cast dice (Bone Dice): Weapon.gd throws a DiceCast onto the floor instead of
+	# attacking directly. One die rolls how many enemies are hit, the other rolls the
+	# damage each of them takes, and the damage only lands when the dice settle.
+	DICE = 1 << 9,
 }
 
 @export var name: String = "Unnamed Weapon"
@@ -50,7 +54,7 @@ enum WeaponClass {
 
 @export_group("Classification")
 @export var rarity_tier: RarityTier = RarityTier.COMMON
-@export_flags("Melee", "Ranged", "Firearm", "Magic", "Holy", "Cursed", "AoE", "Summon", "Trap") var weapon_class: int = WeaponClass.MELEE
+@export_flags("Melee", "Ranged", "Firearm", "Magic", "Holy", "Cursed", "AoE", "Summon", "Trap", "Dice") var weapon_class: int = WeaponClass.MELEE
 
 # Optional tiered-up version of this weapon (e.g. Flintlock Pistol -> Hexed Revolver
 # -> Cathedral Rifle). Not auto-applied by anything yet in this stage — it's the data hook a
@@ -94,6 +98,13 @@ enum WeaponClass {
 @export var trap_root_duration_seconds: float = 1.5
 # How long an armed-but-untriggered trap waits before despawning back to the pool.
 @export var trap_lifetime_seconds: float = 12.0
+
+@export_group("Dice")
+# Only relevant for WeaponClass.DICE. Faces on each die before Luck raises them —
+# a plain d6 at 0 Luck. Luck steps this up the die ladder (see DiceCast.sides_for_luck).
+# For a dice weapon, `damage` above is read as damage PER PIP on the damage die: a
+# 5-pip roll on a 6-damage weapon is 30 to every enemy the other die picked out.
+@export var dice_base_sides: int = 6
 
 @export_group("On-Hit")
 # Fraction of damage dealt by THIS weapon healed back to the wielder immediately

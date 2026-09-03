@@ -377,8 +377,102 @@ def _orb(c, cx, cy, st, k):
         c.set(int(cx + math.cos(a) * 6.5 * k), int(cy - 4 * k + math.sin(a) * 6.5 * k), glow)
 
 
+def _die_face(c, x, y, size, st, pips) -> None:
+    """One bone die, front on. `pips` is a list of (col, row) in a 3x3 grid."""
+    body = st.metal
+    c.rect(int(x), int(y), int(size), int(size), body.dark)
+    c.rect(int(x) + 1, int(y) + 1, int(size) - 2, int(size) - 2, body.core)
+    c.hline(int(x) + 1, int(x + size) - 2, int(y) + 1, body.light)
+    c.vline(int(x) + 1, int(y) + 1, int(y + size) - 2, body.light)
+    # Bone corners, so the die reads as carved rather than as a plain box.
+    for corner_x, corner_y in ((x, y), (x + size - 1, y), (x, y + size - 1), (x + size - 1, y + size - 1)):
+        c.set(int(corner_x), int(corner_y), st.accent.dark)
+
+    step = size / 4.0
+    for col, row in pips:
+        c.set(int(x + step * (col + 1)), int(y + step * (row + 1)), P.VOID)
+
+
+def _dice(c, cx, cy, st, k):
+    """A pair of dice: one landed flat, one caught mid-tumble behind it."""
+    big = max(7, int(9 * k))
+    small = max(5, int(7 * k))
+    _die_face(c, cx - big * 0.9, cy - big * 0.1, big, st, [(0, 0), (2, 0), (1, 1), (0, 2), (2, 2)])
+    _die_face(c, cx + small * 0.2, cy - small * 1.5, small, st, [(0, 0), (1, 1), (2, 2)])
+
+    # A couple of sparks off the tumbling one — the Jester's dice are never
+    # quite inert.
+    glow = st.glow or P.AMBER
+    c.set(int(cx + small * 1.4), int(cy - small * 1.9), glow)
+    c.set(int(cx + small * 0.1), int(cy - small * 2.2), with_alpha(glow, 170))
+
+
+# ---------------------------------------------------------------------------
+# Thrown dice
+#
+# The pair the Jester actually casts on the floor, as its own little sheet:
+# three tumbling frames, a landing squash, then a blank resting face the game
+# writes the rolled number over. Blank on purpose — Luck can push these dice
+# past d6 to d20, and no pip layout survives that.
+# ---------------------------------------------------------------------------
+DICE_CELL = 16
+DICE_FRAMES = 6
+
+
+def dice_cast_frames(style: WeaponStyle | None = None) -> list[Canvas]:
+    st = style or WeaponStyle(P.R_BONE, P.R_LEATHER, P.R_GOLD, P.AMBER)
+    frames: list[Canvas] = []
+    tumble_pips = (
+        [(0, 0), (2, 2)],
+        [(0, 0), (1, 1), (2, 2), (0, 2), (2, 0)],
+        [(1, 1)],
+    )
+
+    for pips in tumble_pips:
+        c = Canvas(DICE_CELL, DICE_CELL)
+        _die_face(c, 3, 3, 10, st, list(pips))
+        c.outline_pass(P.VOID)
+        frames.append(c)
+
+    # Impact: the die spreads and flattens for a single frame. One frame of
+    # squash is the difference between a die landing and a die teleporting.
+    squash = Canvas(DICE_CELL, DICE_CELL)
+    squash.rect(1, 7, 14, 7, st.metal.dark)
+    squash.rect(2, 8, 12, 5, st.metal.core)
+    squash.hline(2, 13, 8, st.metal.light)
+    squash.rect(4, 9, 8, 3, P.PARCHMENT)
+    # Dust kicked out sideways at the moment of impact.
+    for dx in (0, 15):
+        squash.set(dx, 13, with_alpha(P.SMOKE, 170))
+    squash.hline(3, 12, 15, with_alpha(P.VOID, 120))
+    squash.outline_pass(P.VOID)
+    frames.append(squash)
+
+    # Resting, blank: the roll is drawn as a label on top of this.
+    for rim in (None, (st.glow or P.AMBER)):
+        c = Canvas(DICE_CELL, DICE_CELL)
+        c.ellipse(8, 14, 6, 1.6, with_alpha(P.VOID, 110))
+        _die_face(c, 3, 3, 11, st, [])
+        c.rect(5, 5, 7, 7, P.PARCHMENT)
+        if rim is not None:
+            c.rect_outline(2, 2, 13, 13, rim)
+        c.outline_pass(P.VOID)
+        frames.append(c)
+
+    return frames
+
+
+def dice_cast_sheet(style: WeaponStyle | None = None) -> Canvas:
+    frames = dice_cast_frames(style)
+    sheet = Canvas(DICE_CELL * len(frames), DICE_CELL)
+    for i, frame in enumerate(frames):
+        sheet.paste(frame, i * DICE_CELL, 0)
+    return sheet
+
+
 _SHAPES = {
     "scythe": _scythe,
+    "dice": _dice,
     "cleaver": lambda c, x, y, s, k: _cleaver(c, x, y, s, k, False),
     "big_cleaver": lambda c, x, y, s, k: _cleaver(c, x, y, s, k, True),
     "sword": _sword,
@@ -446,7 +540,7 @@ _ICON_TILT = {
     "rifle": -20, "blunderbuss": -20, "stake_launcher": -20,
     "pistol": -25, "revolver": -25, "crossbow": -15,
     "book": 0, "orb": 0, "trap": 0, "flask": -8, "firebomb": -8,
-    "lantern": 0, "bell": -12, "whistle": 0, "claws": 0, "bow": 0,
+    "lantern": 0, "bell": -12, "whistle": 0, "claws": 0, "bow": 0, "dice": 0,
 }
 
 
@@ -515,4 +609,6 @@ CATALOG: dict[str, tuple[str, WeaponStyle]] = {
     "iron_bear_trap": ("trap", WeaponStyle(P.R_IRON, P.R_WOOD, P.R_RUST)),
     "spectral_hound_whistle": ("whistle", WeaponStyle(P.R_BONE, P.R_LEATHER, P.R_SPECTRAL, P.SPECTRAL)),
     "familiar_bolt": ("orb", WeaponStyle(P.R_ARCANE, P.R_WOOD, P.R_SILVER, P.VIOLET)),
+    "bone_dice": ("dice", WeaponStyle(P.R_BONE, P.R_LEATHER, P.R_GOLD, P.AMBER)),
+    "bone_dice": ("dice", WeaponStyle(P.R_BONE, P.R_LEATHER, P.R_GOLD, P.AMBER)),
 }
