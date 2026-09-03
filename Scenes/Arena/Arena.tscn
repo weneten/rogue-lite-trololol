@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://cqk8n2x5f8h3a"]
+[gd_scene load_steps=15 format=3 uid="uid://cqk8n2x5f8h3a"]
 
 [ext_resource type="PackedScene" uid="uid://c3g8t6qk1n0wp" path="res://Scenes/Player/Player.tscn" id="1_player"]
 [ext_resource type="Script" path="res://Scripts/Waves/XpGemSpawner.gd" id="3_gemspawner"]
@@ -10,76 +10,29 @@
 [ext_resource type="Script" path="res://Scripts/Meta/RunStats.gd" id="9_runstats"]
 [ext_resource type="Script" path="res://Scripts/Juice/JuiceController.gd" id="10_juice"]
 [ext_resource type="Script" path="res://Scripts/Arena/ArenaVisuals.gd" id="11_visuals"]
+[ext_resource type="Script" path="res://Scripts/Arena/LoopRebaser.gd" id="14_loop"]
 [ext_resource type="PackedScene" uid="uid://c8bossbar00001" path="res://Scenes/UI/BossHealthBar.tscn" id="12_bossbar"]
 [ext_resource type="PackedScene" uid="uid://c8debugmenu001" path="res://Scenes/UI/DebugMenu.tscn" id="13_debug"]
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_north"]
-size = Vector2(1664, 64)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_east"]
-size = Vector2(64, 1064)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_west"]
-size = Vector2(64, 1064)
 
 [node name="Arena" type="Node2D"]
 y_sort_enabled = true
 
-[node name="CanvasModulate" type="CanvasModulate" parent="."]
+[node name="CanvasModulate" type="CanvasModulate" parent="." groups=["ArenaBackdrop"]]
 color = Color(0.82, 0.8, 0.94, 1)
 
-[node name="World" type="Node2D" parent="."]
+[node name="World" type="Node2D" parent="." groups=["ArenaBackdrop"]]
 y_sort_enabled = true
 
 [node name="ArenaVisuals" type="Node2D" parent="World"]
 z_index = -10
 script = ExtResource("11_visuals")
-arena_size = Vector2(1600, 1000)
 tile_size = 16
-border_thickness = 64
-prop_count = 54
 seed = 1337
 
-[node name="Ground" type="Polygon2D" parent="World"]
-visible = false
-color = Color(0.72, 0.58, 0.4, 1)
-polygon = PackedVector2Array(-800, -500, 800, -500, 800, 500, -800, 500)
-
-[node name="Walls" type="Node2D" parent="World"]
-
-[node name="NorthWall" type="StaticBody2D" parent="World/Walls"]
-collision_layer = 1
-collision_mask = 0
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="World/Walls/NorthWall"]
-position = Vector2(0, -532)
-shape = SubResource("RectangleShape2D_north")
-
-[node name="SouthWall" type="StaticBody2D" parent="World/Walls"]
-collision_layer = 1
-collision_mask = 0
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="World/Walls/SouthWall"]
-position = Vector2(0, 532)
-shape = SubResource("RectangleShape2D_north")
-
-[node name="EastWall" type="StaticBody2D" parent="World/Walls"]
-collision_layer = 1
-collision_mask = 0
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="World/Walls/EastWall"]
-position = Vector2(832, 0)
-shape = SubResource("RectangleShape2D_east")
-
-[node name="WestWall" type="StaticBody2D" parent="World/Walls"]
-collision_layer = 1
-collision_mask = 0
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="World/Walls/WestWall"]
-position = Vector2(-832, 0)
-shape = SubResource("RectangleShape2D_west")
-
 [node name="Player" parent="World" instance=ExtResource("1_player")]
+
+[node name="LoopRebaser" type="Node" parent="."]
+script = ExtResource("14_loop")
 
 [node name="XpGemSpawner" type="Node" parent="."]
 script = ExtResource("3_gemspawner")

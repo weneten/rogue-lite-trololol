@@ -25,13 +25,8 @@ var spawns_paused: bool
 
 # Min distance from player for a spawn (on-screen but not on top of them).
 @export var spawn_radius_min: float = 260.0
-# Max distance from player for a spawn (inside camera / arena, not beyond walls).
+# Max distance from player for a spawn (just off camera).
 @export var spawn_radius_max: float = 400.0
-
-# Half-width of playable area (matches Arena walls ~±800 with margin).
-@export var arena_half_width: float = 760.0
-# Half-height of playable area (matches Arena walls ~±500 with margin).
-@export var arena_half_height: float = 460.0
 
 var _enemy_pool: ObjectPool
 var _pool_parent: Node
@@ -322,30 +317,11 @@ func _spawn_random_enemy() -> void:
 	if NetSession != null and NetSession.is_host:
 		enemy.net_id = NetSession.take_enemy_id()
 
-# Random point on a ring around the player, clamped into the arena so enemies never spawn
-# outside walls (where they get stuck and never reach the player).
+# Random point on a ring around the player. The world loops, so the ring never has to be
+# clamped: there is no edge to push a spawn back from, and every enemy arrives at the
+# distance asked for instead of piling up against a wall the player is standing near.
 func _pick_spawn_position(player_pos: Vector2) -> Vector2:
-	var min_r: float = minf(spawn_radius_min, spawn_radius_max)
-	var max_r: float = maxf(spawn_radius_min, spawn_radius_max)
-
-	for attempt in range(16):
-		var angle: float = randf_range(0.0, TAU)
-		var dist: float = randf_range(min_r, max_r)
-		var candidate: Vector2 = player_pos + Vector2(dist, 0.0).rotated(angle)
-		candidate = _clamp_to_arena(candidate)
-
-		# Accept if still a bit away from the player after clamping.
-		if candidate.distance_squared_to(player_pos) >= 120.0 * 120.0:
-			return candidate
-
-	# Fallback: any clamped offset.
-	var fallback_angle: float = randf_range(0.0, TAU)
-	return _clamp_to_arena(player_pos + Vector2(220.0, 0.0).rotated(fallback_angle))
-
-func _clamp_to_arena(pos: Vector2) -> Vector2:
-	return Vector2(
-		clampf(pos.x, -arena_half_width, arena_half_width),
-		clampf(pos.y, -arena_half_height, arena_half_height))
+	return ArenaLoop.random_point_around(player_pos, spawn_radius_min, spawn_radius_max)
 
 static func _select_weighted_enemy(pool: Array, wave_number: int) -> EnemyData:
 	if pool == null or pool.is_empty():

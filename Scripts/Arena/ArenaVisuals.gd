@@ -4,20 +4,44 @@ class_name ArenaVisuals
 # Builds the graveyard the fight happens in, from the pixel tile strips in
 # Assets/sprites/arena.
 #
-# The floor is stamped once into a single texture (one draw call, no TileMap
-# dependency), the wall is a ring of brick tiles, and props are scattered with
-# a bias toward the edges so the middle stays readable during a fight.
+# The world loops (see ArenaLoop), so nothing here can be built once at a fixed size:
+# a 6144x4096 ground baked into one image would be a 100 MB texture, and 16x the props
+# would be 16x the nodes. Both are instead built around the Hunter and follow him:
+#
+#   * the floor is one seamless 512px patch drawn with texture repeat, its UV origin
+#     tracking his position, so a screenful of ground costs one sprite;
+#   * the props live in 512px cells of the world grid. Only the cells near him exist as
+#     nodes; the rest are freed. What a cell contains is derived from the world seed and
+#     the cell's own coordinates, so walking away and coming back rebuilds the same
+#     headstones in the same places — which is the whole reason the world is a torus
+#     rather than an endless plane.
+#
+# WORLD_SIZE is a whole number of both, so the floor pattern and the prop grid meet
+# themselves at the seam instead of showing a join.
+#
 # Braziers and candles get a flicker light so the arena reads as lit.
 
-@export var arena_size: Vector2 = Vector2(1600, 1000)
 @export var tile_size: int = 16
-@export var border_thickness: int = 64
-@export var prop_count: int = 54
 @export var seed: int = 1337
 
 const FLOOR_PATH := "res://Assets/sprites/arena/floor_tiles.png"
 const WALL_PATH := "res://Assets/sprites/arena/wall_tiles.png"
 const PROPS_PATH := "res://Assets/sprites/arena/props.png"
+
+# Side of the repeating ground patch, and of one prop cell. Both divide WORLD_SIZE.
+const FLOOR_PATCH := 512
+const PROP_CELL := 512.0
+
+# Props per cell. The old fixed arena ran about nine per cell's worth of ground; half
+# that reads just as full once the camera is never near an edge, and halves the nodes.
+const PROPS_PER_CELL := 4
+# Cells kept alive in each direction around the Hunter. Three covers a 3072px square,
+# comfortably past the corners of any viewport we ship.
+const PROP_VIEW_CELLS := 3
+
+# 2D lights are a full composite pass each. The cell grid already bounds how many can
+# exist, but a dense stretch of braziers could still stack a dozen on one screen.
+const MAX_FLICKER_LIGHTS := 16
 
 const PROP_SIZE := 32
 # Prop strip order: headstone, cross, dead tree, brazier, bones, rubble,
@@ -32,15 +56,32 @@ const SCATTER_PROPS := [0, 1, 2, 3, 4, 5, 6]
 # common; braziers are the expensive ones, so they stay rare.
 const PROP_WEIGHTS := [3.0, 2.0, 1.5, 0.8, 3.0, 3.5, 1.2]
 
-const OUTSIDE_VOID := Color(0.035, 0.02, 0.045, 1.0)
+# A fixed place in the world rather than a scattered prop: the gate is a landmark the
+# Hunter can walk away from and come back to, and the hook a dungeon entrance hangs on.
+const GATE_POSITION := Vector2(0.0, -640.0)
+
+var _floor: Sprite2D
+var _prop_root: Node2D
+var _props_strip: Texture2D
+# Live prop cells, keyed by grid coordinate. Values are Node2D holding that cell's props
+# at cell-local offsets, so following the Hunter costs one move per cell, not per prop.
+var _cells: Dictionary = {}
+var _cell_cols: int = 1
+var _cell_rows: int = 1
+var _view_cells: int = PROP_VIEW_CELLS
 
 var _flicker_lights: Array[PointLight2D] = []
-var _flicker_phases: Array[float] = []
 var _time: float = 0.0
 
 func _ready() -> void:
 	if OS.has_feature("web"):
-		prop_count = mini(prop_count, 18)
+		# One ring of cells instead of three: a browser build cannot afford 200 sprites
+		# of scenery on top of a wave.
+		_view_cells = 1
+
+	# LoopRebaser moves every entity under World into the Hunter's frame each frame.
+	# This node is not an entity — it stays at the origin and places its own contents.
+	add_to_group(LoopRebaser.BACKDROP_GROUP)
 
 	# Night grade — the art is drawn for a cold blue night with warm fire pools.
 	var modulate_node = get_parent().get_node_or_null("CanvasModulate") as CanvasModulate
@@ -53,48 +94,53 @@ func _ready() -> void:
 		vignette.color = Color(0.03, 0.01, 0.04, 0.28)
 
 	# Godot 4.7 blocks add_child on a node while its own _ready is running
-	# ("Parent node is busy setting up children"). The eight add_child calls
-	# below used to fail on web, so the floor/walls/props never appeared and
-	# Firefox logged ELEMENT_ARRAY_BUFFER warnings for the missing geometry.
+	# ("Parent node is busy setting up children"). The add_child calls below used to
+	# fail on web, so the floor/props never appeared and Firefox logged
+	# ELEMENT_ARRAY_BUFFER warnings for the missing geometry.
 	_assemble.call_deferred()
 
 func _assemble() -> void:
-	_build_outside()
+	_cell_cols = maxi(1, int(round(ArenaLoop.world_size.x / PROP_CELL)))
+	_cell_rows = maxi(1, int(round(ArenaLoop.world_size.y / PROP_CELL)))
+	# Asking for a wider ring than the world has cells would name the same cell twice
+	# and drop props on the second pass.
+	_view_cells = mini(_view_cells, mini((_cell_cols - 1) / 2, (_cell_rows - 1) / 2))
+
 	_build_floor()
-	_build_walls()
 	_build_props()
 
 func _process(delta: float) -> void:
-	if _flicker_lights.is_empty():
-		set_process(false)
-		return
+	var anchor := _anchor()
+	_update_floor(anchor)
+	_update_props(anchor)
 
 	_time += delta
-	# Cheap per-light flicker: two out-of-phase sines never repeat visibly.
-	for i in range(_flicker_lights.size()):
-		var light = _flicker_lights[i]
+	# Cheap per-light flicker: two out-of-phase sines never repeat visibly. Lights die
+	# with the cell that owns them, so prune as we go.
+	var live: Array[PointLight2D] = []
+	for light in _flicker_lights:
 		if not is_instance_valid(light):
 			continue
 
-		var phase = _flicker_phases[i]
-		light.energy = 0.85 + 0.16 * sin(_time * 7.3 + phase) + 0.09 * sin(_time * 17.1 + phase * 2.0)
+		var phase: float = light.get_meta("flicker_phase", 0.0)
+		light.energy = light.get_meta("flicker_base", 0.85) \
+			+ 0.16 * sin(_time * 7.3 + phase) + 0.09 * sin(_time * 17.1 + phase * 2.0)
+		live.append(light)
 
-func _build_outside() -> void:
-	var outside = Polygon2D.new()
-	outside.name = "Outside"
-	outside.z_index = -20
-	outside.color = OUTSIDE_VOID
-	outside.polygon = PackedVector2Array([
-		Vector2(-arena_size.x, -arena_size.y),
-		Vector2(arena_size.x, -arena_size.y),
-		Vector2(arena_size.x, arena_size.y),
-		Vector2(-arena_size.x, arena_size.y)
-	])
-	outside.scale = Vector2.ONE * 1.4
-	add_child(outside)
+	_flicker_lights = live
 
-# Stamps random floor variants into one image so the whole ground is a single
-# sprite rather than thousands of nodes.
+# Where the world is currently centred. Everything under World has been folded around
+# the local Hunter, so his position is the frame the scenery has to be drawn in.
+func _anchor() -> Vector2:
+	var camera := get_viewport().get_camera_2d() if get_viewport() != null else null
+	if camera != null:
+		return camera.get_screen_center_position()
+
+	var hunter := get_tree().get_first_node_in_group("Player") as Node2D
+	return hunter.global_position if hunter != null else Vector2.ZERO
+
+# Stamps random floor variants into one repeating patch. Drawn with texture repeat and
+# a region that tracks the camera, so any amount of ground costs a single sprite.
 func _build_floor() -> void:
 	var strip = _load_image(FLOOR_PATH)
 	if strip == null:
@@ -104,15 +150,14 @@ func _build_floor() -> void:
 	if variants <= 0:
 		return
 
-	var cols = int(ceil(arena_size.x / tile_size))
-	var rows = int(ceil(arena_size.y / tile_size))
-	var image = Image.create_empty(cols * tile_size, rows * tile_size, false, Image.FORMAT_RGBA8)
+	var tiles = FLOOR_PATCH / tile_size
+	var image = Image.create_empty(FLOOR_PATCH, FLOOR_PATCH, false, Image.FORMAT_RGBA8)
 
 	var rng = RandomNumberGenerator.new()
 	rng.seed = seed
 
-	for y in range(rows):
-		for x in range(cols):
+	for y in range(tiles):
+		for x in range(tiles):
 			# Weighted toward the plain variants; the decorated ones (moss,
 			# crack, blood, bones) are accents and would tile obviously.
 			var variant = rng.randi_range(0, 1)
@@ -122,124 +167,116 @@ func _build_floor() -> void:
 			var src = Rect2i(variant * tile_size, 0, tile_size, tile_size)
 			image.blit_rect(strip, src, Vector2i(x * tile_size, y * tile_size))
 
-	var floor_sprite = Sprite2D.new()
-	floor_sprite.name = "Floor"
-	floor_sprite.texture = ImageTexture.create_from_image(image)
-	floor_sprite.centered = true
-	floor_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	floor_sprite.z_index = -10
-	add_child(floor_sprite)
+	_floor = Sprite2D.new()
+	_floor.name = "Floor"
+	_floor.texture = ImageTexture.create_from_image(image)
+	_floor.centered = true
+	_floor.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_floor.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+	_floor.region_enabled = true
+	_floor.z_index = -10
+	add_child(_floor)
 
-func _build_walls() -> void:
-	var strip = _load_image(WALL_PATH)
-	if strip == null:
+func _update_floor(anchor: Vector2) -> void:
+	if _floor == null:
 		return
 
-	var hw = arena_size.x * 0.5
-	var hh = arena_size.y * 0.5
-	var t = float(border_thickness)
+	var view := get_viewport_rect().size
+	var camera := get_viewport().get_camera_2d() if get_viewport() != null else null
+	if camera != null and camera.zoom.x > 0.0 and camera.zoom.y > 0.0:
+		view /= camera.zoom
 
-	_add_wall_slab(strip, "WallN", Rect2(-hw - t, -hh - t, arena_size.x + t * 2.0, t), true)
-	_add_wall_slab(strip, "WallS", Rect2(-hw - t, hh, arena_size.x + t * 2.0, t), true)
-	_add_wall_slab(strip, "WallW", Rect2(-hw - t, -hh, t, arena_size.y), false)
-	_add_wall_slab(strip, "WallE", Rect2(hw, -hh, t, arena_size.y), false)
-
-	# Line2D uses an element array buffer Firefox's WebGL 2 rejects (bindBuffer /
-	# bufferSubData warnings and hitching). Skip the rim in the browser.
-	if OS.has_feature("web"):
-		return
-
-	# A lit inner lip so the playable edge is unmistakable mid-fight.
-	var rim = Line2D.new()
-	rim.name = "PlayableRim"
-	rim.width = 2.0
-	rim.default_color = Color(0.72, 0.55, 0.32, 0.7)
-	rim.z_index = -5
-	rim.antialiased = false
-	rim.joint_mode = Line2D.LINE_JOINT_BEVEL
-	rim.begin_cap_mode = Line2D.LINE_CAP_BOX
-	rim.end_cap_mode = Line2D.LINE_CAP_BOX
-	for point in [
-		Vector2(-hw + 1, -hh + 1), Vector2(hw - 1, -hh + 1),
-		Vector2(hw - 1, hh - 1), Vector2(-hw + 1, hh - 1), Vector2(-hw + 1, -hh + 1)
-	]:
-		rim.add_point(point)
-	add_child(rim)
-
-func _add_wall_slab(strip: Image, slab_name: String, rect: Rect2, horizontal: bool) -> void:
-	var w = maxi(tile_size, int(rect.size.x))
-	var h = maxi(tile_size, int(rect.size.y))
-	var image = Image.create_empty(w, h, false, Image.FORMAT_RGBA8)
-
-	var rng = RandomNumberGenerator.new()
-	rng.seed = seed + slab_name.hash()
-
-	for y in range(0, h, tile_size):
-		for x in range(0, w, tile_size):
-			# Capstone variant along the top row so the wall has a silhouette.
-			var variant = 0
-			if y == 0 and horizontal:
-				variant = 1
-			elif rng.randf() < 0.25:
-				variant = 2
-
-			var src = Rect2i(variant * tile_size, 0, tile_size, tile_size)
-			image.blit_rect(strip, src, Vector2i(x, y))
-
-	var sprite = Sprite2D.new()
-	sprite.name = slab_name
-	sprite.texture = ImageTexture.create_from_image(image)
-	sprite.centered = false
-	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	sprite.z_index = -8
-	sprite.position = rect.position
-	add_child(sprite)
+	# A patch of slack on every side so a fast Hunter never outruns the ground.
+	var span := view + Vector2.ONE * (FLOOR_PATCH * 2)
+	_floor.global_position = anchor
+	# The region origin is the world position, so the pattern stays pinned to the world
+	# instead of sliding with the camera. WORLD_SIZE is a whole number of patches, so it
+	# lines up with itself across the seam too.
+	_floor.region_rect = Rect2(anchor - span * 0.5, span)
 
 func _build_props() -> void:
-	var strip_texture = _load_texture(PROPS_PATH)
-	if strip_texture == null:
+	_props_strip = _load_texture(PROPS_PATH)
+	if _props_strip == null:
 		return
 
-	var root = Node2D.new()
-	root.name = "Props"
-	root.y_sort_enabled = true
-	root.z_index = -6
-	add_child(root)
+	_prop_root = Node2D.new()
+	_prop_root.name = "Props"
+	_prop_root.y_sort_enabled = true
+	_prop_root.z_index = -6
+	add_child(_prop_root)
 
-	var rng = RandomNumberGenerator.new()
-	rng.seed = seed + 99
+	_update_props(_anchor())
 
-	var hw = arena_size.x * 0.5 - 48.0
-	var hh = arena_size.y * 0.5 - 48.0
+func _update_props(anchor: Vector2) -> void:
+	if _prop_root == null:
+		return
 
-	var total_weight = 0.0
+	var centre := _cell_of(anchor)
+	var wanted := {}
+	for dy in range(-_view_cells, _view_cells + 1):
+		for dx in range(-_view_cells, _view_cells + 1):
+			wanted[Vector2i(
+				wrapi(centre.x + dx, 0, _cell_cols),
+				wrapi(centre.y + dy, 0, _cell_rows))] = true
+
+	for key in _cells.keys():
+		if wanted.has(key):
+			continue
+
+		var stale: Node2D = _cells[key]
+		if is_instance_valid(stale):
+			stale.queue_free()
+
+		_cells.erase(key)
+
+	for key in wanted:
+		if not _cells.has(key):
+			_cells[key] = _build_cell(key)
+
+		var cell: Node2D = _cells[key]
+		if is_instance_valid(cell):
+			# One move per cell rather than per prop, and it puts the cell on whichever
+			# copy of itself is nearest the Hunter.
+			cell.position = ArenaLoop.rebase(anchor, _cell_centre(key))
+
+# Everything a cell holds is derived from the world seed and the cell's own coordinates,
+# so a cell rebuilt an hour later is identical to the one that was freed.
+func _build_cell(key: Vector2i) -> Node2D:
+	var cell := Node2D.new()
+	cell.name = "Cell_%d_%d" % [key.x, key.y]
+	cell.y_sort_enabled = true
+	_prop_root.add_child(cell)
+
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash(Vector3i(key.x, key.y, seed))
+
+	var total_weight := 0.0
 	for weight in PROP_WEIGHTS:
 		total_weight += weight
 
-	for i in range(prop_count):
-		# Edge bias keeps the centre of the arena clear to fight in.
-		var pos: Vector2
-		if rng.randf() < 0.72:
-			var inset = rng.randf_range(24.0, 120.0)
-			match rng.randi_range(0, 3):
-				0: pos = Vector2(rng.randf_range(-hw, hw), -hh + inset)
-				1: pos = Vector2(rng.randf_range(-hw, hw), hh - inset)
-				2: pos = Vector2(-hw + inset, rng.randf_range(-hh, hh))
-				_: pos = Vector2(hw - inset, rng.randf_range(-hh, hh))
-		else:
-			pos = Vector2(rng.randf_range(-hw * 0.72, hw * 0.72), rng.randf_range(-hh * 0.72, hh * 0.72))
+	var half := PROP_CELL * 0.5
+	for i in range(PROPS_PER_CELL):
+		var offset := Vector2(rng.randf_range(-half, half), rng.randf_range(-half, half))
+		cell.add_child(_make_prop(_props_strip, _pick_prop(rng, total_weight), offset, rng))
 
-		root.add_child(_make_prop(strip_texture, _pick_prop(rng, total_weight), pos, rng))
+	# The gate belongs to whichever cell it stands in, so it is built and freed by the
+	# same rule as everything else — but always in the one place.
+	if _cell_of(GATE_POSITION) == key:
+		cell.add_child(_make_prop(
+			_props_strip, PROP_GATE, GATE_POSITION - _cell_centre(key), rng, false))
 
-	# Four braziers frame the arena corners and give the fight a light rig.
-	for corner in [
-		Vector2(-hw + 60.0, -hh + 60.0), Vector2(hw - 60.0, -hh + 60.0),
-		Vector2(-hw + 60.0, hh - 60.0), Vector2(hw - 60.0, hh - 60.0)
-	]:
-		root.add_child(_make_prop(strip_texture, PROP_BRAZIER, corner, rng))
+	return cell
 
-	# A gate at the north edge, so the arena reads as a place with a way in.
-	root.add_child(_make_prop(strip_texture, PROP_GATE, Vector2(0.0, -hh - 12.0), rng, false))
+func _cell_of(absolute: Vector2) -> Vector2i:
+	var folded := ArenaLoop.wrap_point(absolute) + ArenaLoop.half_size
+	return Vector2i(
+		wrapi(int(floor(folded.x / PROP_CELL)), 0, _cell_cols),
+		wrapi(int(floor(folded.y / PROP_CELL)), 0, _cell_rows))
+
+func _cell_centre(key: Vector2i) -> Vector2:
+	return Vector2(
+		(key.x + 0.5) * PROP_CELL - ArenaLoop.half_size.x,
+		(key.y + 0.5) * PROP_CELL - ArenaLoop.half_size.y)
 
 static func _pick_prop(rng: RandomNumberGenerator, total_weight: float) -> int:
 	var roll = rng.randf() * total_weight
@@ -280,7 +317,7 @@ func _make_prop(strip: Texture2D, index: int, pos: Vector2, rng: RandomNumberGen
 func _attach_flicker(holder: Node2D, strong: bool, rng: RandomNumberGenerator) -> void:
 	# 2D lights are a full extra composite pass each. Fine on desktop, fatal
 	# in a single-thread browser build — skip them on web.
-	if OS.has_feature("web"):
+	if OS.has_feature("web") or _flicker_lights.size() >= MAX_FLICKER_LIGHTS:
 		return
 
 	var light = PointLight2D.new()
@@ -289,10 +326,12 @@ func _attach_flicker(holder: Node2D, strong: bool, rng: RandomNumberGenerator) -
 	light.color = Color(1.0, 0.62, 0.32) if strong else Color(1.0, 0.86, 0.6)
 	light.energy = 0.9 if strong else 0.5
 	light.position = Vector2(0, -24 if strong else -16)
+	# Carried on the light itself, so a freed cell takes its phase with it.
+	light.set_meta("flicker_phase", rng.randf() * TAU)
+	light.set_meta("flicker_base", 0.9 if strong else 0.5)
 	holder.add_child(light)
 
 	_flicker_lights.append(light)
-	_flicker_phases.append(rng.randf() * TAU)
 
 # One shared soft falloff texture for every light in the arena.
 static var _light_texture: Texture2D

@@ -3,10 +3,11 @@ extends Node
 # The night's answer to a Hunter who has outrun it.
 #
 # Past Difficulty.overspeed_threshold — a move-speed multiplier of 1.25, so a
-# quarter faster than the Hunter started — this begins planting dark mages as
-# far across the arena as there is room for. They do not move and they do not
-# chase; they stand there and drag on him until somebody walks over and stops
-# them, which is the one thing being fast was supposed to make easy.
+# quarter faster than the Hunter started — this begins planting dark mages at the
+# edge of the ordinary spawn ring. They do not chase; they back away while they
+# drag on him, slowly enough that catching one is never in doubt, until somebody
+# walks over and stops them — which is the one thing being fast was supposed to
+# make easy.
 #
 # It is an autoload of its own rather than a branch inside WaveManager for one
 # reason: WaveManager stops spawning for the length of a boss fight, and this
@@ -36,11 +37,11 @@ const MAX_ALIVE := 3
 # the difficulty is in reaching one, not in killing it once you have.
 const BASE_HEALTH := 34
 
-# Candidate points sampled when placing one. The farthest from the Hunter wins,
-# so "as far away as possible" is answered by the arena's actual shape rather
-# than by a fixed distance that a corner would break.
-const PLACEMENT_SAMPLES := 32
-const MIN_PLACEMENT_DISTANCE := 520.0
+# Where one is planted: the outer edge of the ring every other enemy walks in from, so
+# a warden arrives at a distance the Hunter already reads as "something just spawned".
+# Reaching it is no longer meant to be the hard part - see DarkMage.flee_speed for what
+# replaced that.
+const FALLBACK_SPAWN_EDGE := 400.0
 
 var _mages: Array[DarkMage] = []
 var _spawn_timer: float = FIRST_DELAY
@@ -157,7 +158,7 @@ func _spawn(player: Node2D) -> void:
 
 	var mage: DarkMage = _scene.instantiate()
 	_resolve_parent().add_child(mage)
-	mage.global_position = _far_placement(player.global_position)
+	mage.global_position = _placement(player.global_position)
 
 	var wave: int = WaveManager.current_wave if WaveManager != null else 1
 	var health := roundi(BASE_HEALTH
@@ -166,33 +167,12 @@ func _spawn(player: Node2D) -> void:
 	mage.configure(health)
 	_mages.append(mage)
 
-# The farthest of a handful of sampled points inside the arena. Sampling rather
-# than picking the opposite corner outright, because the opposite corner is the
-# same spot every time and the Hunter would learn to stand in the middle.
-func _far_placement(from: Vector2) -> Vector2:
-	var half_w := WaveManager.arena_half_width if WaveManager != null else 760.0
-	var half_h := WaveManager.arena_half_height if WaveManager != null else 460.0
-	# Kept off the wall so it is reachable and its shadow pool is fully drawn.
-	var margin := 60.0
-	half_w = maxf(margin + 1.0, half_w - margin)
-	half_h = maxf(margin + 1.0, half_h - margin)
-
-	var best := Vector2(half_w, half_h)
-	var best_dist := -1.0
-	for i in range(PLACEMENT_SAMPLES):
-		var candidate := Vector2(randf_range(-half_w, half_w), randf_range(-half_h, half_h))
-		var dist := candidate.distance_squared_to(from)
-		if dist > best_dist:
-			best_dist = dist
-			best = candidate
-
-	# An arena smaller than the ideal gap still has to put it somewhere; taking
-	# the farthest sample is the best that geometry allows.
-	if best_dist < MIN_PLACEMENT_DISTANCE * MIN_PLACEMENT_DISTANCE:
-		push_warning("[DarkMages] Arena too small to place a warden %.0fpx away; used %.0fpx."
-			% [MIN_PLACEMENT_DISTANCE, sqrt(maxf(0.0, best_dist))])
-
-	return best
+# A point on the spawn ring around the Hunter, in whatever direction the roll picks.
+# Read off WaveManager rather than copied, so tuning where enemies come in moves the
+# wardens with them instead of quietly leaving them behind.
+func _placement(from: Vector2) -> Vector2:
+	var edge := WaveManager.spawn_radius_max if WaveManager != null else FALLBACK_SPAWN_EDGE
+	return ArenaLoop.random_point_around(from, edge, edge)
 
 func _resolve_parent() -> Node:
 	var scene: Node = get_tree().current_scene if get_tree() != null else null

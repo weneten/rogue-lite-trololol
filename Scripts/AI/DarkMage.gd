@@ -3,11 +3,15 @@ class_name DarkMage
 
 # A warden the night sends after a Hunter who has outrun it.
 #
-# It never moves and it never closes. It plants itself as far across the arena
-# as there is room for, and from there it drags on the player — the tether is
-# drawn all the way to him, at any distance, because the whole point is that you
-# have to go and put a stop to it. Which you have to do slowed, which is the
-# cost of having been that fast.
+# It never closes. It arrives at the edge of the ordinary spawn ring and backs
+# away from there, dragging on the player the whole time — the tether is drawn
+# all the way to him, at any distance, because the whole point is that you have
+# to go and put a stop to it. Which you have to do slowed, and against something
+# that is walking off while you do, which is the cost of having been that fast.
+#
+# It retreats at a fraction of its own speed while the tether is up, so a Hunter
+# always outruns it by a wide margin. Backing away is not an escape; it is a
+# handful of extra seconds of the slow, and that is all it is meant to be.
 #
 # It is a plain member of the "Enemy" group with a HealthComponent under the
 # name every other actor uses, so weapons target it, the HUD gives it an
@@ -34,6 +38,15 @@ const FADE_SECONDS := 0.45
 
 @export var currency_reward: int = 3
 @export var experience_reward: int = 6
+
+# How fast it backs off. Well under any Hunter's move speed even before the
+# channel cost below, because a warden that could be lost is not a warden.
+@export var flee_speed: float = 170.0
+
+# What holding the tether costs it. Channelling covers its whole life right now
+# (see get_is_channelling), so the speed actually seen is the product of the two
+# — the split exists so the penalty stays legible if it ever stops channelling.
+const CHANNEL_SPEED_MULTIPLIER := 0.42
 
 var _health: HealthComponent
 var _sprite: AnimatedSprite2D
@@ -80,10 +93,9 @@ func dismiss() -> void:
 	_dismiss_age = 0.0
 
 func _physics_process(delta: float) -> void:
-	# It stands exactly where it was put. Stated rather than implied, because a
-	# CharacterBody2D that never calls move_and_slide still drifts if anything
-	# else ever writes to velocity.
-	velocity = Vector2.ZERO
+	velocity = _retreat_velocity()
+	move_and_slide()
+	_drive_locomotion()
 
 	_age += delta
 	if _dismissing:
@@ -94,6 +106,40 @@ func _physics_process(delta: float) -> void:
 			return
 
 	_update_visuals(delta)
+
+# Straight away from the Hunter. Deliberately not pathfinding and not dodging: it is
+# retreating, not escaping, and anything cleverer would turn a guaranteed catch into a
+# chase the Hunter can lose.
+func _retreat_velocity() -> Vector2:
+	if _dead or _dismissing:
+		return Vector2.ZERO
+
+	var player := get_tree().get_first_node_in_group("Player") as Node2D
+	if player == null:
+		return Vector2.ZERO
+
+	# The world loops, but everything has been folded around the Hunter by now, so this
+	# is already the short way apart. See ArenaLoop.
+	var away := global_position - player.global_position
+	if away.length_squared() < 1.0:
+		# Standing on him: every direction is away, so pick one that does not jitter.
+		away = Vector2.RIGHT.rotated(_age)
+
+	var speed := flee_speed
+	if get_is_channelling():
+		speed *= CHANNEL_SPEED_MULTIPLIER
+
+	return away.normalized() * speed
+
+func _drive_locomotion() -> void:
+	var animator: EnemySpriteAnimator = get_node_or_null("SpriteAnimator")
+	if animator == null:
+		return
+
+	var moving := velocity.length_squared() > 1.0
+	animator.update_locomotion(moving)
+	if moving:
+		animator.set_facing(velocity.x)
 
 func _update_visuals(delta: float) -> void:
 	if _ring != null:
@@ -113,7 +159,7 @@ func _update_visuals(delta: float) -> void:
 	if not live:
 		return
 
-	# Local space: the mage does not move, so this is just the player's offset.
+	# Local space, so the tether stays anchored to it while it backs away.
 	var target := to_local(player.global_position)
 	_tether.points = PackedVector2Array([Vector2.ZERO, target])
 	_tether.width = TETHER_WIDTH * (0.85 + 0.15 * sin(_age * 6.0))

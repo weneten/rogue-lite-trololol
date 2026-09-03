@@ -22,6 +22,7 @@ config/icon="res://Assets/Art/icon.svg"
 
 [autoload]
 
+ArenaLoop="*res://Autoloads/ArenaLoop.gd"
 EventBus="*res://Autoloads/EventBus.gd"
 GameManager="*res://Autoloads/GameManager.gd"
 WaveManager="*res://Autoloads/WaveManager.gd"

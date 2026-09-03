@@ -1,14 +1,14 @@
 {
   "image": "bloodstained_crusader.png",
-  "frameWidth": 192,
-  "frameHeight": 128,
+  "frameWidth": 96,
+  "frameHeight": 64,
   "columns": 6,
   "rows": 6,
   "facing": "right",
   "pixelArt": true,
   "origin": {
-    "x": 96.0,
-    "y": 116.0
+    "x": 48.0,
+    "y": 58.0
   },
   "animations": {
     "idle": {
