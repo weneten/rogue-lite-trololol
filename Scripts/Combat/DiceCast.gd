@@ -106,10 +106,9 @@ func begin(from: Vector2, toward: Vector2, target_count: int, damage_pips: int,
 		_spawn_die(sheet, from, landings[i], faces[i], tints[i], 0.05 * float(i))
 
 	var combined := shown_damage * maxi(1, target_count)
-	if combined != shown_damage:
-		var mid_x := (landings[0].x + landings[1].x) * 0.5
-		var top_y := minf(landings[0].y, landings[1].y)
-		_spawn_combined(Vector2(mid_x, top_y), combined)
+	var mid_x := (landings[0].x + landings[1].x) * 0.5
+	var top_y := minf(landings[0].y, landings[1].y)
+	_spawn_combined(Vector2(mid_x, top_y), combined)
 
 	# The dice are thrown, tumble, squash on landing and then hold up their numbers. The
 	# stagger above means the second die lands a beat after the first, so the pair reads
