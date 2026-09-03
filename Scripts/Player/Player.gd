@@ -221,6 +221,16 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		return
 
+	# Wave count-in: the Hunter is held with everything else. The count exists to be
+	# read, and a player who can walk during it is a player repositioning for free
+	# against a field that cannot answer.
+	if WaveManager != null and WaveManager.is_preparing:
+		velocity = Vector2.ZERO
+		move_and_slide()
+		if _sprite_animator != null:
+			_sprite_animator.update_locomotion(false)
+		return
+
 	_dash_cooldown_remaining = maxf(0.0, _dash_cooldown_remaining - delta)
 
 	var effective_speed: float = move_speed * (_stats.move_speed_multiplier if _stats != null else 1.0)
@@ -301,6 +311,11 @@ func try_start_dash() -> void:
 		return
 
 	if _health == null or _health.is_dead:
+		return
+
+	# Refused through the wave count-in as well: a roll banked during the hold would
+	# come out of it as free distance and a free window of i-frames.
+	if WaveManager != null and WaveManager.is_preparing:
 		return
 
 	var input_direction: Vector2 = Input.get_vector("move_left", "move_right", "move_up", "move_down")
