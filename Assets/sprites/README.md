@@ -87,6 +87,29 @@ adding an animation:
   tightens with it. The robe hem is carried by the legs inside it, so it parts
   around the leading foot instead of swinging as a rigid bell.
 
+### Hunters are tailored; enemies are not
+
+`BodySpec.trim` is the costume switch, set on every Hunter by `cast._c` and on
+nobody else. It turns on accent piping down the coat's front edge and along the
+hem, a cuffed glove on each hand, a turned cuff on the boots, and a short
+mantle over the shoulders for anyone without a `tall_collar`.
+
+That split is the point. The Hunters read as people who had this made for
+them; the enemies read as what crawled out of the ground. A black leather
+glove on a skeleton's wrist is equipment nobody issued it, so `trim` gates the
+gloves too — enemies keep bare hands.
+
+Two things learned tuning it:
+
+* **Metal below the knee reads as stripes.** Boot tops in `accent`, on top of a
+  hem line, a belt and two wrist cuffs, made the costume look banded rather
+  than trimmed. Boot cuffs are turned leather instead.
+* **A face is four rows.** Brow, eyes set under it, a nose shadow, a mouth —
+  on an eight-pixel head there is room for exactly that, and with none of them
+  every uncovered face was a smooth ball with two coloured dots floating on it.
+  Headgear has to clear those rows: the Jester's cap dome was centred low
+  enough to cover the eye row, which is why he had no face at all.
+
 ### A limb drawn over the torso needs its own edge
 
 In a side view the near arm lies over the chest for its whole length. Three
