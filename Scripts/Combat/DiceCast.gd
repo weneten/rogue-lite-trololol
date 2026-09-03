@@ -22,6 +22,8 @@ const SHEET_PATH = "res://Assets/sprites/weapons/dice_cast.png"
 const FONT_PATH = "res://Assets/Fonts/nightbane_3x.fnt"
 const CELL = 16
 const DIE_SCALE = 2.0
+# Cube is 16 * DIE_SCALE; keep a sliver of air so the pair never stacks.
+const MIN_DIE_SEPARATION = 44.0
 # Label centre sits this many pixels above the die centre after the throw lands.
 const NUMBER_ABOVE = 30.0
 # Extra lift during the reveal pop, so the number reads as a callout, not a pip.
@@ -96,11 +98,10 @@ func begin(from: Vector2, toward: Vector2, target_count: int, damage_pips: int,
 	# takes). Saturated so they hold up against the bone cube, especially gold.
 	var faces: Array[String] = ["x%d" % target_count, str(shown_damage)]
 	var tints := [Color(1.0, 0.94, 0.28), Color(1.0, 0.38, 0.32)]
+	var landings := _spread_landings(landing, direction)
 
 	for i in range(2):
-		var spread := Vector2(-9.0 + 18.0 * float(i), 5.0 - 10.0 * float(i))
-		_spawn_die(sheet, from, landing + spread + Vector2(randf_range(-4, 4), randf_range(-3, 3)),
-			faces[i], tints[i], 0.05 * float(i))
+		_spawn_die(sheet, from, landings[i], faces[i], tints[i], 0.05 * float(i))
 
 	# The dice are thrown, tumble, squash on landing and then hold up their numbers. The
 	# stagger above means the second die lands a beat after the first, so the pair reads
@@ -189,6 +190,23 @@ func _spawn_die(sheet: Texture2D, from: Vector2, landing: Vector2, value: String
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	reveal.chain().tween_property(label, "scale", Vector2.ONE, REVEAL_SECONDS * 0.4) \
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+
+# Two spots beside the throw, then a last push if jitter still stacked them.
+func _spread_landings(landing: Vector2, direction: Vector2) -> Array[Vector2]:
+	var side := Vector2(-direction.y, direction.x)
+	var half := MIN_DIE_SEPARATION * 0.5
+	var spots: Array[Vector2] = [
+		landing - side * half + direction * randf_range(-3.0, 3.0),
+		landing + side * half + direction * randf_range(-3.0, 3.0),
+	]
+	var delta: Vector2 = spots[1] - spots[0]
+	var dist := delta.length()
+	if dist < MIN_DIE_SEPARATION:
+		var axis := delta / dist if dist > 0.5 else side
+		var extra := (MIN_DIE_SEPARATION - dist) * 0.5
+		spots[0] -= axis * extra
+		spots[1] += axis * extra
+	return spots
 
 func _place_die(die: Sprite2D, from: Vector2, landing: Vector2, t: float) -> void:
 	if not is_instance_valid(die):
