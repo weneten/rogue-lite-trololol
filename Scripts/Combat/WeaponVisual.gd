@@ -299,7 +299,10 @@ func play_swing(weapon_class: int = 0) -> void:
 	if (weapon_class & WeaponData.WeaponClass.MELEE) != 0:
 		_swing_kind = SwingKind.MELEE
 		_swing_duration = 0.36
-	elif (weapon_class & WeaponData.WeaponClass.TRAP) != 0:
+	elif (weapon_class & WeaponData.WeaponClass.TRAP) != 0 \
+			or (weapon_class & WeaponData.WeaponClass.DICE) != 0:
+		# Dice borrow the trap's plant: both are an underarm toss at the floor rather
+		# than anything aimed at the target.
 		_swing_kind = SwingKind.PLANT
 		_swing_duration = 0.30
 	elif (weapon_class & WeaponData.WeaponClass.FIREARM) != 0:

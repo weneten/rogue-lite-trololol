@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://bd7c2e5g8k1m4p"]
+
+[ext_resource type="Script" path="res://Resources/WeaponData/WeaponData.gd" id="1_wd"]
+[ext_resource type="Texture2D" path="res://Assets/sprites/weapons/bone_dice.png" id="icon_tex"]
+
+[resource]
+script = ExtResource("1_wd")
+icon = ExtResource("icon_tex")
+name = "Bone Dice"
+dice_base_sides = 6
+damage = 6.0
+attack_speed = 0.75
+range = 240.0
+crit_chance = 0.05
+crit_multiplier = 2.0
+projectile_count = 1
+spread = 0.0
+knockback = 0.0
+rarity_tier = 1
+weapon_class = 512
+shop_cost = 3

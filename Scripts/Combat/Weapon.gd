@@ -305,7 +305,9 @@ func _attack(target: Node2D) -> void:
 	# Order matters: Trap pre-empts everything (it never attacks directly), Melee handles its
 	# own cleave via the hitbox overlap even when also flagged AoE (War Cleaver), and pure AoE
 	# (no Melee) gets the radius-burst path; anything left over fires a projectile.
-	if (data.weapon_class & WeaponData.WeaponClass.TRAP) != 0:
+	if (data.weapon_class & WeaponData.WeaponClass.DICE) != 0:
+		_throw_dice(target)
+	elif (data.weapon_class & WeaponData.WeaponClass.TRAP) != 0:
 		_place_trap()
 	elif (data.weapon_class & WeaponData.WeaponClass.MELEE) != 0:
 		_perform_melee_attack()
@@ -325,6 +327,7 @@ func _resolve_weapon_hit_sfx_id() -> String:
 	if (c & WeaponData.WeaponClass.CURSED) != 0: return "weapon_cursed"
 	if (c & WeaponData.WeaponClass.AOE) != 0: return "weapon_aoe"
 	if (c & WeaponData.WeaponClass.SUMMON) != 0: return "weapon_summon"
+	if (c & WeaponData.WeaponClass.DICE) != 0: return "weapon_ranged"
 	if (c & WeaponData.WeaponClass.RANGED) != 0: return "weapon_ranged"
 	return "weapon_hit"
 
@@ -390,6 +393,76 @@ func _try_damage_target(body: Node2D) -> bool:
 		dummy.apply_knockback(push_dir * data.knockback)
 
 	return true
+
+# WeaponClass.DICE (Bone Dice): casts a pair of dice on the floor. One die rolls how many
+# enemies are hit, the other rolls the damage each of them takes; both are decided here and
+# handed to the DiceCast, which plays the throw and calls back when the dice settle. The
+# damage deliberately lands on the settle, not on the throw — a hit that happens before the
+# numbers come up is a hit that came from nothing.
+func _throw_dice(target: Node2D) -> void:
+	var luck: float = _owner_stats.luck if _owner_stats else 0.0
+	var sides := DiceCast.sides_for_luck(luck, data.dice_base_sides)
+	var bonus := DiceCast.roll_bonus_for_luck(luck)
+
+	var target_count := DiceCast.roll(sides, bonus)
+	var damage_pips := DiceCast.roll(sides, bonus)
+
+	var cast := DiceCast.new()
+	cast.name = "DiceCast"
+	# Parented to the arena, not to this weapon: the dice stay where they landed while
+	# the Jester keeps running, which is the whole point of throwing them on the floor.
+	var host: Node = get_tree().current_scene if get_tree() != null else null
+	if host == null:
+		return
+	host.add_child(cast)
+
+	cast.resolved.connect(func(count: int, pips: int): _resolve_dice(count, pips))
+	cast.begin(_spawn_point.global_position, target.global_position, target_count, damage_pips)
+
+# Applies one settled throw: the nearest `target_count` live enemies in range each take
+# `damage_pips` times this weapon's per-pip damage.
+func _resolve_dice(target_count: int, damage_pips: int) -> void:
+	if _owner_body == null or not is_instance_valid(_owner_body) or data == null:
+		return
+
+	var reach := get_range()
+	var reach_sq := reach * reach
+	var origin: Vector2 = _owner_body.global_position
+
+	var candidates: Array[Node2D] = []
+	for node in get_tree().get_nodes_in_group(target_group):
+		if not node is Node2D:
+			continue
+		var body := node as Node2D
+		if not is_live_candidate(body):
+			continue
+		if origin.distance_squared_to(body.global_position) > reach_sq:
+			continue
+		candidates.append(body)
+
+	candidates.sort_custom(func(a: Node2D, b: Node2D):
+		return origin.distance_squared_to(a.global_position) < origin.distance_squared_to(b.global_position))
+
+	var crit_chance: float = data.crit_chance + (_owner_stats.extra_crit_chance if _owner_stats else 0.0)
+	var crit_multiplier: float = data.crit_multiplier + (_owner_stats.extra_crit_multiplier if _owner_stats else 0.0)
+	var pips: float = float(maxi(1, damage_pips))
+
+	for i in range(mini(target_count, candidates.size())):
+		var body := candidates[i]
+		var health := body.get_node_or_null("HealthComponent") as HealthComponent
+		if health == null or health.is_dead:
+			continue
+
+		var is_crit: bool = randf() < crit_chance
+		var multiplier := _compute_damage_multiplier(body)
+		var final_damage: int = maxi(1, roundi(
+			get_damage() * pips * multiplier * (crit_multiplier if is_crit else 1.0)))
+
+		health.take_damage(final_damage, _owner_body)
+		_record_damage(final_damage)
+		if _owner_stats:
+			_owner_stats.notify_damage_dealt(final_damage, body)
+		_apply_on_hit_lifesteal(final_damage)
 
 # Spawns Data.ProjectileCount pooled projectiles fanned across Data.Spread degrees, aimed at target.
 func _fire_projectiles(target: Node2D) -> void:

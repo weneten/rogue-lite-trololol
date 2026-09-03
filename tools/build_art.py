@@ -47,7 +47,10 @@ def build_weapons() -> None:
         # The arena-facing copy, so the weapon on your character is the same
         # object as the one in the shop card.
         weapons.mount(kind, style).save(mounts / f"{name}.png")
-    print(f"  {len(weapons.CATALOG)} icons + mounted copies")
+    # The Jester's thrown pair: its own little sheet, since the dice leave the
+    # hand and land on the floor instead of riding it.
+    weapons.dice_cast_sheet().save(out / "dice_cast.png")
+    print(f"  {len(weapons.CATALOG)} icons + mounted copies, dice cast sheet")
 
 
 def build_items() -> None:
