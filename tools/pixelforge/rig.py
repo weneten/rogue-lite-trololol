@@ -82,6 +82,11 @@ class BodySpec:
     # charge on it are the whole order.
     tabard: Ramp | None = None
     emblem: str = "none"    # none | cross
+    # Tailored costume: accent piping down the coat front and along the hem,
+    # cuffed gloves, cuffed boots and a shoulder mantle. What separates a
+    # Hunter who had this made for them from a corpse in a sack, so the
+    # enemies leave it off.
+    trim: bool = False
     # Heater shield strapped to the far arm. Drawn with the back limb, so it
     # sits behind the torso and reads as depth rather than as a plate glued to
     # the front of the sprite.
@@ -567,10 +572,38 @@ def _limb(c: Canvas, a: Vec2, b: Vec2, r0: float, r1: float, ramp: Ramp) -> None
         c.capsule((a[0] - 0.9, a[1] - 1.0), (b[0] - 0.9, b[1] - 1.0), r0 * 0.42, r1 * 0.42, ramp.light)
 
 
-def _boot(c: Canvas, foot: Vec2, s: float, ramp: Ramp) -> None:
+def _boot(c: Canvas, foot: Vec2, s: float, ramp: Ramp, cuff: RGBA | None = None) -> None:
+    """Shaft, sole and a turned-down cuff. The cuff is the whole difference
+    between a boot and a dark smudge where the leg ends."""
+    # Shaft up the ankle, so the boot has height instead of being a puddle.
+    c.capsule((foot[0], foot[1] - 3.4 * s), (foot[0], foot[1] - 0.6), 1.9 * s, 2.1 * s, ramp.dark)
     c.ellipse(foot[0] + 1.0 * s, foot[1], 3.2 * s, 1.9 * s, ramp.dark)
     c.ellipse(foot[0] + 0.8 * s, foot[1] - 0.7, 2.6 * s, 1.2 * s, ramp.core)
     c.hline(round(foot[0] - 1.4 * s), round(foot[0] + 1.6 * s), round(foot[1] - 1.4 * s), ramp.light)
+    if cuff is not None:
+        c.hline(round(foot[0] - 2.0 * s), round(foot[0] + 1.8 * s),
+                round(foot[1] - 3.6 * s), cuff)
+
+
+def _glove(c: Canvas, elbow: Vec2, hand: Vec2, s: float, ramp: Ramp, cuff: RGBA | None) -> None:
+    """A dark glove with a band at the wrist.
+
+    A bare hand at this size is one pale dot on the end of a sleeve, and it
+    was the only part of the arm anyone could pick out. Near-black reads as a
+    hand because the shape is a hand; the cuff says where the sleeve stops.
+    """
+    c.ellipse(hand[0], hand[1], 1.5 * s, 1.7 * s, ramp.outline)
+    c.ellipse(hand[0] - 0.3, hand[1] - 0.4, 1.1 * s, 1.2 * s, ramp.dark)
+    c.set(round(hand[0] - 0.6 * s), round(hand[1] - 0.9 * s), ramp.core)
+    if cuff is None:
+        return
+    # Band across the wrist, square to the forearm.
+    dx, dy = hand[0] - elbow[0], hand[1] - elbow[1]
+    d = math.hypot(dx, dy) or 1.0
+    px, py = -dy / d, dx / d
+    wx = hand[0] - (dx / d) * 1.9 * s
+    wy = hand[1] - (dy / d) * 1.9 * s
+    c.line((wx - px * 1.7 * s, wy - py * 1.7 * s), (wx + px * 1.7 * s, wy + py * 1.7 * s), cuff)
 
 
 def _paw(c: Canvas, ankle: Vec2, toe: Vec2, s: float, ramp: Ramp, claw: RGBA | None) -> None:
@@ -637,13 +670,14 @@ def _draw_leg(
     hip: Vec2, knee: Vec2, ankle: Vec2 | None, foot: Vec2,
     ramp: Ramp, foot_ramp: Ramp,
     r_hip: float, r_knee: float, r_foot: float,
+    cuff: RGBA | None = None,
 ) -> None:
     """One leg, humanoid or digitigrade. Radii are passed in rather than
     derived, so the beast branch cannot quietly restyle the whole cast."""
     _limb(c, hip, knee, r_hip, r_knee, ramp)
     if ankle is None:
         _limb(c, knee, foot, r_knee, r_foot, ramp)
-        _boot(c, foot, s, foot_ramp)
+        _boot(c, foot, s, foot_ramp, cuff)
         return
 
     _limb(c, knee, ankle, r_knee, r_foot, ramp)
@@ -863,6 +897,21 @@ def _draw_torso(c: Canvas, pose: Pose, spec: BodySpec, s: float) -> None:
         c.line((hip[0] - 1.0, hip[1] + 1.0), (hip[0] - 2.0 - pose.cape_sway * 0.4, hem - 1), shade(cloth.dark, -0.3))
         c.line((hip[0] + 2.0, hip[1] + 1.0), (hip[0] + 2.6, hem - 1), shade(cloth.dark, -0.3))
 
+    if spec.trim:
+        # Piping down the coat's front edge and around the hem. Two lines, and
+        # they do more for "this was tailored" than any amount of shading.
+        gold = spec.accent.core
+        front_x = chest[0] + w_top * 0.34
+        c.line((front_x, chest[1] - 1.0 * s), (hip[0] + w_bot * 0.5, hip[1] + 2.0 * s),
+               shade(gold, -0.25))
+        if spec.cape in ("cloak", "shroud", "coat", "tatters"):
+            hem = pose.ground_y - 5.0 * s if spec.cape != "coat" else hip[1] + 8.0 * s
+            lead = (pose.foot_f[0] - hip[0]) * 0.45
+            trail = (pose.foot_b[0] - hip[0]) * 0.45
+            c.line((hip[0] - w_bot - 2.8 * s - pose.cape_sway * 0.8 + trail, hem - 1.0),
+                   (hip[0] + w_bot + 2.6 * s - pose.cape_sway * 0.4 + lead, hem - 1.0),
+                   shade(gold, -0.35))
+
     if spec.belt:
         c.capsule((hip[0] - w_bot, hip[1] - 1.0), (hip[0] + w_bot, hip[1] - 1.0), 1.4 * s, 1.4 * s, spec.accent.dark)
         c.set(round(hip[0] + 0.5), round(hip[1] - 1.5), spec.accent.light)
@@ -878,6 +927,21 @@ def _draw_torso(c: Canvas, pose: Pose, spec: BodySpec, s: float) -> None:
             c.ellipse(px - 0.5, sh[1] - 0.5, pad_w, pad_w * 0.72, spec.armor.dark)
             c.ellipse(px - 1.0, sh[1] - 1.2, pad_w * 0.7, pad_w * 0.46, spec.armor.core)
             c.set(round(px - 1.5), round(sh[1] - 2.0), spec.armor.hi)
+
+    if spec.trim and not spec.tall_collar:
+        # Short mantle over the shoulders. The cast is mostly straight tubes
+        # from neck to hem; one horizontal break at the shoulders is what stops
+        # a coat reading as a dressing gown.
+        mantle = cloth.tinted(P.VOID, 0.34)
+        pts = [
+            (pose.neck[0] - 4.6 * s, pose.neck[1] + 1.0 * s),
+            (pose.neck[0] + 4.0 * s, pose.neck[1] + 1.0 * s),
+            (chest[0] + w_top * 0.92, chest[1] + 4.2 * s),
+            (chest[0] - w_top * 1.02 - pose.cape_sway * 0.3, chest[1] + 4.6 * s),
+        ]
+        c.polygon(pts, mantle.dark)
+        c.polygon([(x + 0.7, y - 0.7) for x, y in pts[:2]] + [pts[2], pts[3]], mantle.core)
+        c.line(pts[3], pts[2], spec.accent.dark)
 
     if spec.tall_collar:
         c.polygon(
@@ -1153,8 +1217,18 @@ def _draw_head(c: Canvas, pose: Pose, spec: BodySpec, s: float) -> None:
     c.ellipse(hx + r * 0.35, hy + r * 0.55, r * 0.6, r * 0.45, base.dark)
 
     eye_y = round(hy - 0.2)
+    # Brow, eyes set under it, a nose shadow and a mouth. Four rows is all an
+    # eight-pixel head has room for, and with none of them the face was a
+    # smooth ball with two coloured dots floating on it.
+    c.line((hx - r * 0.5, eye_y - 1), (hx + r * 0.9, eye_y - 1), shade(base.dark, -0.45))
+    for ex in (r * 0.5, r * -0.25):
+        c.set(round(hx + ex), eye_y, shade(base.dark, -0.55))
     c.set(round(hx + r * 0.5), eye_y, spec.eye)
     c.set(round(hx - r * 0.25), eye_y, spec.eye)
+    # Nose: one pixel of shadow off the brow, on the side facing the camera.
+    c.set(round(hx + r * 0.95), eye_y + 1, shade(base.dark, -0.3))
+    c.hline(round(hx + r * 0.15), round(hx + r * 0.7), round(hy + r * 0.72),
+            shade(base.dark, -0.4))
     if kind == "skull":
         c.set(round(hx + r * 0.5), eye_y + 1, shade(spec.eye, -0.5))
         c.set(round(hx - r * 0.25), eye_y + 1, shade(spec.eye, -0.5))
@@ -1214,8 +1288,10 @@ def _draw_head(c: Canvas, pose: Pose, spec: BodySpec, s: float) -> None:
         # one standing up. Nothing else in the cast has anything above the
         # skull that hangs, so the silhouette reads as the Jester long before
         # the motley colours do.
-        c.ellipse(hx, hy - r * 0.35, r * 0.95, r * 0.8, spec.cloth.dark)
-        c.ellipse(hx - 0.5, hy - r * 0.55, r * 0.7, r * 0.5, spec.cloth.core)
+        # Sits on the crown, not over the face. Centred at -0.35r with a 0.8r
+        # radius the dome reached down past the eye row and covered it.
+        c.ellipse(hx, hy - r * 0.92, r * 0.98, r * 0.62, spec.cloth.dark)
+        c.ellipse(hx - 0.5, hy - r * 1.05, r * 0.72, r * 0.4, spec.cloth.core)
         # Each lobe leaves the skull, rises, then falls away from it. Drawn as
         # two capsules rather than one so the horn actually droops instead of
         # sticking out like a spike.
@@ -1224,13 +1300,15 @@ def _draw_head(c: Canvas, pose: Pose, spec: BodySpec, s: float) -> None:
             ((hx - r * 1.7, hy - r * 1.5), (hx - r * 2.6, hy + r * 0.2)),
             ((hx - r * 0.2, hy - r * 2.2), (hx - r * 1.0, hy - r * 3.0)),
         ):
-            c.capsule((hx, hy - r * 0.8), mid, r * 0.34, r * 0.2, spec.cloth.core)
+            c.capsule((hx, hy - r * 1.2), mid, r * 0.34, r * 0.2, spec.cloth.core)
             c.capsule(mid, tip, r * 0.2, r * 0.1, spec.cloth.dark)
             # The bell on the end: a bright core with a dim pixel under it. Two
             # pixels, and they catch the eye every time he moves.
             c.set(round(tip[0]), round(tip[1]), spec.accent.core)
             c.set(round(tip[0]), round(tip[1]) + 1, spec.accent.dark)
-        c.hline(round(hx - r * 0.95), round(hx + r * 0.95), round(hy + r * 0.15), spec.accent.dark)
+        # Band along the cap's lower edge. At hy + r*0.15 it ran straight across
+        # the eyes, which is most of why the Jester had no face.
+        c.hline(round(hx - r * 0.95), round(hx + r * 0.95), round(hy - r * 0.62), spec.accent.dark)
     elif kind == "mask":
         # Plague beak.
         c.polygon(
@@ -1337,10 +1415,20 @@ def draw_figure(
     # so it needs to be visibly lighter as well as outlined.
     sleeve = spec.cloth.tinted(P.SMOKE, 0.22)
 
+    cuff = spec.accent.dark if spec.trim else None
+    glove = spec.cloth.tinted(P.VOID, 0.62)
+    # Boot tops are turned leather, not gold. Ringing both shins in accent as
+    # well as the hem, the belt and both wrists left the costume looking
+    # striped rather than trimmed — the reference has no metal below the knee.
+    boot_cuff = P.R_LEATHER.light if spec.trim else None
     _draw_leg(layer, spec, s, pose.hip_b, pose.knee_b, pose.ankle_b, pose.foot_b,
-              back_trouser, back, 2.5 * s * spec.build, 2.1 * s, 1.7 * s)
+              back_trouser, back, 2.5 * s * spec.build, 2.1 * s, 1.7 * s,
+              cuff=None)
     _limb(layer, pose.shoulder_b, pose.elbow_b, 1.9 * s * spec.build, 1.6 * s, back)
     _limb(layer, pose.elbow_b, pose.hand_b, 1.6 * s, 1.35 * s, back)
+    if spec.trim and not spec.claws:
+        _glove(layer, pose.elbow_b, pose.hand_b, s, glove.tinted(P.VOID, 0.3),
+               shade(cuff, -0.35) if cuff else None)
     if spec.claws:
         layer.circle(pose.hand_b[0], pose.hand_b[1], 1.5 * s, back.dark)
         _draw_claws(layer, pose.elbow_b, pose.hand_b, s, shade(P.R_BONE.dark, -0.3))
@@ -1349,7 +1437,7 @@ def draw_figure(
 
     _draw_leg(layer, spec, s, pose.hip_f, pose.knee_f, pose.ankle_f, pose.foot_f,
               trouser, trouser if spec.digitigrade else P.R_LEATHER,
-              2.7 * s * spec.build, 2.2 * s, 1.8 * s)
+              2.7 * s * spec.build, 2.2 * s, 1.8 * s, cuff=boot_cuff)
 
     # Over the near thigh, which is what a surcoat does.
     _draw_tabard(layer, pose, spec, s)
@@ -1399,8 +1487,13 @@ def draw_figure(
     layer.circle(pose.hand_f[0], pose.hand_f[1], hand_r + 0.6, edge)
     _limb(layer, pose.shoulder_f, pose.elbow_f, up_r, fore_r, sleeve)
     _limb(layer, pose.elbow_f, pose.hand_f, fore_r, wrist_r, sleeve)
-    layer.circle(pose.hand_f[0], pose.hand_f[1], hand_r, spec.skin.dark)
-    layer.circle(pose.hand_f[0] - 0.4, pose.hand_f[1] - 0.5, 0.8 * s, spec.skin.core)
+    if spec.trim:
+        _glove(layer, pose.elbow_f, pose.hand_f, s, glove, cuff)
+    else:
+        # Enemies go bare-handed. A black leather glove on a skeleton's wrist
+        # reads as equipment nobody issued it.
+        layer.circle(pose.hand_f[0], pose.hand_f[1], hand_r, spec.skin.dark)
+        layer.circle(pose.hand_f[0] - 0.4, pose.hand_f[1] - 0.5, 0.8 * s, spec.skin.core)
     if spec.claws:
         _draw_claws(layer, pose.elbow_f, pose.hand_f, s, P.R_BONE.dark)
 

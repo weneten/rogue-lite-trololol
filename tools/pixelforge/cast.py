@@ -32,6 +32,9 @@ class Entry:
 
 
 def _c(ident, title, spec, wstyle, swing="slash") -> Entry:
+    # Every Hunter is tailored: piping, cuffs, mantle. Set here rather than on
+    # each entry so nobody in the roster can quietly be the scruffy one.
+    spec.trim = True
     return Entry(ident, "characters", spec, wstyle, swing, 64, title)
 
 
