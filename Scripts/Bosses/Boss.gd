@@ -194,6 +194,14 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		return
 
+	# Held through the wave count-in exactly like the regular roster — a boss that
+	# survived into the next wave must not get free hits on a player who is still
+	# reading the arena.
+	if WaveManager != null and WaveManager.is_preparing:
+		velocity = Vector2.ZERO
+		move_and_slide()
+		return
+
 	update_phase_from_health()
 
 	var player = get_tree().get_first_node_in_group("Player") as Node2D

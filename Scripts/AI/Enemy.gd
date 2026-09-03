@@ -157,6 +157,14 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		return
 
+	# Wave count-in: leftovers from last wave stand exactly where the shop left them so
+	# the player can read the board before it moves. Cooldowns are frozen with them —
+	# a held enemy that swings the instant the count ends is not a fair count.
+	if WaveManager != null and WaveManager.is_preparing:
+		velocity = Vector2.ZERO
+		move_and_slide()
+		return
+
 	var player := _resolve_player()
 	var player_health: HealthComponent = null
 	if player != null:

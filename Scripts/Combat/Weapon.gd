@@ -172,6 +172,12 @@ func _process(delta: float) -> void:
 	if _cooldown_remaining > 0:
 		return
 
+	# Weapons hold fire through the wave count-in. The enemies are frozen for it, and
+	# free hits on a field that cannot fight back would turn a breather into a bonus.
+	# Aim still tracks above, so the loadout is pointed the right way when it lifts.
+	if WaveManager != null and WaveManager.is_preparing:
+		return
+
 	var target := _find_nearest_target()
 	if target == null:
 		return

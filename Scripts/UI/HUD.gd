@@ -224,6 +224,12 @@ func _update_wave_timer() -> void:
 	if _timer_label == null or WaveManager == null:
 		return
 
+	# The count-in owns the timer slot while it runs: the wave clock has not started,
+	# so showing it would read as a wave that is already draining.
+	if WaveManager.is_preparing:
+		_timer_label.text = "READY %.0f" % ceilf(WaveManager.prep_time_remaining)
+		return
+
 	if WaveManager.is_wave_active:
 		# On difficulties where the wave waits for the boss, the timer has
 		# already run out and would sit at a stuck "0s" for the whole fight.
@@ -491,7 +497,12 @@ func _on_wave_start(wave_number: int) -> void:
 	if _wave_label != null:
 		_wave_label.text = "WAVE %d" % wave_number
 
-	_show_banner("WAVE %d" % wave_number, _wave_flavour(wave_number))
+	# A wave that opens with a count-in says so on the banner; the seconds themselves
+	# tick down in the wave-timer slot, which is where the player already looks for time.
+	if WaveManager != null and WaveManager.is_preparing:
+		_show_banner("WAVE %d" % wave_number, "GET READY")
+	else:
+		_show_banner("WAVE %d" % wave_number, _wave_flavour(wave_number))
 
 static func _wave_flavour(wave_number: int) -> String:
 	if wave_number <= 1:

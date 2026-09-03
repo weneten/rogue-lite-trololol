@@ -17,6 +17,12 @@ var spawns_paused: bool
 @export var enemy_pool_prewarm: int = 10
 @export var initial_delay_seconds: float = 2.0
 
+# Breathing room at the top of every wave after the first. The shop closes straight back
+# onto the arena the player left — same position, same leftovers still standing — and this
+# is the beat they get to read that board before it moves. Nothing spawns, nothing chases,
+# nothing swings; the wave timer has not started either, so the pause is free.
+@export var wave_prep_seconds: float = 3.0
+
 # Min distance from player for a spawn (on-screen but not on top of them).
 @export var spawn_radius_min: float = 260.0
 # Max distance from player for a spawn (inside camera / arena, not beyond walls).
@@ -37,11 +43,22 @@ var _enemies_to_spawn_this_wave: int
 var _enemies_spawned_this_wave: int
 var _gameplay_active: bool
 
+var _prep_time_remaining: float
+
 var wave_time_remaining: float:
 	get: return _wave_time_remaining
 
 var time_until_next_wave: float:
 	get: return _inter_wave_time_remaining
+
+# True while the wave has started but the arena is still held: enemies stand, weapons
+# hold fire and nothing new spawns. Everything that must sit still during the count-in
+# reads this rather than being told to freeze by the wave loop.
+var is_preparing: bool:
+	get: return is_wave_active and _prep_time_remaining > 0.0
+
+var prep_time_remaining: float:
+	get: return maxf(0.0, _prep_time_remaining)
 
 func _ready() -> void:
 	if enemy_scene == null:
@@ -86,6 +103,7 @@ func _begin_gameplay() -> void:
 	_enemies_spawned_this_wave = 0
 	_enemies_to_spawn_this_wave = 0
 	_wave_time_remaining = 0
+	_prep_time_remaining = 0
 	_inter_wave_time_remaining = initial_delay_seconds
 	_enemy_pool = null
 	_pool_parent = null
@@ -136,6 +154,15 @@ func _resolve_entity_parent() -> Node:
 	return world if world != null else scene
 
 func _process_active_wave(delta: float) -> void:
+	# Count-in: the wave is live but held. The wave timer does not run yet, so the
+	# player is never charged for the time they spend reading the board.
+	if _prep_time_remaining > 0.0:
+		_prep_time_remaining -= delta
+		if _prep_time_remaining <= 0.0:
+			_prep_time_remaining = 0.0
+			EventBus.wave_prep_end.emit(current_wave)
+		return
+
 	_wave_time_remaining -= delta
 
 	# Keep spawning for the whole wave timer (Brotato-style). No "quota then idle" gap.
@@ -183,8 +210,13 @@ func start_next_wave() -> void:
 	_enemies_to_spawn_this_wave = _get_max_alive_for_wave(current_wave)
 	_enemies_spawned_this_wave = 0
 	_spawn_time_remaining = 0
+	# Wave 1 already opens with initial_delay_seconds of quiet before anything exists to
+	# look at; the count-in is for the waves the player walks back into off the shop.
+	_prep_time_remaining = wave_prep_seconds if current_wave > 1 else 0.0
 
 	EventBus.wave_start.emit(current_wave)
+	if _prep_time_remaining > 0.0:
+		EventBus.wave_prep_start.emit(current_wave, _prep_time_remaining)
 	if NetSession != null and NetSession.is_host:
 		NetSession.broadcast_wave_start(current_wave)
 	print("[WaveManager] Wave %d start — continuous spawn for %.0fs (interval %.2fs, max alive %d)." % [

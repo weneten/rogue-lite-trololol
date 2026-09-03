@@ -12,6 +12,12 @@ signal run_started()
 
 signal wave_start(wave_number)
 signal wave_end(wave_number)
+
+# The count-in at the top of a wave (see WaveManager.wave_prep_seconds): the arena is live
+# and the player is standing in it, but nothing spawns, chases or swings until it ends.
+# Raised right after wave_start, and only for waves that get one.
+signal wave_prep_start(wave_number, seconds)
+signal wave_prep_end(wave_number)
 signal player_level_up(new_level)
 # After every queued moon-boon for this intermission has been picked. ShopUI
 # waits on this so the Ossuary never covers the boon screen.
