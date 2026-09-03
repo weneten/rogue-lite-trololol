@@ -2,7 +2,7 @@ extends Node2D
 class_name DiceCast
 
 # One throw of the Jester's Bone Dice: two dice arc out of his hand, tumble, land, show
-# their numbers, and vanish.
+# their numbers above the cubes, and vanish.
 #
 # The rolls are decided before the dice leave the hand (Weapon._throw_dice) — this node is
 # the theatre, exactly like SlotMachineUI's reels. What it does own is the beat the damage
@@ -19,12 +19,15 @@ class_name DiceCast
 signal resolved(target_count: int, damage_pips: int)
 
 const SHEET_PATH = "res://Assets/sprites/weapons/dice_cast.png"
-const FONT_PATH = "res://Assets/Fonts/nightbane_2x.fnt"
+const FONT_PATH = "res://Assets/Fonts/nightbane_3x.fnt"
 const CELL = 16
 const DIE_SCALE = 2.0
+# Label centre sits this many pixels above the die centre after the throw lands.
+const NUMBER_ABOVE = 30.0
+# Extra lift during the reveal pop, so the number reads as a callout, not a pip.
+const NUMBER_RISE = 8.0
 # Frames 0-2 tumble (blank cubes), 3 is the landing squash, 4-5 are pip faces.
-# Settled dice use a blank cube so the calculated number can sit on the face
-# without fighting the painted pips.
+# Settled dice use a blank cube; the number floats above rather than fighting pips.
 const TUMBLE_FRAMES: Array[int] = [0, 1, 2]
 const SQUASH_FRAME = 3
 const BLANK_FRAME = 0
@@ -74,7 +77,7 @@ static func roll(sides: int, bonus: int) -> int:
 func begin(from: Vector2, toward: Vector2, target_count: int, damage_pips: int,
 		display_damage: int = -1) -> void:
 	global_position = Vector2.ZERO
-	z_index = 1
+	z_index = 12
 
 	var sheet := load(SHEET_PATH) as Texture2D
 	if sheet == null:
@@ -90,10 +93,9 @@ func begin(from: Vector2, toward: Vector2, target_count: int, damage_pips: int,
 
 	var shown_damage: int = display_damage if display_damage > 0 else damage_pips
 	# Gold count die (how many enemies), crimson damage die (the hit each of them
-	# takes). The damage face is the calculated number, not the pip roll — otherwise
-	# a 5 that deals 30 reads as a 5.
+	# takes). Saturated so they hold up against the bone cube, especially gold.
 	var faces: Array[String] = ["x%d" % target_count, str(shown_damage)]
-	var tints := [Color(1.0, 0.84, 0.42), Color(1.0, 0.45, 0.45)]
+	var tints := [Color(1.0, 0.94, 0.28), Color(1.0, 0.38, 0.32)]
 
 	for i in range(2):
 		var spread := Vector2(-9.0 + 18.0 * float(i), 5.0 - 10.0 * float(i))
@@ -126,29 +128,31 @@ func _spawn_die(sheet: Texture2D, from: Vector2, landing: Vector2, value: String
 	die.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	die.global_position = from
 	die.scale = Vector2.ONE * DIE_SCALE
-	die.modulate = Color.WHITE.lerp(tint, 0.28)
+	die.modulate = Color.WHITE.lerp(tint, 0.12)
 	add_child(die)
 	_dice.append(die)
 
+	# Sibling of the die, not a child: the number must not inherit the cube's
+	# gold tint (that was washing the yellow out) or the throw's spin.
 	var label := Label.new()
 	label.text = value
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	# Same 2x Nightbane + outline as DamageNumber, so the face reads as a hit
-	# rather than as a pip count. Inverse-scale so the glyph size is in screen
-	# pixels; the die itself is scaled up for the throw.
+	label.z_index = 2
 	label.add_theme_font_override("font", load(FONT_PATH))
 	label.add_theme_color_override("font_color", tint)
-	label.add_theme_color_override("font_outline_color", Color(0.05, 0.02, 0.04, 1.0))
-	label.add_theme_constant_override("outline_size", 4)
-	var label_size := Vector2(48, 24)
+	label.add_theme_color_override("font_outline_color", Color(0.04, 0.02, 0.02, 1.0))
+	label.add_theme_constant_override("outline_size", 8)
+	label.add_theme_color_override("font_shadow_color", Color(0.0, 0.0, 0.0, 0.95))
+	label.add_theme_constant_override("shadow_offset_x", 2)
+	label.add_theme_constant_override("shadow_offset_y", 2)
+	var label_size := Vector2(80, 36)
 	label.size = label_size
 	label.pivot_offset = label_size * 0.5
-	label.position = -label_size * 0.5
-	label.scale = Vector2.ONE / die.scale
+	label.position = landing - label_size * 0.5 + Vector2(0.0, -NUMBER_ABOVE)
 	label.modulate = Color(1.0, 1.0, 1.0, 0.0)
-	die.add_child(label)
+	add_child(label)
 	_labels.append(label)
 
 	var tween := die.create_tween()
@@ -173,15 +177,17 @@ func _spawn_die(sheet: Texture2D, from: Vector2, landing: Vector2, value: String
 	tween.tween_interval(SQUASH_SECONDS)
 	tween.tween_callback(func(): atlas.region = Rect2(BLANK_FRAME * CELL, 0, CELL, CELL))
 
-	# Number pops onto the face. Scale is relative to the inverse-die scale set above.
-	var rest_scale: Vector2 = Vector2.ONE / die.scale
+	# Number pops in above the die and rises a little so it isn't glued to the cube.
+	var rest_y: float = label.position.y
 	var reveal := label.create_tween()
 	reveal.tween_interval(delay + THROW_SECONDS + SQUASH_SECONDS)
 	reveal.set_parallel(true)
 	reveal.tween_property(label, "modulate:a", 1.0, REVEAL_SECONDS * 0.45)
-	reveal.tween_property(label, "scale", rest_scale * 1.35, REVEAL_SECONDS * 0.45) \
+	reveal.tween_property(label, "scale", Vector2.ONE * 1.2, REVEAL_SECONDS * 0.45) \
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	reveal.chain().tween_property(label, "scale", rest_scale, REVEAL_SECONDS * 0.55) \
+	reveal.tween_property(label, "position:y", rest_y - NUMBER_RISE, REVEAL_SECONDS) \
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	reveal.chain().tween_property(label, "scale", Vector2.ONE, REVEAL_SECONDS * 0.4) \
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
 
 func _place_die(die: Sprite2D, from: Vector2, landing: Vector2, t: float) -> void:
