@@ -26,6 +26,9 @@ const DIE_SCALE = 2.0
 const MIN_DIE_SEPARATION = 44.0
 # Label centre sits this many pixels above the die centre after the throw lands.
 const NUMBER_ABOVE = 30.0
+# Combined total sits this far above the *higher* die's number, so a vertical
+# spread never parks the total on top of one of the faces.
+const TOTAL_ABOVE = 26.0
 # Extra lift during the reveal pop, so the number reads as a callout, not a pip.
 const NUMBER_RISE = 8.0
 # Sheet: frames 0-5 are pip faces 1-6, 6 is the landing squash. The pips are
@@ -104,7 +107,9 @@ func begin(from: Vector2, toward: Vector2, target_count: int, damage_pips: int,
 
 	var combined := shown_damage * maxi(1, target_count)
 	if combined != shown_damage:
-		_spawn_combined((landings[0] + landings[1]) * 0.5, combined)
+		var mid_x := (landings[0].x + landings[1].x) * 0.5
+		var top_y := minf(landings[0].y, landings[1].y)
+		_spawn_combined(Vector2(mid_x, top_y), combined)
 
 	# The dice are thrown, tumble, squash on landing and then hold up their numbers. The
 	# stagger above means the second die lands a beat after the first, so the pair reads
@@ -180,11 +185,12 @@ func _spawn_die(sheet: Texture2D, from: Vector2, landing: Vector2, value: String
 	reveal.chain().tween_property(label, "scale", Vector2.ONE, REVEAL_SECONDS * 0.4) \
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
 
-# Combined hit (per-enemy damage × count) pops above the pair once both faces are up.
-func _spawn_combined(midpoint: Vector2, total: int) -> void:
+# Combined hit (per-enemy damage × count) pops above the higher die once both
+# faces are up. `anchor` is the midpoint-x / top-die-y of the pair.
+func _spawn_combined(anchor: Vector2, total: int) -> void:
 	var label := _make_roll_label(str(total), Color(1.0, 0.96, 0.88), Vector2(96, 40))
 	label.z_index = 3
-	label.position = midpoint - label.size * 0.5 + Vector2(0.0, -NUMBER_ABOVE - 22.0)
+	label.position = anchor - label.size * 0.5 + Vector2(0.0, -NUMBER_ABOVE - TOTAL_ABOVE)
 	add_child(label)
 	_labels.append(label)
 
