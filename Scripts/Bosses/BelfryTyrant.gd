@@ -31,7 +31,14 @@ enum Flight {
 	DIVING,
 }
 
-const WAVE_ARC_DEGREES := 52.0
+# How wide one wave is. Sized against the Hunter rather than by eye: a wave crossing
+# `d` px at `speed` gives him d/speed seconds, in which he covers move_speed * that
+# sideways - so the arc only threatens him while tan(arc/2) is near move_speed/speed,
+# and the distance cancels out. At 52 degrees and 300 px/s the arc was worth 0.49 to a
+# base Hunter's 0.87, which is why walking sideways cleared it without a thought.
+# 90 degrees is worth 1.0 against 0.72 at the current wave speed: standing still is
+# punished in full, walking out still works, and sprinting out always works.
+const WAVE_ARC_DEGREES := 90.0
 const WAVE_SPACING := 0.11
 const WAVE_FAN_DEGREES := 13.0
 
@@ -98,6 +105,23 @@ func begin_telegraph(attack: BossAttackPatternData, player: Node2D) -> void:
 
 		_:
 			super.begin_telegraph(attack, player)
+
+# Keeps the cone pointed at the player for as long as he is winding up.
+#
+# The fan itself is aimed at the live player when it fires — the first wave at
+# execution, the rest as their stagger timers come up — so a decal that locked in
+# at the start drew one cone and threw another. Stepping out of the drawn shape did
+# nothing, which made the telegraph worse than none: it taught the wrong dodge.
+#
+# Deliberately no lock-in near the end, unlike the Alpha's pounce. There the leap
+# commits and the decal should commit with it; here the waves keep re-aiming right
+# through the fan, so the cone has to as well or the mismatch is straight back.
+func process_windup(delta: float, player: Node2D, has_live_target: bool) -> void:
+	if player != null and pending_attack != null and pending_attack.attack_id == "sonic_wave" 			and active_telegraph != null and is_instance_valid(active_telegraph):
+		active_telegraph.retarget(global_position, _direction_to(player.global_position))
+		face_toward(player.global_position)
+
+	super.process_windup(delta, player, has_live_target)
 
 # ---------------------------------------------------------------------------
 # Attacks

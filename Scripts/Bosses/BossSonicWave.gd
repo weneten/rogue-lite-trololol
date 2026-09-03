@@ -8,6 +8,18 @@ class_name BossSonicWave
 # reason BossAoeTelegraph does it: the shape the player sees and the shape that
 # hits them are then literally the same two numbers, and a growing physics
 # shape cannot drift out of sync with the drawn one.
+#
+# Which means the arc has to be drawn at its real radii, rebuilt as it travels.
+# It used to be a unit arc scaled up by the distance travelled, and that quietly
+# broke the promise above twice over: the drawn outer edge sat exactly on the
+# leading edge while the hit test reached `band` px further, so the wave hit from
+# outside its own picture; and the drawn thickness was a fraction of the radius,
+# so it grew as the wave spread while the hit band stayed the same width.
+
+const ARC_SEGMENTS := 40
+# How much of the hit band the bright core line covers. Kept well inside 1.0 so
+# the core never reads as the edge of the danger.
+const CORE_FRACTION := 0.28
 
 var direction: Vector2 = Vector2.RIGHT
 var arc_degrees: float = 52.0
@@ -19,7 +31,6 @@ var band: float = 16.0
 var damage: int = 16
 var instigator: Node
 
-var _origin: Vector2
 var _distance: float = 8.0
 var _spent: bool = false
 var _band: Polygon2D
@@ -27,7 +38,6 @@ var _core: Polygon2D
 
 func _ready() -> void:
 	z_index = -1
-	_origin = global_position
 	_build_visuals()
 
 func _process(delta: float) -> void:
@@ -36,18 +46,7 @@ func _process(delta: float) -> void:
 		queue_free()
 		return
 
-	# The unit arc is drawn at radius 1 and scaled, so the band thickens as it
-	# spreads — which is what a sound wave losing focus actually looks like.
-	var scale_now := _distance
-	if _band != null:
-		_band.scale = Vector2.ONE * scale_now
-
-	if _core != null:
-		_core.scale = Vector2.ONE * scale_now
-		# Fades as it runs out of reach, so a wave about to expire never looks
-		# like one that still bites.
-		var life := 1.0 - clampf(_distance / maxf(1.0, max_distance), 0.0, 1.0)
-		_core.color = Color(0.72, 0.94, 1.0, 0.25 + 0.5 * life)
+	_update_shape()
 
 	if not _spent:
 		_try_hit()
@@ -57,7 +56,10 @@ func _try_hit() -> void:
 	if player == null:
 		return
 
-	var local := player.global_position - _origin
+	# global_position rather than a cached origin: the wave never moves itself, but
+	# the world folds around the Hunter (see ArenaLoop), and a stored copy would be
+	# left a world away the first time it did.
+	var local := player.global_position - global_position
 	var dist := local.length()
 	if absf(dist - _distance) > band:
 		return
@@ -73,43 +75,45 @@ func _try_hit() -> void:
 	health.take_damage(damage, instigator)
 
 func _build_visuals() -> void:
-	# Unit arc: outer edge at radius 1, inner edge pulled in by the band, both
-	# scaled up every frame from the spawn point.
-	var thickness := band / maxf(1.0, max_distance * 0.25)
+	_band = Polygon2D.new()
+	_band.color = Color(0.45, 0.75, 0.9, 0.28)
+	add_child(_band)
+
+	# A brighter line down the middle of the band, so the eye has something to
+	# read the wave's position off without it implying an edge that is not there.
+	_core = Polygon2D.new()
+	_core.color = Color(0.72, 0.94, 1.0, 0.7)
+	add_child(_core)
+
+	_update_shape()
+
+func _update_shape() -> void:
+	if _band != null:
+		_band.polygon = _arc_ring(_distance - band, _distance + band)
+
+	if _core != null:
+		_core.polygon = _arc_ring(_distance - band * CORE_FRACTION, _distance + band * CORE_FRACTION)
+		# Fades as it runs out of reach, so a wave about to expire never looks
+		# like one that still bites.
+		var life := 1.0 - clampf(_distance / maxf(1.0, max_distance), 0.0, 1.0)
+		_core.color = Color(0.72, 0.94, 1.0, 0.25 + 0.5 * life)
+
+# The band between two real radii, spanning the arc. These are the same numbers
+# _try_hit compares against, which is the entire point.
+func _arc_ring(inner: float, outer: float) -> PackedVector2Array:
+	var lo := maxf(0.0, inner)
+	var hi := maxf(lo, outer)
 	var points := PackedVector2Array()
 	var half := deg_to_rad(arc_degrees) * 0.5
 	var facing := direction.angle()
-	var segments := 16
 
-	for i in range(segments + 1):
-		var a := facing - half + (deg_to_rad(arc_degrees) * i / segments)
-		points.append(Vector2(cos(a), sin(a)))
+	for i in range(ARC_SEGMENTS + 1):
+		var a := facing - half + (half * 2.0 * i / ARC_SEGMENTS)
+		points.append(Vector2(cos(a), sin(a)) * hi)
 
-	for i in range(segments, -1, -1):
-		var a := facing - half + (deg_to_rad(arc_degrees) * i / segments)
-		points.append(Vector2(cos(a), sin(a)) * (1.0 - thickness))
-
-	_band = Polygon2D.new()
-	_band.color = Color(0.45, 0.75, 0.9, 0.28)
-	_band.polygon = points
-	_band.scale = Vector2.ONE * _distance
-	add_child(_band)
-
-	_core = Polygon2D.new()
-	_core.color = Color(0.72, 0.94, 1.0, 0.7)
-	_core.polygon = _arc_line(facing, half, segments, thickness * 0.42)
-	_core.scale = Vector2.ONE * _distance
-	add_child(_core)
-
-func _arc_line(facing: float, half: float, segments: int, thickness: float) -> PackedVector2Array:
-	var points := PackedVector2Array()
-	for i in range(segments + 1):
-		var a := facing - half + (half * 2.0 * i / segments)
-		points.append(Vector2(cos(a), sin(a)))
-
-	for i in range(segments, -1, -1):
-		var a := facing - half + (half * 2.0 * i / segments)
-		points.append(Vector2(cos(a), sin(a)) * (1.0 - thickness))
+	for i in range(ARC_SEGMENTS, -1, -1):
+		var a := facing - half + (half * 2.0 * i / ARC_SEGMENTS)
+		points.append(Vector2(cos(a), sin(a)) * lo)
 
 	return points
 
