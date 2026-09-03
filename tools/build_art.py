@@ -33,6 +33,12 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def build_sprites() -> None:
     for entry in cast.ALL:
+        if entry.external_sheet:
+            # Cut from supplied artwork by a tools/build_*_boss.py script. The
+            # source images live outside the repo, so a sheet overwritten here
+            # cannot be rebuilt — skip rather than silently downgrade it.
+            print(f"  {entry.group}/{entry.ident} — skipped (external artwork)")
+            continue
         sheets.export(entry, ROOT)
         print(f"  {entry.group}/{entry.ident}")
 

@@ -1,14 +1,14 @@
 """Renders each cast entry into a Godot-ready sprite sheet + atlas JSON.
 
-Layout is a fixed 6-column grid, one animation per row, which is exactly what
+Layout is a fixed 8-column grid, one animation per row, which is exactly what
 SpriteSheetCache expects:
 
-    row 0  idle   4 frames   loop
-    row 1  run    6 frames   loop
-    row 2  attack 6 frames   one-shot   (enemies and bosses only)
-    row 3  hurt   2 frames   one-shot
-    row 4  death  5 frames   one-shot
-    row 5  dash   4 frames   one-shot
+    row 0  idle   6 frames   loop
+    row 1  run    8 frames   loop
+    row 2  attack 7 frames   one-shot   (enemies and bosses only)
+    row 3  hurt   3 frames   one-shot
+    row 4  death  7 frames   one-shot
+    row 5  dash   5 frames   one-shot
 
 Hunters have no attack row — see `anims_for`. Rows and frame indices are
 written into the atlas JSON, so a sheet with one row fewer needs no change
@@ -25,17 +25,30 @@ from .rig import build_pose, draw_figure
 from . import weapons
 from . import palette as P
 
-COLUMNS = 6
+# Eight, not six. Six columns capped the run at a six-frame stride, which is
+# two frames short of a contact/down/pass/up beat per leg, and it left idle
+# with four frames — barely enough to read as breathing rather than as a
+# two-frame flicker. Nothing on the Godot side is affected: SpriteSheetCache
+# takes the column count, the frame indices and the fps straight out of the
+# atlas JSON.
+COLUMNS = 8
 
 # name, frame count, fps, loops
 ANIMS = [
-    ("idle", 4, 6, True),
-    ("run", 6, 12, True),
-    ("attack", 6, 14, False),
-    ("hurt", 2, 12, False),
-    ("death", 5, 9, False),
-    ("dash", 4, 16, False),
+    ("idle", 6, 7, True),
+    ("run", 8, 15, True),
+    ("attack", 7, 16, False),
+    ("hurt", 3, 15, False),
+    ("death", 7, 10, False),
+    ("dash", 5, 18, False),
 ]
+
+# White-out per frame index, for the anims that take a hit. The flinch used to
+# be one blown-out frame followed by a normal one, which at 15 fps is a strobe;
+# a two-frame decay reads as the hit landing and the colour coming back.
+FLASH = {
+    "hurt": (0.55, 0.22, 0.0),
+}
 
 # The combat code asks for these by name depending on weapon class; they all
 # resolve to the same swing so nothing ever falls back to idle.
@@ -85,7 +98,8 @@ def render_frames(entry: Entry) -> list[Canvas]:
             t = i / count if loops else (i / (count - 1) if count > 1 else 0.0)
             pose = build_pose(entry.spec, name, t, center_x=cx, feet_y=fy, swing=entry.swing)
             frame = Canvas(cell, cell)
-            flash = 0.38 if (name == "hurt" and i == 0) else 0.0
+            curve = FLASH.get(name)
+            flash = curve[i] if curve is not None and i < len(curve) else 0.0
             draw_figure(frame, entry.spec, pose, t=t, weapon_canvas=held, flash=flash)
             if name == "dash":
                 _add_dash_streaks(frame, pose, i, count)

@@ -2,7 +2,7 @@
   "image": "hollow_cardinal.png",
   "frameWidth": 96,
   "frameHeight": 96,
-  "columns": 6,
+  "columns": 8,
   "rows": 6,
   "facing": "right",
   "pixelArt": true,
@@ -14,216 +14,233 @@
     "idle": {
       "row": 0,
       "from": 0,
-      "to": 3,
+      "to": 5,
       "frames": [
         0,
         1,
         2,
-        3
+        3,
+        4,
+        5
       ],
-      "frameCount": 4,
-      "fps": 6,
+      "frameCount": 6,
+      "fps": 7,
       "loop": true
     },
     "run": {
       "row": 1,
-      "from": 6,
-      "to": 11,
+      "from": 8,
+      "to": 15,
       "frames": [
-        6,
-        7,
         8,
         9,
         10,
-        11
+        11,
+        12,
+        13,
+        14,
+        15
       ],
-      "frameCount": 6,
-      "fps": 12,
+      "frameCount": 8,
+      "fps": 15,
       "loop": true
     },
     "attack": {
       "row": 2,
-      "from": 12,
-      "to": 17,
+      "from": 16,
+      "to": 22,
       "frames": [
-        12,
-        13,
-        14,
-        15,
         16,
-        17
+        17,
+        18,
+        19,
+        20,
+        21,
+        22
       ],
-      "frameCount": 6,
-      "fps": 14,
+      "frameCount": 7,
+      "fps": 16,
       "loop": false
     },
     "hurt": {
       "row": 3,
-      "from": 18,
-      "to": 19,
+      "from": 24,
+      "to": 26,
       "frames": [
-        18,
-        19
+        24,
+        25,
+        26
       ],
-      "frameCount": 2,
-      "fps": 12,
+      "frameCount": 3,
+      "fps": 15,
       "loop": false
     },
     "death": {
       "row": 4,
-      "from": 24,
-      "to": 28,
+      "from": 32,
+      "to": 38,
       "frames": [
-        24,
-        25,
-        26,
-        27,
-        28
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38
       ],
-      "frameCount": 5,
-      "fps": 9,
+      "frameCount": 7,
+      "fps": 10,
       "loop": false
     },
     "dash": {
       "row": 5,
-      "from": 30,
-      "to": 33,
+      "from": 40,
+      "to": 44,
       "frames": [
-        30,
-        31,
-        32,
-        33
+        40,
+        41,
+        42,
+        43,
+        44
       ],
-      "frameCount": 4,
-      "fps": 16,
+      "frameCount": 5,
+      "fps": 18,
       "loop": false
     },
     "attack_slash": {
       "row": 2,
-      "from": 12,
-      "to": 17,
+      "from": 16,
+      "to": 22,
       "frames": [
-        12,
-        13,
-        14,
-        15,
         16,
-        17
+        17,
+        18,
+        19,
+        20,
+        21,
+        22
       ],
-      "frameCount": 6,
-      "fps": 14,
+      "frameCount": 7,
+      "fps": 16,
       "loop": false
     },
     "attack_whip": {
       "row": 2,
-      "from": 12,
-      "to": 17,
+      "from": 16,
+      "to": 22,
       "frames": [
-        12,
-        13,
-        14,
-        15,
         16,
-        17
+        17,
+        18,
+        19,
+        20,
+        21,
+        22
       ],
-      "frameCount": 6,
-      "fps": 14,
+      "frameCount": 7,
+      "fps": 16,
       "loop": false
     },
     "attack_orbs": {
       "row": 2,
-      "from": 12,
-      "to": 17,
+      "from": 16,
+      "to": 22,
       "frames": [
-        12,
-        13,
-        14,
-        15,
         16,
-        17
+        17,
+        18,
+        19,
+        20,
+        21,
+        22
       ],
-      "frameCount": 6,
-      "fps": 14,
+      "frameCount": 7,
+      "fps": 16,
       "loop": false
     },
     "shield_bash": {
       "row": 2,
-      "from": 12,
-      "to": 17,
+      "from": 16,
+      "to": 22,
       "frames": [
-        12,
-        13,
-        14,
-        15,
         16,
-        17
+        17,
+        18,
+        19,
+        20,
+        21,
+        22
       ],
-      "frameCount": 6,
-      "fps": 14,
+      "frameCount": 7,
+      "fps": 16,
       "loop": false
     },
     "chain_swing": {
       "row": 2,
-      "from": 12,
-      "to": 17,
+      "from": 16,
+      "to": 22,
       "frames": [
-        12,
-        13,
-        14,
-        15,
         16,
-        17
+        17,
+        18,
+        19,
+        20,
+        21,
+        22
       ],
-      "frameCount": 6,
-      "fps": 14,
+      "frameCount": 7,
+      "fps": 16,
       "loop": false
     },
     "attack_spin": {
       "row": 2,
-      "from": 12,
-      "to": 17,
+      "from": 16,
+      "to": 22,
       "frames": [
-        12,
-        13,
-        14,
-        15,
         16,
-        17
+        17,
+        18,
+        19,
+        20,
+        21,
+        22
       ],
-      "frameCount": 6,
-      "fps": 14,
+      "frameCount": 7,
+      "fps": 16,
       "loop": false
     },
     "attack_nova": {
       "row": 2,
-      "from": 12,
-      "to": 17,
+      "from": 16,
+      "to": 22,
       "frames": [
-        12,
-        13,
-        14,
-        15,
         16,
-        17
+        17,
+        18,
+        19,
+        20,
+        21,
+        22
       ],
-      "frameCount": 6,
-      "fps": 14,
+      "frameCount": 7,
+      "fps": 16,
       "loop": false
     },
     "attack_cross": {
       "row": 2,
-      "from": 12,
-      "to": 17,
+      "from": 16,
+      "to": 22,
       "frames": [
-        12,
-        13,
-        14,
-        15,
         16,
-        17
+        17,
+        18,
+        19,
+        20,
+        21,
+        22
       ],
-      "frameCount": 6,
-      "fps": 14,
+      "frameCount": 7,
+      "fps": 16,
       "loop": false
     }
   }

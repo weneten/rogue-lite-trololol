@@ -45,20 +45,47 @@ Enemies and bosses buy nothing and attack with their bodies, so they keep both.
 ## Sheet format
 
 - **Frame size:** 64×64 for hunters and enemies, 96×96 for bosses
-- **Grid:** 6 columns, one animation per row
+- **Grid:** 8 columns, one animation per row
 - **Facing:** right (`flip_h` for left)
 - **Origin:** centre-x, feet (`origin` in the JSON)
 - **JSON:** the schema `SpriteSheetCache` reads (`frameWidth`, `animations`,
   `fps`, `loop`)
 
-| Row | Animation | Frames | Loop |
-|-----|-----------|--------|------|
-| 0 | `idle` | 4 | yes |
-| 1 | `run` | 6 | yes |
-| 2 | `attack` | 6 | no (enemies and bosses only) |
-| 3 | `hurt` | 2 | no |
-| 4 | `death` | 5 | no |
-| 5 | `dash` | 4 | no |
+| Row | Animation | Frames | FPS | Loop |
+|-----|-----------|--------|-----|------|
+| 0 | `idle` | 6 | 7 | yes |
+| 1 | `run` | 8 | 15 | yes |
+| 2 | `attack` | 7 | 16 | no (enemies and bosses only) |
+| 3 | `hurt` | 3 | 15 | no |
+| 4 | `death` | 7 | 10 | no |
+| 5 | `dash` | 5 | 18 | no |
+
+Eight columns, not six. A six-frame run is two frames short of a
+contact/down/pass/up beat per leg, and four idle frames is close enough to a
+two-frame flicker that a standing Hunter read as a breathing statue. Nothing
+on the Godot side is pinned to either number: `SpriteSheetCache` takes the
+column count, the frame indices, the fps and the loop flag straight out of the
+atlas JSON, so changing `sheets.COLUMNS` or `sheets.ANIMS` needs no engine
+change at all.
+
+## What makes a pose read as a body
+
+Everything in `rig.py` used to ride one shared sine, which is a pulse rather
+than a body: lungs, spine, arms and cloth all reached their extreme on the
+same frame. Three things fix that, and they are worth keeping in mind when
+adding an animation:
+
+* **Lag.** Each layer trails the one driving it — the spine follows the lungs,
+  the limbs and the cape trail both. Nothing peaks together, so the loop has no
+  visible seam.
+* **`sway`, `twist`, `head_lead`.** Lateral weight shift, shoulder-line
+  rotation and how far the head leads the spine. A few pixels each, and they
+  are most of the difference between a rig moving and a body moving. `twist` is
+  as much three-quarter turn as a side-on rig can show.
+* **Weight.** The run hip is lowest just after each contact and highest at the
+  pass between them, and the contact shadow tightens with it. The robe hem is
+  carried by the legs inside it, so it parts around the leading foot instead of
+  swinging as a rigid bell.
 
 Hunter sheets have **no** `attack` row, so they are five rows and their later
 animations sit one row higher. Nothing on the Godot side hardcodes a row: the

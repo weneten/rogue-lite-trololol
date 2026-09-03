@@ -16,6 +16,7 @@ from .core import (
     RGBA,
     Canvas,
     Ramp,
+    ease_in,
     ease_in_out,
     ease_out,
     lerp,
@@ -76,6 +77,15 @@ class BodySpec:
     crouch: float = 0.0
     # Skull charm hung at the throat.
     amulet: bool = False
+    # A surcoat worn over the torso, in its own colour, with an emblem on the
+    # chest. A knight in one flat cloth ramp is a monk; the panel and the
+    # charge on it are the whole order.
+    tabard: Ramp | None = None
+    emblem: str = "none"    # none | cross
+    # Heater shield strapped to the far arm. Drawn with the back limb, so it
+    # sits behind the torso and reads as depth rather than as a plate glued to
+    # the front of the sprite.
+    shield: bool = False
 
 
 # ---------------------------------------------------------------------------
@@ -184,20 +194,40 @@ def build_pose(
     wing_flap = 0.0
     wing_flare = 1.0
     mouth_open = 0.0
+    # Lateral weight shift, shoulder-line rotation and how far the head
+    # leads the spine. Small numbers, but they are the difference between
+    # a rig moving and a body moving.
+    sway = 0.0
+    twist = 0.0
+    head_lead = 0.0
 
     if anim == "idle":
+        # Three waves, not one. Every joint used to ride the same sine, which
+        # is a pulse rather than a body: lungs, spine and cloth all reached
+        # their extreme on the same frame and the figure read as a breathing
+        # statue. Each layer now trails the one driving it, so the pose is
+        # never symmetrical and the loop has no visible seam.
         breath = math.sin(t * math.tau)
-        bob = -0.5 - breath * 0.9
-        arm_b_u = 16 + breath * 4
-        arm_f_u = -8 + breath * 3
-        arm_f_f = 16
-        weapon_angle = -74 + breath * 4
-        cape_sway = breath * 1.6
+        settle = math.sin((t - 0.14) * math.tau)   # spine follows the lungs
+        drift = math.sin((t - 0.28) * math.tau)    # limbs and cloth trail both
+        bob = -0.5 - breath * 1.4
+        # Weight rocks between the feet. A hand's width of travel is enough at
+        # this size and it is what stops the stance reading as bolted down.
+        sway = drift * 0.9
+        twist = drift * 2.4
+        head_lead = settle * 0.6
+        arm_b_u = 16 + drift * 5
+        arm_f_u = -8 + drift * 4
+        arm_b_f = 20 + settle * 3
+        arm_f_f = 16 + settle * 3
+        weapon_angle = -74 + drift * 5
+        cape_sway = drift * 2.1
         thigh_b, thigh_f = -4.0, 4.0
         shin_b, shin_f = 4.0, -2.0
         wing_flap = math.sin(t * math.tau) * 0.85
         if spec.hover:
             bob = -2.0 - breath * 2.5
+            sway = drift * 1.2
             thigh_b, thigh_f = -12.0, 10.0
             shin_b, shin_f = 14.0, 16.0
             airborne = True
@@ -208,25 +238,37 @@ def build_pose(
 
     elif anim == "run":
         ph = t * math.tau
-        swing_amt = 24.0
+        swing_amt = 30.0
         thigh_f = math.sin(ph) * swing_amt
         thigh_b = math.sin(ph + math.pi) * swing_amt
         # Knees only bend on the recovery half of the stride.
-        shin_f = max(0.0, -math.sin(ph - 0.6)) * 28.0
-        shin_b = max(0.0, -math.sin(ph + math.pi - 0.6)) * 28.0
-        # Two bounces per stride, one per footfall. This is most of what makes
-        # a run read as a run rather than a slide.
-        bob = -abs(math.sin(ph * 2.0)) * 3.0 - 0.5
-        lean += 9.0
-        arm_b_u = 18 + math.sin(ph) * 30
-        arm_f_u = -14 + math.sin(ph + math.pi) * 26
-        arm_b_f = 26
-        arm_f_f = 30
+        shin_f = max(0.0, -math.sin(ph - 0.6)) * 30.0
+        shin_b = max(0.0, -math.sin(ph + math.pi - 0.6)) * 30.0
+        # Weight curve, one per footfall: lowest just after each contact
+        # (ph 0 and pi), highest at the pass between them. The old
+        # `-abs(sin(2*ph))` bottomed out at the passes as well as the
+        # contacts, so the hip dipped four times per stride and the run
+        # jittered instead of bounding.
+        bob = -(1.0 - math.cos((ph - 0.35) * 2.0)) * 0.5 * 4.0 - 0.4
+        lean += 9.0 + math.sin(ph * 2.0) * 1.6
+        # Shoulders counter-rotate against the hips — the thing that separates
+        # a run from a pair of scissoring legs under a rigid torso.
+        twist = -math.sin(ph) * 4.2
+        head_lead = math.sin(ph * 2.0) * 0.7
+        arm_b_u = 18 + math.sin(ph) * 34
+        arm_f_u = -14 + math.sin(ph + math.pi) * 30
+        # The elbow closes on the forward swing and opens on the back swing.
+        arm_b_f = 26 + max(0.0, math.sin(ph)) * 16
+        arm_f_f = 24 + max(0.0, math.sin(ph + math.pi)) * 14
         # Held close over the back/shoulder rather than swinging wide with
         # the arm: a long weapon (scythe, cleaver) tracking the full arm
         # swing reads as a streamer trailing off the silhouette.
         weapon_angle = -72 + math.sin(ph + math.pi) * 5
-        cape_sway = 3.0 + math.sin(ph) * 2.2
+        # Cloth lags the body by an eighth of a stride. The oscillation stays
+        # well under the base: a running figure's cloak trails behind for the
+        # whole stride, and an amplitude that reached zero made it hang dead
+        # straight for three frames out of eight.
+        cape_sway = 4.4 + math.sin(ph - 0.35) * 1.6
         wing_flap = math.sin(ph)
         wing_flare = 1.05
         if spec.wingspan > 0.0:
@@ -235,6 +277,7 @@ def build_pose(
             thigh_f, thigh_b = 18.0, -14.0
             shin_f, shin_b = 20.0, 24.0
             bob = -3.0 - abs(math.sin(ph)) * 2.0
+            twist = 0.0
             airborne = True
 
     elif anim == "attack":
@@ -248,6 +291,11 @@ def build_pose(
         # Body counter-rotates into the swing.
         lean += -6.0 if t < 0.35 else 12.0 * ease_out(min(1.0, (t - 0.35) / 0.4))
         bob = -1.0 if t < 0.35 else -2.0
+        # Wind up away from the target, then drive through it. Torso rotation
+        # is where a swing gets its weight; the arm alone is a wave.
+        twist = lerp(-5.0, 7.0, ease_out(min(1.0, max(0.0, (t - 0.25)) / 0.5)))
+        head_lead = twist * 0.25
+        sway = -1.0 if t < 0.35 else 1.6
         arm_b_u = 24 - arm_f_u * 0.25
         arm_f_f = 22 if t < 0.4 else 16
         thigh_f = 16 if t > 0.35 else 6
@@ -263,33 +311,46 @@ def build_pose(
         mouth_open = ease_out(min(1.0, t * 2.2))
 
     elif anim == "hurt":
-        k = ease_out(t)
-        lean += -18.0 * (1.0 - k * 0.4)
-        bob = -1.5
-        tilt = -8.0 * (1.0 - k * 0.5)
-        arm_b_u = 42
-        arm_f_u = -38
+        # `snap` is the hit itself: 1 on the impact frame, 0 once recovered.
+        # Driving everything off it means the third frame is already most of
+        # the way back to idle, so the flinch reads as a recoil-and-recover
+        # rather than as a pose the character is left standing in.
+        snap = 1.0 - ease_out(t)
+        lean += -4.0 - 22.0 * snap
+        bob = -1.5 - snap * 1.5
+        tilt = -11.0 * snap
+        sway = -1.7 * snap
+        twist = -4.5 * snap
+        head_lead = -1.3 * snap
+        arm_b_u = lerp(24.0, 46.0, snap)
+        arm_f_u = lerp(-16.0, -44.0, snap)
         weapon_angle = -60
-        thigh_b, thigh_f = -16.0, 12.0
-        shin_b, shin_f = 18.0, 4.0
-        cape_sway = -5.0
-        wing_flap = -0.35
-        wing_flare = 0.72
-        mouth_open = 0.45
+        thigh_b = lerp(-8.0, -20.0, snap)
+        thigh_f = lerp(6.0, 15.0, snap)
+        shin_b = lerp(10.0, 20.0, snap)
+        shin_f = lerp(2.0, 6.0, snap)
+        cape_sway = -6.5 * snap
+        wing_flap = lerp(-0.1, -0.4, snap)
+        wing_flare = lerp(1.0, 0.72, snap)
+        mouth_open = 0.45 * snap
 
     elif anim == "death":
-        # A collapse: sink toward the ground and slump forward. The knees
-        # buckle and the feet stay planted (foot-pin correction, enabled for
-        # this anim below), so the silhouette contracts as the hip drops
-        # instead of the legs stretching out into a horizontal streak.
-        k = ease_in_out(min(1.0, t * 1.15))
-        tilt = -26.0 * k
+        # Two stages rather than one ramp. A body that starts sinking on
+        # frame one has no moment of being hit; it just deflates. So: a
+        # short stagger backwards, then the knees go and it comes down,
+        # then it settles and thins out.
+        stagger = ease_out(min(1.0, t / 0.26))
+        k = ease_in_out(max(0.0, (t - 0.2)) / 0.8)
+        tilt = -7.0 * stagger - 24.0 * k
         # The hips sink toward planted feet rather than the whole body sliding
         # down the cell: `drop` moves the feet too, and at any useful amount it
         # pushed the legs clean off the bottom of the 64px frame.
         drop = 3.0 * k
-        bob = 9.0 * k
-        lean += -18.0 * k
+        bob = -1.2 * stagger + 10.0 * k
+        lean += -6.0 * stagger - 16.0 * k
+        sway = -1.8 * stagger - 1.0 * k
+        twist = -3.0 * stagger
+        head_lead = -1.0 * stagger + 1.4 * k
         # Arms fold toward the body rather than flying out behind it, and the
         # weapon rotates down to hang from the hand. Both were widening the
         # silhouette exactly as it should have been getting smaller.
@@ -300,31 +361,55 @@ def build_pose(
         thigh_f = lerp(14, 18, k)
         shin_b = lerp(20, 26, k)
         shin_f = lerp(8, 14, k)
-        alpha = 1.0 if t < 0.6 else lerp(1.0, 0.25, (t - 0.6) / 0.4)
-        cape_sway = -8.0 * k
+        # Holds opaque through the fall and only thins out once it is down —
+        # a body that starts fading while it is still on its feet reads as a
+        # teleport rather than a death.
+        alpha = 1.0 if t < 0.68 else lerp(1.0, 0.2, (t - 0.68) / 0.32)
+        cape_sway = -3.0 * stagger - 7.0 * k
         # Wings fold as it comes down. A corpse with the span still spread
         # reads as a kite, not a body.
         wing_flap = lerp(-0.2, 0.85, k)
         wing_flare = lerp(1.0, 0.4, k)
+        mouth_open = 0.5 * stagger * (1.0 - k)
 
     elif anim == "dash":
-        k = ease_out(t)
-        lean += 26.0 * math.sin(min(1.0, t * 1.4) * math.pi)
-        bob = -3.5 * math.sin(min(1.0, t * 1.3) * math.pi)
-        thigh_f = lerp(16, 8, k)
-        thigh_b = lerp(-14, -6, k)
-        shin_f = lerp(8, 6, k)
-        shin_b = lerp(14, 10, k)
-        arm_b_u = lerp(60, 20, k)
-        arm_f_u = lerp(-50, -14, k)
-        weapon_angle = lerp(-70, -25, k)
-        cape_sway = 8.0 - k * 4.0
-        airborne = True
+        # Coil, drive, land. The old curve started at full extension, so the
+        # dash had no push-off — the character was already travelling on
+        # frame one and simply slowed down.
+        drive = ease_out(min(1.0, t / 0.34))
+        settle = ease_in(max(0.0, (t - 0.56)) / 0.44)
+        # Deep crouch, then thrown forward, then upright again on the landing.
+        lean += lerp(6.0, 30.0, drive) - 22.0 * settle
+        bob = lerp(2.0, -5.0, drive) + 5.0 * settle
+        sway = lerp(-1.5, 1.5, drive) - 0.8 * settle
+        twist = lerp(3.0, -3.5, drive)
+        head_lead = lerp(-0.8, 1.4, drive) - 1.0 * settle
+        thigh_f = lerp(26.0, 8.0, drive) + 10.0 * settle
+        thigh_b = lerp(-6.0, -26.0, drive) + 14.0 * settle
+        shin_f = lerp(24.0, 4.0, drive) + 8.0 * settle
+        shin_b = lerp(6.0, 22.0, drive) - 8.0 * settle
+        arm_b_u = lerp(58.0, 14.0, drive) + 14.0 * settle
+        arm_f_u = lerp(-20.0, -52.0, drive) + 22.0 * settle
+        arm_b_f = 22.0
+        arm_f_f = lerp(30.0, 14.0, drive)
+        weapon_angle = lerp(-70, -25, drive)
+        cape_sway = lerp(2.0, 9.0, drive) - 3.0 * settle
+        # Feet are only off the ground between the push-off and the landing.
+        airborne = drive > 0.35 and settle < 0.5
         # The dive: swept back and tucked, driving down.
-        wing_flap = lerp(0.55, 0.95, k)
-        wing_flare = lerp(0.62, 0.48, k)
+        wing_flap = lerp(0.55, 0.95, drive)
+        wing_flare = lerp(0.62, 0.48, drive)
         # Coming down mouth-first.
-        mouth_open = lerp(0.3, 0.85, k)
+        mouth_open = lerp(0.3, 0.85, drive)
+
+    if spec.shield:
+        # A shield arm is braced across the body, not swinging free. Left on
+        # the normal arm curve the board swung clear of the sprite on every
+        # stride and read as a second object flying alongside the character.
+        arm_b_u = lerp(arm_b_u, 12.0, 0.76)
+        arm_b_f = lerp(arm_b_f, 34.0, 0.76)
+
+    cx += sway
 
     crouch = max(0.0, min(1.0, spec.crouch))
     feet = feet_y + drop
@@ -340,7 +425,8 @@ def build_pose(
     chest = (cx + lean_off * 0.75 + spine_out, hip_y - spine_up)
     neck = (cx + lean_off + spine_out * 1.3, hip_y - lerp(16.0, 7.0, crouch) * s)
     head_r = 3.9 * s * (1.0 + 0.42 * crouch)
-    head = (cx + lean_off * 1.25 + spine_out * 1.75 + math.sin(math.radians(tilt)) * 6.0,
+    head = (cx + lean_off * 1.25 + spine_out * 1.75 + math.sin(math.radians(tilt)) * 6.0
+            + head_lead,
             hip_y - lerp(21.5, 9.5, crouch) * s + abs(tilt) * 0.06)
 
     if crouch > 0.0:
@@ -351,8 +437,11 @@ def build_pose(
         arm_f_f = lerp(arm_f_f, 26.0, crouch * 0.6)
 
     sh_dx = 5.8 * s
-    shoulder_b = (chest[0] - sh_dx * 0.5, chest[1] + 1.0)
-    shoulder_f = (chest[0] + sh_dx * 0.5, chest[1] + 1.5)
+    # `twist` rotates the shoulder line in plan view: the near shoulder swings
+    # further than the far one and both drop slightly as they come forward,
+    # which is as much three-quarter turn as a side-on rig can show.
+    shoulder_b = (chest[0] - sh_dx * 0.5 - twist * 0.35, chest[1] + 1.0 - twist * 0.12)
+    shoulder_f = (chest[0] + sh_dx * 0.5 + twist * 0.65, chest[1] + 1.5 + twist * 0.12)
     elbow_b, hand_b = _arm(shoulder_b, arm_b_u, arm_b_f, s)
     elbow_f, hand_f = _arm(shoulder_f, arm_f_u, arm_f_f, s)
 
@@ -689,11 +778,18 @@ def _draw_torso(c: Canvas, pose: Pose, spec: BodySpec, s: float) -> None:
     if spec.cape in ("cloak", "shroud", "coat", "tatters"):
         # Robe skirt over the legs.
         hem = pose.ground_y - 5.0 * s if spec.cape != "coat" else hip[1] + 8.0 * s
+        # The hem is carried by the legs inside it, so it parts around the
+        # leading foot and drags behind the trailing one. Without this a robed
+        # hunter runs as a rigid bell with two boots appearing under it, and
+        # for the half of the stride where the near leg is tucked up in
+        # recovery there is nothing left moving at all.
+        lead = (pose.foot_f[0] - hip[0]) * 0.45
+        trail = (pose.foot_b[0] - hip[0]) * 0.45
         skirt = [
             (hip[0] - w_bot - 0.5, hip[1] - 1.0),
             (hip[0] + w_bot + 0.5, hip[1] - 1.0),
-            (hip[0] + w_bot + 2.6 * s - pose.cape_sway * 0.4, hem),
-            (hip[0] - w_bot - 2.8 * s - pose.cape_sway * 0.8, hem),
+            (hip[0] + w_bot + 2.6 * s - pose.cape_sway * 0.4 + lead, hem),
+            (hip[0] - w_bot - 2.8 * s - pose.cape_sway * 0.8 + trail, hem),
         ]
         c.polygon(skirt, cloth.dark)
         c.polygon([(x + 0.6, y - 0.6) for x, y in skirt[:3]] + [skirt[3]], cloth.core)
@@ -723,6 +819,97 @@ def _draw_torso(c: Canvas, pose: Pose, spec: BodySpec, s: float) -> None:
             ],
             spec.accent.dark if spec.accent else cloth.dark,
         )
+
+
+def _draw_tabard(c: Canvas, pose: Pose, spec: BodySpec, s: float) -> None:
+    """A surcoat panel down the front of the torso, with a charge on it.
+
+    Drawn after the near leg on purpose: a surcoat hangs over the thigh, and
+    the first pass put it under the leg where two thirds of it — the whole
+    lower half, cross included — was covered by the trouser.
+
+    Narrower than the torso, also on purpose: the cloth of the body has to
+    stay visible either side, or the panel stops reading as a garment worn
+    over armour and becomes the character's only colour.
+    """
+    ramp = spec.tabard
+    if ramp is None:
+        return
+
+    hip, chest = pose.hip, pose.chest
+    top_w = 3.4 * s * spec.build
+    bot_w = 3.0 * s * spec.build
+    hem = hip[1] + 8.0 * s
+    # Hangs off the body rather than being painted on it, so it drags with
+    # the same sway the cape does.
+    drag = pose.cape_sway * 0.35
+    panel = [
+        (chest[0] - top_w, chest[1] + 0.5 * s),
+        (chest[0] + top_w * 0.85, chest[1] + 0.5 * s),
+        (hip[0] + bot_w * 0.9 - drag, hem),
+        (hip[0] - bot_w - drag * 1.4, hem),
+    ]
+    c.polygon(panel, ramp.dark)
+    c.polygon([(x + 0.7, y + 0.6) for x, y in panel[:2]]
+              + [(panel[2][0] - 0.5, panel[2][1] - 1.2), (panel[3][0] + 1.2, panel[3][1] - 1.2)],
+              ramp.core)
+    # Shadowed far edge, lit near edge.
+    c.line((panel[0][0] + 0.4, panel[0][1] + 1.0), (panel[3][0] + 1.4, panel[3][1] - 1.0),
+           shade(ramp.dark, -0.3))
+    c.line((panel[1][0] - 1.0, panel[1][1] + 1.0), (panel[2][0] - 1.2, panel[2][1] - 1.5),
+           ramp.light)
+
+    if spec.emblem == "cross":
+        # Two bars, three or four pixels of arm at hunter scale. Any bigger and
+        # the chest is all charge; any smaller and it is a smudge.
+        # Pushed to the far side of the panel: on the spine the near sleeve
+        # swings across it and the charge disappears for half of every cycle.
+        cxp = chest[0] - 1.7 * s
+        cyp = chest[1] + 4.0 * s
+        arm = max(1.0, 1.4 * s)
+        c.vline(round(cxp), round(cyp - arm * 1.4), round(cyp + arm * 1.7), spec.accent.dark)
+        c.hline(round(cxp - arm), round(cxp + arm), round(cyp), spec.accent.dark)
+        c.set(round(cxp), round(cyp), spec.accent.core)
+        c.set(round(cxp), round(cyp - arm), spec.accent.core)
+
+
+def _draw_shield(c: Canvas, pose: Pose, spec: BodySpec, s: float) -> None:
+    """A heater shield centred on the far hand.
+
+    Two things it must not do, both of which the first pass did. It must sit
+    *on* the hand rather than beside it — offset along the forearm axis, the
+    board floated away from the fist as soon as the arm swung. And it is on
+    the far arm, so it is shaded down toward the back-limb tone; drawn in
+    plain armour white beside a bone surcoat it was the brightest thing on
+    the sprite and read as a flag.
+    """
+    if not spec.shield:
+        return
+
+    face = spec.armor.tinted(P.VOID, 0.30)
+    fx, fy = pose.hand_b
+    # A shield is carried a little in front of and above the fist, and it
+    # tilts with the forearm rather than tracking it end to end.
+    dx, dy = fx - pose.elbow_b[0], fy - pose.elbow_b[1]
+    d = math.hypot(dx, dy) or 1.0
+    tilt = (dx / d) * 1.6 * s
+    cxp, cyp = fx - 0.3 * s, fy - 1.0 * s
+
+    w = 3.6 * s
+    h = 5.4 * s
+    # Flat top, straight sides, point at the bottom — the heater outline.
+    pts = [
+        (cxp - w + tilt, cyp - h * 0.62),
+        (cxp + w + tilt, cyp - h * 0.62),
+        (cxp + w * 0.92, cyp + h * 0.1),
+        (cxp + w * 0.1, cyp + h * 0.72),
+        (cxp - w * 0.92, cyp + h * 0.1),
+    ]
+    c.polygon(pts, face.dark)
+    c.polygon([(x + 0.8, y + 0.7) for x, y in pts[:2]] + [pts[2], pts[3], pts[4]], face.core)
+    # Rim and boss. Two details, and they are what stop it reading as a plank.
+    c.line(pts[0], pts[1], face.light)
+    c.circle(cxp, cyp - h * 0.05, 1.1 * s, shade(spec.accent.dark, -0.25))
 
 
 def _draw_head(c: Canvas, pose: Pose, spec: BodySpec, s: float) -> None:
@@ -931,7 +1118,9 @@ def _draw_head(c: Canvas, pose: Pose, spec: BodySpec, s: float) -> None:
         c.rect(round(hx - r * 0.4), eye_y - 1, round(r * 1.8), 2, P.VOID)
         c.set(round(hx + r * 0.5), eye_y, spec.eye)
         c.set(round(hx - r * 0.1), eye_y, spec.eye)
-        c.vline(round(hx + r * 0.15), round(hy - r * 1.4), round(hy + r * 0.8), spec.armor.hi)
+        # Nasal bar, crown to jaw. Any higher and the highlight reads as a
+        # spike growing out of the helmet.
+        c.vline(round(hx + r * 0.15), round(hy - r * 1.0), round(hy + r * 0.8), spec.armor.hi)
     elif kind == "crown":
         for k in range(4):
             px = hx - r * 1.0 + k * r * 0.7
@@ -1066,9 +1255,12 @@ def draw_figure(
     # in the rig was invisible and the whole cast read as a shuffling mass.
     # Depth now maps to value: far limbs darkest, trousers below the coat,
     # near sleeve lifted off it.
-    back = spec.cloth.tinted(P.VOID, 0.52)
+    back = spec.cloth.tinted(P.VOID, 0.42)
     trouser = spec.cloth.tinted(P.VOID, 0.26)
-    back_trouser = spec.cloth.tinted(P.VOID, 0.62)
+    # 0.62 put the far leg within a couple of values of the robe it stands
+    # behind, so for half of every stride the only leg reaching was invisible
+    # and the run looked like a limp. Still clearly the darker of the two.
+    back_trouser = spec.cloth.tinted(P.VOID, 0.48)
     sleeve = spec.cloth.tinted(P.SMOKE, 0.16)
 
     _draw_leg(layer, spec, s, pose.hip_b, pose.knee_b, pose.ankle_b, pose.foot_b,
@@ -1078,12 +1270,16 @@ def draw_figure(
     if spec.claws:
         layer.circle(pose.hand_b[0], pose.hand_b[1], 1.5 * s, back.dark)
         _draw_claws(layer, pose.elbow_b, pose.hand_b, s, shade(P.R_BONE.dark, -0.3))
+    _draw_shield(layer, pose, spec, s)
 
     _draw_torso(layer, pose, spec, s)
 
     _draw_leg(layer, spec, s, pose.hip_f, pose.knee_f, pose.ankle_f, pose.foot_f,
               trouser, trouser if spec.digitigrade else P.R_LEATHER,
               2.7 * s * spec.build, 2.2 * s, 1.8 * s)
+
+    # Over the near thigh, which is what a surcoat does.
+    _draw_tabard(layer, pose, spec, s)
 
     if spec.tail:
         tail_a = (pose.hip[0] - 3.0 * s, pose.hip[1])

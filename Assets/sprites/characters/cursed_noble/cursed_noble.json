@@ -2,7 +2,7 @@
   "image": "cursed_noble.png",
   "frameWidth": 64,
   "frameHeight": 64,
-  "columns": 6,
+  "columns": 8,
   "rows": 5,
   "facing": "right",
   "pixelArt": true,
@@ -14,72 +14,80 @@
     "idle": {
       "row": 0,
       "from": 0,
-      "to": 3,
+      "to": 5,
       "frames": [
         0,
         1,
         2,
-        3
+        3,
+        4,
+        5
       ],
-      "frameCount": 4,
-      "fps": 6,
+      "frameCount": 6,
+      "fps": 7,
       "loop": true
     },
     "run": {
       "row": 1,
-      "from": 6,
-      "to": 11,
+      "from": 8,
+      "to": 15,
       "frames": [
-        6,
-        7,
         8,
         9,
         10,
-        11
+        11,
+        12,
+        13,
+        14,
+        15
       ],
-      "frameCount": 6,
-      "fps": 12,
+      "frameCount": 8,
+      "fps": 15,
       "loop": true
     },
     "hurt": {
       "row": 2,
-      "from": 12,
-      "to": 13,
+      "from": 16,
+      "to": 18,
       "frames": [
-        12,
-        13
+        16,
+        17,
+        18
       ],
-      "frameCount": 2,
-      "fps": 12,
+      "frameCount": 3,
+      "fps": 15,
       "loop": false
     },
     "death": {
       "row": 3,
-      "from": 18,
-      "to": 22,
-      "frames": [
-        18,
-        19,
-        20,
-        21,
-        22
-      ],
-      "frameCount": 5,
-      "fps": 9,
-      "loop": false
-    },
-    "dash": {
-      "row": 4,
       "from": 24,
-      "to": 27,
+      "to": 30,
       "frames": [
         24,
         25,
         26,
-        27
+        27,
+        28,
+        29,
+        30
       ],
-      "frameCount": 4,
-      "fps": 16,
+      "frameCount": 7,
+      "fps": 10,
+      "loop": false
+    },
+    "dash": {
+      "row": 4,
+      "from": 32,
+      "to": 36,
+      "frames": [
+        32,
+        33,
+        34,
+        35,
+        36
+      ],
+      "frameCount": 5,
+      "fps": 18,
       "loop": false
     }
   }

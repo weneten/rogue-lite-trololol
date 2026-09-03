@@ -1,100 +1,93 @@
 {
   "image": "bloodstained_crusader.png",
-  "frameWidth": 96,
+  "frameWidth": 64,
   "frameHeight": 64,
-  "columns": 6,
-  "rows": 6,
+  "columns": 8,
+  "rows": 5,
   "facing": "right",
   "pixelArt": true,
   "origin": {
-    "x": 48.0,
+    "x": 29.4,
     "y": 58.0
   },
   "animations": {
     "idle": {
       "row": 0,
       "from": 0,
-      "to": 3,
+      "to": 5,
       "frames": [
         0,
         1,
         2,
-        3
+        3,
+        4,
+        5
       ],
-      "frameCount": 4,
-      "fps": 6,
+      "frameCount": 6,
+      "fps": 7,
       "loop": true
     },
     "run": {
       "row": 1,
-      "from": 6,
-      "to": 11,
+      "from": 8,
+      "to": 15,
       "frames": [
-        6,
-        7,
         8,
         9,
         10,
-        11
-      ],
-      "frameCount": 6,
-      "fps": 12,
-      "loop": true
-    },
-    "dash": {
-      "row": 2,
-      "from": 12,
-      "to": 16,
-      "frames": [
+        11,
         12,
         13,
         14,
-        15,
-        16
+        15
       ],
-      "frameCount": 5,
-      "fps": 20,
-      "loop": false
-    },
-    "dash_end": {
-      "row": 3,
-      "from": 18,
-      "to": 21,
-      "frames": [
-        18,
-        19,
-        20,
-        21
-      ],
-      "frameCount": 4,
-      "fps": 16,
-      "loop": false
+      "frameCount": 8,
+      "fps": 15,
+      "loop": true
     },
     "hurt": {
-      "row": 4,
-      "from": 24,
-      "to": 25,
+      "row": 2,
+      "from": 16,
+      "to": 18,
       "frames": [
-        24,
-        25
+        16,
+        17,
+        18
       ],
-      "frameCount": 2,
-      "fps": 12,
+      "frameCount": 3,
+      "fps": 15,
       "loop": false
     },
     "death": {
-      "row": 5,
-      "from": 30,
-      "to": 34,
+      "row": 3,
+      "from": 24,
+      "to": 30,
       "frames": [
-        30,
-        31,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ],
+      "frameCount": 7,
+      "fps": 10,
+      "loop": false
+    },
+    "dash": {
+      "row": 4,
+      "from": 32,
+      "to": 36,
+      "frames": [
         32,
         33,
-        34
+        34,
+        35,
+        36
       ],
       "frameCount": 5,
-      "fps": 9,
+      "fps": 18,
       "loop": false
     }
   }
