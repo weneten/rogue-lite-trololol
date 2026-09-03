@@ -133,6 +133,24 @@ static func add_meta_currency(amount: int) -> void:
 	save()
 
 
+# Takes a share of the balance away and returns what was actually taken. Separate
+# from try_spend because this is not a purchase: it can never fail for want of
+# funds, and it rounds down so a Hunter with 1 Blood Mark keeps it rather than
+# being wiped for the sake of a fraction.
+static func lose_meta_currency_fraction(fraction: float) -> int:
+	ensure_loaded()
+	if fraction <= 0.0 or meta_currency <= 0:
+		return 0
+
+	var lost := int(floor(meta_currency * clampf(fraction, 0.0, 1.0)))
+	if lost <= 0:
+		return 0
+
+	meta_currency -= lost
+	save()
+	return lost
+
+
 static func try_spend_meta_currency(amount: int) -> bool:
 	ensure_loaded()
 	if amount < 0 or meta_currency < amount:

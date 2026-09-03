@@ -37,11 +37,14 @@ const PROFILES := {
 		"boss_wave_scaling": false,
 		# 0 disables the wardens entirely.
 		"overspeed_threshold": 0.0,
+		# What a run pays in Blood Marks, and what dying costs of the stockpile.
+		"meta_currency": 1.0,
+		"death_meta_loss": 0.0,
 	},
 	Level.DARK_NIGHT: {
 		"name": "Dark is the Night!",
 		"tagline": "Whatever is behind you is barely slower than you.",
-		"description": "Enemies: double health, +120% damage, 94% of your speed, half again as many. You: 55% health, 75% damage. A boss every third wave, drawn at random and never the same one twice in a row, and the wave does not end until it falls. Bosses grow with the wave they arrive on. Outrun the night by more than a quarter and it sends something to slow you down.",
+		"description": "Enemies: double health, +120% damage, 94% of your speed, half again as many. You: 55% health, 75% damage. A boss every third wave, drawn at random and never the same one twice in a row, and the wave does not end until it falls. Bosses grow with the wave they arrive on. Outrun the night by more than a quarter and it sends something to slow you down. Blood Marks pay four times over — but fall here and half of everything you have banked stays in the dark.",
 		"enemy_health": 2.0,
 		# +120% damage dealt, i.e. 2.2x what the archetype does.
 		"enemy_damage": 2.2,
@@ -59,6 +62,11 @@ const PROFILES := {
 		"boss_wave_scaling": true,
 		# Move speed multiplier past which the dark mages start arriving.
 		"overspeed_threshold": 1.25,
+		# The wager. Four times the Blood Marks for the run, against half of
+		# everything already banked if the night takes you. Surviving to wave 20
+		# collects without paying: the cost is dying, not playing.
+		"meta_currency": 4.0,
+		"death_meta_loss": 0.5,
 	},
 }
 
@@ -102,6 +110,16 @@ static func boss_wave_scaling(level: int) -> bool:
 # interest. 0 means this difficulty never sends them.
 static func overspeed_threshold(level: int) -> float:
 	return profile(level)["overspeed_threshold"]
+
+# What a finished run pays in Blood Marks, against the Normal payout.
+static func meta_currency_multiplier(level: int) -> float:
+	return profile(level)["meta_currency"]
+
+# The share of the banked Blood Marks that dying costs. 0 means death is free.
+# Charged against what was banked before the run, so the run's own payout is
+# never clawed back — the wager is the stockpile, not the night's work.
+static func death_meta_loss_fraction(level: int) -> float:
+	return profile(level)["death_meta_loss"]
 
 # The speed an enemy or boss should move at, given the Hunter's starting speed.
 # Returns `authored_speed` unchanged on difficulties that do not override it.

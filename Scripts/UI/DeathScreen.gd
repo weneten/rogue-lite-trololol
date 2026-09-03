@@ -84,14 +84,19 @@ func _show_summary(run_complete: bool) -> void:
 	var damage = (stats.damage_dealt if stats != null else 0)
 	var gold = (stats.gold_earned if stats != null else (GameManager.currency if GameManager != null else 0))
 
+	var level = GameManager.difficulty if GameManager != null else Difficulty.Level.NORMAL
 	var meta_granted = 0
+	var meta_lost = 0
 	if stats != null:
 		meta_granted = stats.finalize_and_grant_meta(run_complete)
+		meta_lost = stats.meta_currency_lost
 	else:
-		meta_granted = RunStats.preview_payout(waves, kills, gold, run_complete)
-
-	if stats == null and meta_granted > 0:
-		MetaSave.add_meta_currency(meta_granted)
+		# No RunStats node in the scene. Settle by hand, in the same order it does,
+		# or a death here would quietly skip the toll.
+		meta_lost = RunStats.settle_death_loss(run_complete, level)
+		meta_granted = RunStats.preview_payout(waves, kills, gold, run_complete, level)
+		if meta_granted > 0:
+			MetaSave.add_meta_currency(meta_granted)
 
 	if _title_label != null:
 		_title_label.text = "The Blood Moon Wanes" if run_complete else "You Have Fallen"
@@ -105,7 +110,7 @@ func _show_summary(run_complete: bool) -> void:
 		)
 
 	if _meta_label != null:
-		_meta_label.text = "+%d Blood Marks\nTotal: %d" % [meta_granted, MetaSave.get_meta_currency()]
+		_meta_label.text = _meta_summary(meta_granted, meta_lost)
 
 	if _root_panel != null:
 		_root_panel.visible = true
@@ -126,10 +131,21 @@ func _show_summary(run_complete: bool) -> void:
 			"+%d Blood Marks", 0.9)
 		await get_tree().create_timer(1.3).timeout
 		if is_instance_valid(_meta_label):
-			_meta_label.text = "+%d Blood Marks\nTotal: %d" % [meta_granted, MetaSave.get_meta_currency()]
+			_meta_label.text = _meta_summary(meta_granted, meta_lost)
 			UIAnim.punch(_meta_label, 1.2)
 		# Re-assert focus after the await in case something stole it.
 		UIAnim.grab_focus_safe(_continue_button)
+
+# The Blood Mark line. The toll only appears when there was one, so Normal reads
+# exactly as it always has - but a Dark is the Night death never takes half the
+# stockpile without saying so.
+func _meta_summary(granted: int, lost: int) -> String:
+	var text := "+%d Blood Marks" % granted
+	if lost > 0:
+		text += "\n-%d lost to the dark" % lost
+
+	return text + "\nTotal: %d" % MetaSave.get_meta_currency()
+
 
 func _on_continue_pressed() -> void:
 	is_showing = false

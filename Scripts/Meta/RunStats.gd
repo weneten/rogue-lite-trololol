@@ -18,6 +18,9 @@ var gold_earned: int
 var run_complete: bool
 var is_finalized: bool
 var meta_currency_granted: int
+# Blood Marks the night took off the stockpile for dying. 0 on Normal, and 0 on any
+# run that was actually finished.
+var meta_currency_lost: int
 
 var _last_currency: int
 var _subscribed: bool = false
@@ -46,10 +49,16 @@ func reset() -> void:
 	run_complete = false
 	is_finalized = false
 	meta_currency_granted = 0
+	meta_currency_lost = 0
 	_last_currency = GameManager.currency if GameManager != null else 0
 
 
 # Compute + grant meta currency once. Safe to call multiple times (idempotent).
+#
+# The death toll is charged first, then the payout is added. That order is the deal
+# on Dark is the Night: the wager is the stockpile you walked in with, and the run's
+# own Blood Marks are never halved on the way in. Dying with 1000 banked and 400
+# earned leaves 900, not 700.
 func finalize_and_grant_meta(run_complete_: bool) -> int:
 	if is_finalized:
 		return meta_currency_granted
@@ -57,26 +66,46 @@ func finalize_and_grant_meta(run_complete_: bool) -> int:
 	run_complete = run_complete_
 	is_finalized = true
 
-	# Base: 10 per wave + kill chip + gold drip; clear wave 20 for bonus.
-	var payout = waves_survived * 10 + kills / 5 + gold_earned / 50
-	if run_complete:
-		payout += 100
-
-	meta_currency_granted = maxi(0, payout)
+	var level: int = GameManager.difficulty if GameManager != null else Difficulty.Level.NORMAL
+	meta_currency_lost = settle_death_loss(run_complete, level)
+	meta_currency_granted = payout_for(level, waves_survived, kills, gold_earned, run_complete)
 	if meta_currency_granted > 0:
 		MetaSave.add_meta_currency(meta_currency_granted)
 
-	print("[RunStats] Finalized. Waves=%d Kills=%d Dmg=%d Gold=%d Complete=%s Meta+=%d" % [
-		waves_survived, kills, damage_dealt, gold_earned, run_complete, meta_currency_granted
+	print("[RunStats] Finalized. Waves=%d Kills=%d Dmg=%d Gold=%d Complete=%s Meta+=%d Meta-=%d" % [
+		waves_survived, kills, damage_dealt, gold_earned, run_complete,
+		meta_currency_granted, meta_currency_lost
 	])
 	return meta_currency_granted
 
 
-static func preview_payout(waves: int, kills: int, gold: int, run_complete_: bool) -> int:
+# What the run is worth before the difficulty has its say.
+static func base_payout(waves: int, kills: int, gold: int, run_complete_: bool) -> int:
 	var payout = waves * 10 + kills / 5 + gold / 50
 	if run_complete_:
 		payout += 100
 	return maxi(0, payout)
+
+
+# What the run actually pays, difficulty included.
+static func payout_for(level: int, waves: int, kills: int, gold: int,
+		run_complete_: bool) -> int:
+	var base := base_payout(waves, kills, gold, run_complete_)
+	return maxi(0, roundi(base * Difficulty.meta_currency_multiplier(level)))
+
+
+# Charges the difficulty's death toll against the banked Blood Marks and returns what
+# it took. Only for dying: reaching the end of the run collects without paying.
+static func settle_death_loss(run_complete_: bool, level: int) -> int:
+	if run_complete_:
+		return 0
+
+	return MetaSave.lose_meta_currency_fraction(Difficulty.death_meta_loss_fraction(level))
+
+
+static func preview_payout(waves: int, kills: int, gold: int, run_complete_: bool,
+		level: int = Difficulty.Level.NORMAL) -> int:
+	return payout_for(level, waves, kills, gold, run_complete_)
 
 
 func _subscribe() -> void:
