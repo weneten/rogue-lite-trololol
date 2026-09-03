@@ -261,6 +261,5 @@ static func _apply_upgrade(upgrade: UpgradeData) -> void:
 			stats.apply_move_speed_upgrade(upgrade.value)
 		UpgradeData.UpgradeType.MAX_HEALTH_BOOST:
 			stats.apply_max_health_upgrade(roundi(upgrade.value))
-		UpgradeData.UpgradeType.PASSIVE:
-			# Stage stub: no relic/passive-item system exists yet, just acknowledge the pick.
-			print("[LevelUpUI] Passive relic '%s' selected (placeholder, no effect yet)." % upgrade.id)
+		UpgradeData.UpgradeType.ATTACK_SPEED_BOOST:
+			stats.apply_attack_speed_bonus(upgrade.value)

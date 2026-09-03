@@ -44,7 +44,7 @@ const LUCK_PER_ROLL_BONUS = 22.0
 const THROW_SECONDS = 0.36
 const SQUASH_SECONDS = 0.07
 const REVEAL_SECONDS = 0.30
-const HOLD_SECONDS = 0.45
+const HOLD_SECONDS = 0.60
 const FADE_SECONDS = 0.22
 
 var _dice: Array[Sprite2D] = []
@@ -93,14 +93,18 @@ func begin(from: Vector2, toward: Vector2, target_count: int, damage_pips: int,
 	var landing := from + direction * 46.0
 
 	var shown_damage: int = display_damage if display_damage > 0 else damage_pips
-	# Gold count die (how many enemies), crimson damage die (the hit each of them
-	# takes). Saturated so they hold up against the bone cube, especially gold.
+	# Gold count die (how many enemies), crimson damage die (the hit each of
+	# them takes). After both land, a combined total pops above the pair.
 	var faces: Array[String] = ["x%d" % target_count, str(shown_damage)]
 	var tints := [Color(1.0, 0.94, 0.28), Color(1.0, 0.38, 0.32)]
 	var landings := _spread_landings(landing, direction)
 
 	for i in range(2):
 		_spawn_die(sheet, from, landings[i], faces[i], tints[i], 0.05 * float(i))
+
+	var combined := shown_damage * maxi(1, target_count)
+	if combined != shown_damage:
+		_spawn_combined((landings[0] + landings[1]) * 0.5, combined)
 
 	# The dice are thrown, tumble, squash on landing and then hold up their numbers. The
 	# stagger above means the second die lands a beat after the first, so the pair reads
@@ -135,24 +139,8 @@ func _spawn_die(sheet: Texture2D, from: Vector2, landing: Vector2, value: String
 
 	# Sibling of the die, not a child: the number must not inherit the cube's
 	# gold tint (that was washing the yellow out) or the throw's spin.
-	var label := Label.new()
-	label.text = value
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	label.z_index = 2
-	label.add_theme_font_override("font", load(FONT_PATH))
-	label.add_theme_color_override("font_color", tint)
-	label.add_theme_color_override("font_outline_color", Color(0.04, 0.02, 0.02, 1.0))
-	label.add_theme_constant_override("outline_size", 8)
-	label.add_theme_color_override("font_shadow_color", Color(0.0, 0.0, 0.0, 0.95))
-	label.add_theme_constant_override("shadow_offset_x", 2)
-	label.add_theme_constant_override("shadow_offset_y", 2)
-	var label_size := Vector2(80, 36)
-	label.size = label_size
-	label.pivot_offset = label_size * 0.5
-	label.position = landing - label_size * 0.5 + Vector2(0.0, -NUMBER_ABOVE)
-	label.modulate = Color(1.0, 1.0, 1.0, 0.0)
+	var label := _make_roll_label(value, tint, Vector2(80, 36))
+	label.position = landing - label.size * 0.5 + Vector2(0.0, -NUMBER_ABOVE)
 	add_child(label)
 	_labels.append(label)
 
@@ -191,6 +179,45 @@ func _spawn_die(sheet: Texture2D, from: Vector2, landing: Vector2, value: String
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	reveal.chain().tween_property(label, "scale", Vector2.ONE, REVEAL_SECONDS * 0.4) \
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+
+# Combined hit (per-enemy damage × count) pops above the pair once both faces are up.
+func _spawn_combined(midpoint: Vector2, total: int) -> void:
+	var label := _make_roll_label(str(total), Color(1.0, 0.96, 0.88), Vector2(96, 40))
+	label.z_index = 3
+	label.position = midpoint - label.size * 0.5 + Vector2(0.0, -NUMBER_ABOVE - 22.0)
+	add_child(label)
+	_labels.append(label)
+
+	var rest_y: float = label.position.y
+	var reveal := label.create_tween()
+	reveal.tween_interval(0.05 + THROW_SECONDS + SQUASH_SECONDS + REVEAL_SECONDS * 0.7)
+	reveal.set_parallel(true)
+	reveal.tween_property(label, "modulate:a", 1.0, REVEAL_SECONDS * 0.4)
+	reveal.tween_property(label, "scale", Vector2.ONE * 1.25, REVEAL_SECONDS * 0.4) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	reveal.tween_property(label, "position:y", rest_y - NUMBER_RISE, REVEAL_SECONDS * 0.7) \
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	reveal.chain().tween_property(label, "scale", Vector2.ONE, REVEAL_SECONDS * 0.35) \
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+
+func _make_roll_label(value: String, tint: Color, label_size: Vector2) -> Label:
+	var label := Label.new()
+	label.text = value
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.z_index = 2
+	label.add_theme_font_override("font", load(FONT_PATH))
+	label.add_theme_color_override("font_color", tint)
+	label.add_theme_color_override("font_outline_color", Color(0.04, 0.02, 0.02, 1.0))
+	label.add_theme_constant_override("outline_size", 8)
+	label.add_theme_color_override("font_shadow_color", Color(0.0, 0.0, 0.0, 0.95))
+	label.add_theme_constant_override("shadow_offset_x", 2)
+	label.add_theme_constant_override("shadow_offset_y", 2)
+	label.size = label_size
+	label.pivot_offset = label_size * 0.5
+	label.modulate = Color(1.0, 1.0, 1.0, 0.0)
+	return label
 
 # Two spots beside the throw, then a last push if jitter still stacked them.
 func _spread_landings(landing: Vector2, direction: Vector2) -> Array[Vector2]:

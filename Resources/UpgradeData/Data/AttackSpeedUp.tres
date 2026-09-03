@@ -4,9 +4,9 @@
 
 [resource]
 script = ExtResource("1_ud")
-id = "relic_placeholder"
-display_name = "Cursed Locket (???)"
-description = "A strange relic. Its effect is not yet understood."
+id = "attack_speed_up"
+display_name = "Quickened Hands"
+description = "+12% attack speed."
 upgrade_type = 3
-value = 0.0
-weight = 0.6
+value = 0.12
+weight = 1.0

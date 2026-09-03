@@ -1,13 +1,12 @@
 extends Resource
 class_name UpgradeData
 
-# What effect an upgrade choice applies on selection. Passive is a placeholder for a
-# future relic/passive-item system — LevelUpUI just logs the pick for now, no real effect yet.
+# What effect an upgrade choice applies on selection.
 enum UpgradeType {
 	DAMAGE_BOOST,
 	MOVE_SPEED_BOOST,
 	MAX_HEALTH_BOOST,
-	PASSIVE
+	ATTACK_SPEED_BOOST
 }
 
 # Data-driven definition of a single level-up choice. LevelUpUI rolls a few of these from an
@@ -20,7 +19,7 @@ enum UpgradeType {
 @export var upgrade_type: UpgradeType = UpgradeType.DAMAGE_BOOST
 
 # Magnitude applied on selection; meaning depends on UpgradeType (e.g. +0.15 damage
-# multiplier, +20 max HP). Unused for Passive.
+# multiplier, +20 max HP, +0.12 attack speed).
 @export var value: float = 0.0
 
 # Relative weight in LevelUpUI's random draw.
