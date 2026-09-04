@@ -208,6 +208,29 @@ ENEMIES = [
         WeaponStyle(P.R_SPECTRAL, P.R_WOOD, P.R_SILVER, P.SPECTRAL), "cast",
     ),
     _e(
+        # The warden that channels the slow (Scripts/AI/DarkMage.gd). It used
+        # to wear the Witchfire Magus's own artwork at 0.75 on the argument
+        # that the thing planting wardens is the same figure drawn larger. On
+        # screen that argument lost: the boss sheet is a painted 160px figure
+        # and shrinking it produced a small boss rather than a servant, so a
+        # wave of them read as four Magi standing in the arena at once.
+        #
+        # Its own rig instead, on the family's colours. Purple and hooded, so
+        # whose it is stays obvious; gaunt, stooped and half the boss's mass,
+        # so which of the two matters never is. The staff is the tell — this is
+        # the one enemy in the roster that is doing something to you from a
+        # distance rather than coming to get you.
+        "dark_warden", "Dark Warden",
+        BodySpec(
+            cloth=Ramp(P.rgb("32234a"), outline=P.rgb("0d0716")), armor=P.R_ARCANE,
+            skin=P.R_FLESH_DEAD, accent=P.R_ARCANE,
+            head="hood", cape="tatters", weapon="staff", stature=1.06, build=0.74,
+            hunch=0.28, eye=P.VIOLET, aura=P.ARCANE, tall_collar=True,
+            amulet=True, belt=False,
+        ),
+        WeaponStyle(P.R_ARCANE, P.R_WOOD, P.R_SILVER, P.VIOLET), "cast",
+    ),
+    _e(
         "bloated_corpse", "Bloated Corpse",
         BodySpec(
             cloth=Ramp(P.rgb("6b7346"), outline=P.rgb("1a1d0e")), armor=P.R_ROT,

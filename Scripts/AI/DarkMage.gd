@@ -21,21 +21,29 @@ class_name DarkMage
 # several of them stack is a decision that has to be made in one place — see
 # DarkMages.combined_slow.
 
-# Its own rig at last, and one it shares with The Witchfire Magus — the boss
-# that sends these is the same figure drawn larger (see WitchfireMagus.gd).
-# Built by tools/build_dark_mage.py.
-const SHEET_PATH := "res://Assets/sprites/enemies/dark_mage/dark_mage.png"
-const SHEET_JSON := "res://Assets/sprites/enemies/dark_mage/dark_mage.json"
+# Its own figure, drawn by the same rig as the rest of the roster and on the
+# Magus's colours — see the dark_warden entry in tools/pixelforge/cast.py.
+#
+# It wore the boss's own artwork before this, on the argument that the thing
+# planting wardens is the same figure drawn larger. The argument was sound and
+# the picture was not: that sheet is a painted 160px boss, and shrinking it
+# gives a small boss rather than a servant, so a wave of these read as four
+# Witchfire Magi standing around the arena. Whose they are now comes from the
+# hood and the purple; what they are comes from being half the mass and holding
+# a staff.
+const SHEET_PATH := "res://Assets/sprites/enemies/dark_warden/dark_warden.png"
+const SHEET_JSON := "res://Assets/sprites/enemies/dark_warden/dark_warden.json"
 
-# Against the boss's 1.9 on the same 160px cells. A warden has to read as the
-# lesser thing at a glance, or the wave-30 fight opens with the player unsure
-# which of the two is the boss.
-const SPRITE_SCALE := 0.75
+# The roster's own scale on the roster's own 64px cells, so a warden stands
+# beside a ghoul at the size a ghoul expects — and well under the boss, which is
+# the whole point of not sharing his sheet any more.
+const SPRITE_SCALE := 2.0
 
-# The sheet above is generated from artwork that does not live in the repo, so a
-# checkout that has never run the builder has no dark mage art at all. The rig
-# it used to borrow is still on disk and is still a hooded caster; falling back
-# to it beats a warden that is a shadow and a tether with nothing in between.
+# Both sheets here are built from source in this repo, so this is a guard
+# against a checkout that has never run tools/build_art.py rather than against
+# missing artwork. The wraith rig is still a hooded caster, and a warden drawn
+# in the wrong robe beats a warden that is a shadow and a tether with nothing
+# in between.
 const FALLBACK_SHEET_PATH := "res://Assets/sprites/enemies/wraith/wraith.png"
 const FALLBACK_SHEET_JSON := "res://Assets/sprites/enemies/wraith/wraith.json"
 
@@ -230,11 +238,10 @@ func _build_visuals() -> void:
 	if animator == null:
 		return
 
-	# Barely tinted, unlike the violet wash the borrowed wraith rig needed: this
-	# art is already the right colour, and a full key over it would flatten the
-	# witchfire the artist drew into the staff and the off hand. The lift is
-	# only enough to keep it off the floor under CanvasModulate.
-	# "attack" is an alias of the cast row on this sheet, so it resolves.
+	# Barely tinted: the rig already drew this figure in the Magus's purple, and
+	# a full colour key over it would flatten the arcane trim back into the
+	# robe. The lift is only enough to keep it off the floor under
+	# CanvasModulate. "attack" is an alias of the cast row, so it resolves.
 	if animator.configure(SHEET_PATH, SHEET_JSON, "attack", SPRITE_SCALE,
 			Color(1.05, 0.98, 1.12, 1.0)):
 		_sprite = animator.get_sprite()

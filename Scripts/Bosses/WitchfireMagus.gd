@@ -26,11 +26,15 @@ class_name WitchfireMagus
 #                   the sheet as it comes. Take the lane, outrun the sheet, or
 #                   pay the fire and cross.
 #
-# It wears the dark mage rig (Assets/sprites/enemies/dark_mage, built by
-# tools/build_dark_mage.py) at 1.9 against a warden's 0.75, because it is the
-# same figure: the thing that plants wardens behind a Hunter who has outrun the
-# night is the thing he eventually has to stand in a room with. Re-exporting
-# that artwork moves both, which is the point rather than an accident.
+# It wears the dark mage artwork (Assets/sprites/enemies/dark_mage, cut from
+# supplied art by tools/build_dark_mage.py) at 1.9.
+#
+# Its wardens used to wear the same sheet at 0.75, on the argument that the
+# thing planting them is the thing the Hunter eventually stands in a room with.
+# They do not any more: a painted boss shrunk to a third is a small boss, not a
+# servant, and a wave of them made the wave-30 fight open with the player
+# unsure which figure was the one with the health bar. They have their own rig
+# now (see DarkMage.gd), on these colours, at the roster's size.
 #
 # The moves overlap on purpose, and that is why this boss does not use the base
 # state machine the way the others do. Boss.process_chase picks one move, WINDUP
