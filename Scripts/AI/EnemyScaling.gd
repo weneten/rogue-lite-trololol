@@ -87,18 +87,35 @@ const FINALE_WAVE = 20
 # step at the baseline is deliberate rather than a ramp starting at 1.0: wave 10
 # is where the complaint starts, so wave 10 is where the fix starts.
 #
-# These are the second pass. The first put wave 10 at 1.75 and the finale at 3.0,
-# and a finished build still took the wave 10 and wave 12 bosses down in seconds
-# — which says the gap between a boss's health bar and a late build's damage was
-# never a matter of tens of percent. Doubled, so a wave 10 boss now spawns with
-# twice the health the first pass gave it, and every boss above it with the same
-# doubling. If it is still short, the honest read is that the fight needs to
-# scale with the build (damage taken, or the player's own numbers) rather than
-# that this constant wants a third pass.
-const BOSS_HEALTH_HARDENING_AT_BASELINE = 3.5
-const BOSS_HEALTH_HARDENING_AT_FINALE = 6.0
-const BOSS_DAMAGE_HARDENING_AT_BASELINE = 1.08
-const BOSS_DAMAGE_HARDENING_AT_FINALE = 1.22
+# Third pass, and the first two are worth writing down because the shape of the
+# miss is the useful part. Pass one put wave 10 at 1.75x and the finale at 3.0x;
+# a finished build still took the wave 10 and wave 12 bosses down in seconds.
+# Pass two doubled both; same result. Tens of percent were never the unit here.
+#
+# So these are set from the two ends the fight is actually read at, rather than
+# nudged: wave 10 is pinned to what wave 20 used to be worth, and wave 20 to
+# four times that again. The waves between are whatever the ramp says, which is
+# the point of a ramp — they climb from one anchor to the other instead of each
+# being argued about separately.
+#
+# The numbers are large enough that they now dwarf the authored curve above:
+# past the baseline, what a boss is worth is this constant, and _boss_curve only
+# still shapes the waves below it. That is a fair description of the problem —
+# a boss's authored health was written against a build that no longer exists by
+# wave 10 — but it does mean the next miss should not be fixed here. If a run
+# still walks through these, the answer is to scale the fight off what the
+# player is actually doing (damage dealt over the last waves) rather than off
+# the wave number, because the wave number does not know what build turned up.
+const BOSS_HEALTH_HARDENING_AT_BASELINE = 17.64
+const BOSS_HEALTH_HARDENING_AT_FINALE = 24.0
+
+# Damage is the other half of pass three, and it is the half to be careful with.
+# Doubled at both ends on request — a boss that survives long enough to use its
+# whole kit should be worth being afraid of — but see the note further up on why
+# health is the safer lever: this one buys difficulty by shrinking the mistake
+# budget, and a hit that kills outright is a coin flip rather than a fight.
+const BOSS_DAMAGE_HARDENING_AT_BASELINE = 2.16
+const BOSS_DAMAGE_HARDENING_AT_FINALE = 2.44
 
 # And the last fight on top of that. The run ends when this wave does, so this
 # is the only boss the Hunter cannot out-wait, out-level or come back to with a
@@ -112,8 +129,8 @@ const FINALE_DAMAGE_BONUS = 1.12
 # boss is actually worth:
 #
 #            w3     w9    w10    w12    w15    w18    w20    w25
-#   health  0.51   0.93   3.50   4.88   7.36  10.34  17.64  22.26
-#   damage  0.79   0.97   1.08   1.20   1.38   1.57   1.91   2.19
+#   health  0.51   0.93  17.64  23.07  32.27  42.73  70.56  89.04
+#   damage  0.79   0.97   2.16   2.39   2.76   3.15   3.83   4.39
 #
 # The step between wave 9 and wave 10 is the largest thing on that line and it
 # is meant to be: nine is a boss the run walks through, ten is where the fight
