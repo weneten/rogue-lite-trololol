@@ -1,0 +1,94 @@
+{
+  "image": "witchfire.png",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "columns": 8,
+  "rows": 3,
+  "facing": "right",
+  "pixelArt": true,
+  "origin": {
+    "x": 32.0,
+    "y": 46.0
+  },
+  "animations": {
+    "curtain": {
+      "row": 0,
+      "from": 0,
+      "to": 7,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "frameCount": 8,
+      "fps": 12,
+      "loop": true
+    },
+    "ground": {
+      "row": 1,
+      "from": 8,
+      "to": 15,
+      "frames": [
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "frameCount": 8,
+      "fps": 10,
+      "loop": true
+    },
+    "plume": {
+      "row": 2,
+      "from": 16,
+      "to": 23,
+      "frames": [
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "frameCount": 8,
+      "fps": 12,
+      "loop": true
+    },
+    "idle": {
+      "row": 0,
+      "from": 0,
+      "to": 7,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "frameCount": 8,
+      "fps": 12,
+      "loop": true
+    }
+  },
+  "flameHeight": 52,
+  "floorY": 46,
+  "tileable": {
+    "curtain": "x",
+    "ground": "xy",
+    "plume": "none"
+  }
+}

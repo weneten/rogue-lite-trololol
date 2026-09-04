@@ -24,6 +24,7 @@ produces identical files.
 | `items/<id>.png` | 32×32 shop relic icons |
 | `cosmetics/` | Loadout aura and charm chrome worn by the Hunter |
 | `arena/` | Floor tiles, wall tiles, prop strip |
+| `vfx/<id>/` | Effect sheet + atlas JSON, anchored on the effect |
 | `../UI/` | Nine-slice panels, buttons, bars, HUD icons, theme |
 | `../Fonts/` | Bitmap font atlases + `.fnt` descriptors |
 
@@ -67,6 +68,33 @@ on the Godot side is pinned to either number: `SpriteSheetCache` takes the
 column count, the frame indices, the fps and the loop flag straight out of the
 atlas JSON, so changing `sheets.COLUMNS` or `sheets.ANIMS` needs no engine
 change at all.
+
+## Fire, and the angle it is drawn at
+
+`vfx/witchfire/` is the Witchfire Magus's purple fire, built by
+`pixelforge/flames.py` — a wall of it (`curtain`), the ground it leaves behind
+(`ground`), and one column of it (`plume`). It is the same 8-column sheet
+format as everything else, with two extra promises the atlas JSON writes down
+and the builder asserts at build time:
+
+* `curtain` tiles left to right and `ground` tiles both ways, so a wall two
+  hundred pixels long is one frame repeated and shows no seam.
+* Every row's animation closes exactly — frame 8 is frame 0, pixel for pixel —
+  so a fire that burns for the whole fight never jumps.
+
+Both come from the same place: the noise the fire is made of lives on a lattice
+that wraps in x, y and time. Cell size, lattice period and scroll speed have to
+stay in step for that, which is why changing one of them trips `_check_periods`
+rather than quietly producing a sheet with a scar down it.
+
+The angle is the game's own. Nightbane is drawn from a high three-quarter view:
+the cast stands upright with their feet at the bottom of the cell, and what
+lies on the floor is flattened. Fire has to answer both at once, so each flame
+here has a footprint squashed to `FOOT_SQUASH` of its width because it lies on
+the ground plane, and tongues at `RISE` of their side-on height because at this
+angle height is worth less screen than floor. The sheet's origin is the floor
+line rather than the middle of the cell, so a flame placed at a point stands on
+that point.
 
 ## What makes a pose read as a body
 

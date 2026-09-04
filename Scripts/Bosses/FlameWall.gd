@@ -123,6 +123,7 @@ var _time: float = 0.0
 
 func _ready() -> void:
 	z_index = -1
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 
 func _process(delta: float) -> void:
 	_time += delta
@@ -221,6 +222,7 @@ func _draw() -> void:
 	# have before it is safe to go back. Every strip drawn here is a strip that
 	# still burns: see TRAIL_MIN_HEAT.
 	if front > rear:
+		var burnt := WitchfireSheet.frame(WitchfireSheet.GROUND, _time)
 		var step := (front - rear) / float(TRAIL_STRIPS)
 		for i in range(TRAIL_STRIPS):
 			var x0 := rear + step * i
@@ -232,7 +234,20 @@ func _draw() -> void:
 				TRAIL_COLOR.a * glow * flicker)
 			var strip := Rect2(Vector2(x0, -span_half), Vector2(step + 1.0, span_half * 2.0))
 			for piece in _split_around_lane(strip, gap_center(x0 + step * 0.5)):
+				# The wash first, and unconditionally. It is what makes the
+				# whole damaging band one readable shape at a glance, which is
+				# the thing the fade used to get wrong; the artwork on top says
+				# what it is, but the wash is what says how far it goes.
 				draw_rect(piece, tint)
+				if burnt == null:
+					continue
+
+				WitchfireSheet.draw_tiled(self, burnt, piece,
+					# Phased on the node rather than on the strip: the ground
+					# does not move once it is alight, so the pattern must not
+					# crawl forward with the sheet that lit it.
+					Vector2.ZERO, 0.0,
+					Color(1.0, 1.0, 1.0, glow * flicker), true)
 
 		_draw_trail_edge(rear)
 
@@ -256,6 +271,11 @@ func _draw() -> void:
 				false, 3.0)
 		return
 
+	var curtain := WitchfireSheet.frame(WitchfireSheet.CURTAIN, _time)
+	if curtain != null:
+		_draw_sheet_face(front, pieces, curtain)
+		return
+
 	var breathe := 0.78 + 0.14 * sin(_time * 10.0)
 	for piece in pieces:
 		draw_rect(piece, SHEET_EDGE)
@@ -263,6 +283,34 @@ func _draw() -> void:
 			SHEET_CORE.a * breathe))
 
 	_draw_tongues(front + thickness, gap_center(front))
+
+# The sheet itself, as a curtain of fire standing across the room and leaning
+# the way it is going.
+#
+# Drawn in a frame rotated a quarter turn, because the artwork's "up" is this
+# hazard's "forward": the flames then lick ahead of the slab in the direction of
+# travel, which is the same tell the tongues used to give. It is also scaled, on
+# purpose — the slab is as deep as the attack pattern says (`thickness`, 60 in
+# the resource) and the artwork is FLAME_H deep, and what the player must be
+# able to trust is that the fire they see is the fire that burns them.
+func _draw_sheet_face(front: float, pieces: Array, curtain: Texture2D) -> void:
+	var scale := thickness / WitchfireSheet.flame_height()
+	var cell := WitchfireSheet.cell() * scale
+	var floor_y := WitchfireSheet.floor_y() * scale
+
+	# A quarter turn takes the artwork's up to this hazard's forward, which puts
+	# the sheet's floor line on the back of the slab and its flame across the
+	# whole depth the attack claims. The scorch below the line lands on ground
+	# the sweep has already burnt, where it belongs.
+	draw_set_transform(Vector2(front, 0.0), PI * 0.5, Vector2.ONE)
+	for piece in pieces:
+		WitchfireSheet.draw_tiled(self, curtain,
+			Rect2(piece.position.y, -floor_y, piece.size.y, cell),
+			# One grid for both sides of the lane, anchored on the sheet rather
+			# than on the piece, so the fire does not step across the gap.
+			Vector2(-span_half, -floor_y), cell)
+
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 # The line the burn ends at: behind it the floor is floor again. Drawn at the
 # same depth the lane is tested at, and split around the lane like everything

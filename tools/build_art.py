@@ -14,6 +14,7 @@ Groups:
     font     bitmap font atlases + .fnt descriptors
     theme    the Godot Theme resource
     arena    floor / wall tiles and props
+    flames   the Witchfire Magus's fire: wall, burning ground, plume
 
 Requires Pillow. Everything is deterministic, so a rebuild produces
 byte-identical output unless the generators change.
@@ -26,7 +27,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from pixelforge import arena, cast, cosmetics, font, items, sheets, slots, theme, ui, weapons  # noqa: E402
+from pixelforge import arena, cast, cosmetics, flames, font, items, sheets, slots, theme, ui, weapons  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -93,6 +94,11 @@ def build_arena() -> None:
     print("  floor tiles, wall tiles, props")
 
 
+def build_flames() -> None:
+    flames.export(ROOT)
+    print(f"  witchfire: {', '.join(name for name, *_ in flames.ROWS)}")
+
+
 GROUPS = {
     "sprites": build_sprites,
     "weapons": build_weapons,
@@ -103,10 +109,12 @@ GROUPS = {
     "font": build_font,
     "theme": build_theme,
     "arena": build_arena,
+    "flames": build_flames,
 }
 
 # The theme references the font atlases and UI textures, so it goes last.
-ORDER = ["font", "ui", "slots", "arena", "weapons", "items", "cosmetics", "sprites", "theme"]
+ORDER = ["font", "ui", "slots", "arena", "flames", "weapons", "items", "cosmetics",
+         "sprites", "theme"]
 
 
 def main(argv: list[str]) -> int:

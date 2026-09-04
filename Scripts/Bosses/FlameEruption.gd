@@ -35,6 +35,7 @@ var _resolved: bool = false
 
 func _ready() -> void:
 	z_index = -1
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 
 func _process(delta: float) -> void:
 	_age += delta
@@ -88,6 +89,17 @@ func _draw() -> void:
 		# The hit itself: full brightness, fading out over BURN_SECONDS.
 		var fade := 1.0 - clampf((_age - windup_seconds) / BURN_SECONDS, 0.0, 1.0)
 		_draw_band(outer, inner, Color(BURN.r, BURN.g, BURN.b, BURN.a * fade))
+		# Artwork over the wash, not instead of it: the wash is what makes the
+		# ring one shape from across the room, and a ring is a thing the player
+		# has to read the extent of in half a second.
+		#
+		# Only the eruption itself gets it. The wind-up below stays a flat decal
+		# on purpose — a ring that is about to go up must not look like one that
+		# already has, and the move is built on telling those apart.
+		var burnt := WitchfireSheet.frame(WitchfireSheet.GROUND, _age)
+		if burnt != null:
+			_draw_band_tiled(outer, inner, burnt, Color(1.0, 1.0, 1.0, fade))
+
 		return
 
 	# Wind-up. The fill brightens toward the hit rather than pulsing, for the
@@ -110,6 +122,18 @@ func _draw_band(outer: Rect2, inner: Rect2, color: Color) -> void:
 
 	for rect in FlameArena.frame_rects(outer, inner):
 		draw_rect(rect, color)
+
+# The same ring, filled with burning ground. Every piece is phased on the arena
+# rather than on its own rectangle, so the three rings of one eruption lie on a
+# single grid and the fire does not visibly restart at each band boundary.
+func _draw_band_tiled(outer: Rect2, inner: Rect2, texture: Texture2D, modulate: Color) -> void:
+	var phase := arena.global_position - global_position
+	if inner.size.x <= 2.0 or inner.size.y <= 2.0:
+		WitchfireSheet.draw_tiled(self, texture, outer, phase, 0.0, modulate, true)
+		return
+
+	for rect in FlameArena.frame_rects(outer, inner):
+		WitchfireSheet.draw_tiled(self, texture, rect, phase, 0.0, modulate, true)
 
 func _draw_band_outline(outer: Rect2, inner: Rect2, color: Color) -> void:
 	draw_rect(outer, color, false, 3.0)

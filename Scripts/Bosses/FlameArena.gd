@@ -45,6 +45,9 @@ var _tongue_seeds: Array[float] = []
 func _ready() -> void:
 	# Under the characters, over the floor — the layer boss telegraphs use.
 	z_index = -1
+	# The wall is pixel art now; filtering it would soften exactly the edges the
+	# rest of the game keeps hard.
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	# Findable by anything that places things on the floor. DarkMages is the one
 	# that has to care: it keeps planting wardens through a boss fight by design.
 	add_to_group(GROUP)
@@ -144,6 +147,50 @@ func _draw() -> void:
 	for band in frame_rects(outer, inner):
 		draw_rect(band, SCORCH)
 
+	if WitchfireSheet.ready():
+		_draw_sheet_walls(inner)
+		return
+
+	_draw_polygon_walls(inner)
+
+# One curtain per side, rotated so its flame leans out of the room. The sheet's
+# floor line goes on the wall line itself: fire outward into the band the arena
+# burns, scorch inward onto the floor the Hunter is standing on, which is what
+# a wall of fire does to the ground it borders.
+func _draw_sheet_walls(inner: Rect2) -> void:
+	var texture := WitchfireSheet.frame(WitchfireSheet.CURTAIN, _time)
+	if texture == null:
+		_draw_polygon_walls(inner)
+		return
+
+	var cell := WitchfireSheet.cell()
+	var floor_y := WitchfireSheet.floor_y()
+
+	for edge in _edges(inner):
+		var from: Vector2 = edge[0]
+		var to: Vector2 = edge[1]
+		var normal: Vector2 = edge[2]
+		var span := from.distance_to(to)
+		# The top and bottom walls are run out over the corners so the four
+		# sides close into a ring. Without it each corner is a notch of unburnt
+		# floor exactly where a Hunter fleeing a sweep ends up.
+		var overhang := BORDER if absf(normal.y) > absf(normal.x) else 0.0
+
+		# Local x runs along the wall, local -y is out of the room, so the
+		# curtain is drawn upright in a frame where "up" means "outward".
+		draw_set_transform((from + to) * 0.5, normal.angle() + PI * 0.5, Vector2.ONE)
+		WitchfireSheet.draw_tiled(self, texture,
+			Rect2(-span * 0.5 - overhang, -floor_y, span + overhang * 2.0, cell),
+			# Phased off the wall's own middle so both halves of a side share
+			# one grid and the pattern does not step at the centre.
+			Vector2(-span * 0.5, -floor_y), cell)
+
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+# What the wall looked like before there was artwork, kept for when there is
+# none: a hazard the player is being told to stand clear of must never be
+# invisible because a file failed to load.
+func _draw_polygon_walls(inner: Rect2) -> void:
 	var seed_index := 0
 	for edge in _edges(inner):
 		var from: Vector2 = edge[0]
