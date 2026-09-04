@@ -51,6 +51,13 @@ func _process(delta: float) -> void:
 	var desired_position = _owner.global_position + follow_offset
 	global_position = global_position.move_toward(desired_position, follow_speed * delta)
 
+	# A familiar is a weapon that happens to fly, so it holds fire with the rest
+	# of the loadout — it had no such check at all, which made a summon the one
+	# way to keep shooting a frozen field through a pause. It still follows its
+	# owner above: what is held is the shooting, not the pet.
+	if WaveManager != null and WaveManager.is_arena_held:
+		return
+
 	_cooldown_remaining -= delta
 
 	var target = _find_nearest_target()

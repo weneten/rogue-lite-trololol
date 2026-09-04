@@ -136,7 +136,7 @@ func _physics_process(delta: float) -> void:
 	_age += delta
 	_burn_cooldown -= delta
 
-	if WaveManager != null and WaveManager.is_preparing:
+	if WaveManager != null and WaveManager.is_arena_held:
 		return
 
 	# The wind-up is the sheet forming along its edge without moving. It is the

@@ -250,9 +250,9 @@ func _tick_casting(delta: float) -> void:
 	if health == null or health.is_dead or state == BossState.DEAD:
 		return
 
-	# The count-in holds every other actor still; a boss casting through it would
-	# be swinging at a Hunter who cannot move yet.
-	if WaveManager != null and WaveManager.is_preparing:
+	# The hold stops every other actor; a boss casting through it would be
+	# swinging at a Hunter whose own weapons are down.
+	if WaveManager != null and WaveManager.is_arena_held:
 		return
 
 	var phase := get_current_phase()

@@ -67,9 +67,9 @@ func _process(delta: float) -> void:
 func _physics_process(delta: float) -> void:
 	_burn_cooldown -= delta
 
-	# The count-in freezes the arena for everyone else; a wall that kept burning
+	# The hold freezes the arena for everyone else; a wall that kept burning
 	# through it would be the one thing on the field still taking swings.
-	if WaveManager != null and WaveManager.is_preparing:
+	if WaveManager != null and WaveManager.is_arena_held:
 		return
 
 	var player := _live_player()

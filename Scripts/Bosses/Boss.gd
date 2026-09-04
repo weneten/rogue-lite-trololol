@@ -214,10 +214,10 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		return
 
-	# Held through the wave count-in exactly like the regular roster — a boss that
-	# survived into the next wave must not get free hits on a player who is still
-	# reading the arena.
-	if WaveManager != null and WaveManager.is_preparing:
+	# Held exactly like the regular roster, for the count-in and the gap between
+	# waves both — a boss that survived into either must not get free hits on a
+	# player whose weapons are down and who is still reading the arena.
+	if WaveManager != null and WaveManager.is_arena_held:
 		velocity = Vector2.ZERO
 		move_and_slide()
 		return

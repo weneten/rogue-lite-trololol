@@ -52,6 +52,20 @@ var time_until_next_wave: float:
 var is_preparing: bool:
 	get: return is_wave_active and _prep_time_remaining > 0.0
 
+# True whenever the arena is held and nothing may fight — the count-in above,
+# and the gap between one wave ending and the next starting.
+#
+# is_preparing only ever covered the first of those, because it is a state
+# *inside* an active wave. The gap is not: the wave has ended, so is_wave_active
+# is false and every check written against is_preparing quietly reads false too.
+# For the length of that gap the arena was live in one direction only — weapons
+# fired, leftovers chased and swung, hazards burned — while the player was
+# standing in a shop or reading a board. That is the thing the pause exists to
+# prevent, so the pause is now both halves and everything that must sit still
+# reads this rather than is_preparing.
+var is_arena_held: bool:
+	get: return not is_wave_active or is_preparing
+
 var prep_time_remaining: float:
 	get: return maxf(0.0, _prep_time_remaining)
 

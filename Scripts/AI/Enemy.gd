@@ -129,6 +129,11 @@ func apply_spawn_modifiers(wave_number: int, is_elite: bool) -> void:
 	# a hard run still gets harder as the waves climb.
 	var difficulty: int = GameManager.difficulty
 	hp_mul *= Difficulty.enemy_health_multiplier(difficulty)
+	# And on a difficulty that asks for it, health keeps compounding in the late
+	# waves, because the Hunter's damage does. A flat multiplier only moves the
+	# wave at which he outgrows the roster; this one follows him.
+	hp_mul *= EnemyScaling.late_health_multiplier(
+		wave_number, Difficulty.enemy_health_late_growth(difficulty))
 	dmg_mul *= Difficulty.enemy_damage_multiplier(difficulty)
 
 	# Speed is set, not scaled: the hard mode's promise is "barely slower than
@@ -157,10 +162,12 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		return
 
-	# Wave count-in: leftovers from last wave stand exactly where the shop left them so
+	# Arena held: leftovers from last wave stand exactly where the shop left them so
 	# the player can read the board before it moves. Cooldowns are frozen with them —
-	# a held enemy that swings the instant the count ends is not a fair count.
-	if WaveManager != null and WaveManager.is_preparing:
+	# a held enemy that swings the instant the hold ends is not a fair count. This
+	# covers the gap between waves as well, where the Hunter's own weapons are down:
+	# a leftover chasing him there would be the one thing on the field still armed.
+	if WaveManager != null and WaveManager.is_arena_held:
 		velocity = Vector2.ZERO
 		move_and_slide()
 		return

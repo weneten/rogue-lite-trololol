@@ -24,6 +24,9 @@ const PROFILES := {
 		"description": "Standard enemy strength, one boss on waves 10, 15 and 20.",
 		"enemy_health": 1.0,
 		"enemy_damage": 1.0,
+		# 1.0 means the flat per-wave curve is the whole story — see
+		# EnemyScaling.late_health_multiplier.
+		"enemy_health_late_growth": 1.0,
 		# 0 keeps whatever speed the archetype was authored with.
 		"enemy_speed_of_player": 0.0,
 		"player_health": 1.0,
@@ -44,8 +47,14 @@ const PROFILES := {
 	Level.DARK_NIGHT: {
 		"name": "Dark is the Night!",
 		"tagline": "Whatever is behind you is barely slower than you.",
-		"description": "Enemies: double health, +120% damage, 94% of your speed, half again as many. You: 55% health, 75% damage. A boss every third wave, drawn at random and never the same one twice in a row, and the wave does not end until it falls. Bosses grow with the wave they arrive on. Outrun the night by more than a quarter and it sends something to slow you down. Blood Marks pay four times over — but fall here and half of everything you have banked stays in the dark.",
+		"description": "Enemies: double health, +120% damage, 94% of your speed, half again as many — and past wave 8 they keep hardening, so the night grows with your build instead of falling behind it. You: 55% health, 75% damage. A boss every third wave, drawn at random and never the same one twice in a row, and the wave does not end until it falls. From wave 10 bosses are walls, heavier every wave up to the last one. Outrun the night by more than a quarter and it sends wardens to take back the speed you bought — the faster you are, the more they take. Blood Marks pay four times over — but fall here and half of everything you have banked stays in the dark.",
 		"enemy_health": 2.0,
+		# Compounding health in the back half of the run, on top of the flat
+		# curve. A build's damage is a product and grows geometrically; a flat
+		# multiplier on a linear curve cannot stay with it, so the night stopped
+		# being dangerous somewhere around wave twelve however large that flat
+		# number was. This is the term that keeps pace.
+		"enemy_health_late_growth": 1.055,
 		# +120% damage dealt, i.e. 2.2x what the archetype does.
 		"enemy_damage": 2.2,
 		# Not a multiplier on their own speed: a target expressed against the
@@ -84,6 +93,11 @@ static func description(level: int) -> String:
 
 static func enemy_health_multiplier(level: int) -> float:
 	return profile(level)["enemy_health"]
+
+# The compounding rate enemy health gains per wave in the late game. 1.0 on a
+# difficulty that does not do this at all.
+static func enemy_health_late_growth(level: int) -> float:
+	return profile(level)["enemy_health_late_growth"]
 
 static func enemy_damage_multiplier(level: int) -> float:
 	return profile(level)["enemy_damage"]
