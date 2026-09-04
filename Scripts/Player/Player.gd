@@ -45,10 +45,12 @@ const DASH_FALLBACK_SECONDS := 0.25
 @export var fallback_polygon_path: NodePath
 
 # Debug
-# Stage-2 verification hook: press the "debug_damage_test" action (T) to self-damage
-# and confirm HealthComponent -> EventBus.OnPlayerDamaged/OnPlayerDied wiring works
-# end-to-end without needing enemies yet. TODO: disable/remove once real combat lands.
-@export var enable_debug_damage_key: bool = true
+# Stage-2 verification hook: self-damage on the "debug_damage_test" action to
+# confirm HealthComponent -> EventBus.OnPlayerDamaged/OnPlayerDied wiring works
+# end-to-end. Off by default: real combat has landed, and the key it sits on (T)
+# is the Auto-Wave toggle now — leaving it armed would cost 10 HP every time the
+# player flipped Auto-Wave. Tick it in the inspector when the hook is wanted.
+@export var enable_debug_damage_key: bool = false
 @export var debug_damage_amount: int = 10
 
 var _health: HealthComponent

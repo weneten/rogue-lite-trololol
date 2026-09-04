@@ -21,6 +21,9 @@ func _ready() -> void:
 	collision_layer = 0
 	collision_mask = 2  # Player layer
 	_life_remaining = max_lifetime_seconds
+	# Cleared with the round, like every other projectile — see Projectile.gd.
+	if EventBus != null:
+		EventBus.wave_end.connect(_on_wave_end)
 
 	var shape = CollisionShape2D.new()
 	var circle = CircleShape2D.new()
@@ -60,6 +63,10 @@ func _physics_process(delta: float) -> void:
 	_life_remaining -= delta
 	if _life_remaining <= 0:
 		queue_free()
+
+func _on_wave_end(_wave_number: int) -> void:
+	_active = false
+	queue_free()
 
 func _on_body_entered(body: Node2D) -> void:
 	if not _active or not body.is_in_group("Player"):

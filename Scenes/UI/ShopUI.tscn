@@ -190,7 +190,7 @@ alignment = 1
 
 [node name="RerollButton" type="Button" parent="RootPanel/Content/Rows/Body/RightColumn/ShelfFooter"]
 layout_mode = 2
-text = "REROLL"
+text = "REROLL  [R]"
 
 [node name="RerollCostLabel" type="Label" parent="RootPanel/Content/Rows/Body/RightColumn/ShelfFooter"]
 layout_mode = 2

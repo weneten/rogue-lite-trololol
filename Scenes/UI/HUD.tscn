@@ -32,6 +32,8 @@ dash_icon_path = NodePath("Root/DashAnchor/DashPanel/Slot/Icon")
 dash_shade_path = NodePath("Root/DashAnchor/DashPanel/Slot/Shade")
 dash_label_path = NodePath("Root/DashAnchor/DashPanel/Slot/Remaining")
 dash_key_label_path = NodePath("Root/DashAnchor/DashPanel/Slot/KeyHint")
+auto_wave_panel_path = NodePath("Root/DashAnchor/AutoWavePanel")
+auto_wave_label_path = NodePath("Root/DashAnchor/AutoWavePanel/AutoWaveLabel")
 
 [node name="Root" type="Control" parent="."]
 layout_mode = 3
@@ -353,6 +355,22 @@ mouse_filter = 2
 theme_type_variation = &"SmallLabel"
 horizontal_alignment = 1
 text = "SPACE"
+
+[node name="AutoWavePanel" type="PanelContainer" parent="Root/DashAnchor"]
+layout_mode = 1
+anchors_preset = 0
+offset_top = -26.0
+offset_right = 152.0
+offset_bottom = -4.0
+mouse_filter = 2
+theme_type_variation = &"DarkPanel"
+
+[node name="AutoWaveLabel" type="Label" parent="Root/DashAnchor/AutoWavePanel"]
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"SmallLabel"
+horizontal_alignment = 1
+text = "[T] AUTO-WAVE  OFF"
 
 [node name="OffscreenArrows" type="Control" parent="Root"]
 layout_mode = 1

@@ -121,10 +121,20 @@ func _build_shelf() -> void:
 
 		var index := i
 		card.buy_requested.connect(func(): _on_buy(index))
+		# A held card is part of the shelf a co-op peer is looking at.
+		card.lock_toggled.connect(func(_locked: bool): _push_net())
 
 # ------------------------------------------------------------------- lifecycle
 
 func _on_wave_end(wave_number: int) -> void:
+	# Auto-Wave: the round boundary passes without stopping. Nothing is paused,
+	# no boon screen, no Ossuary — WaveManager's own inter-wave timer brings the
+	# next wave up the same way it does when NEXT WAVE is pressed. The levels
+	# earned this round stay queued on PlayerStats and come out in one go at the
+	# first intermission that does run.
+	if _auto_wave_active():
+		return
+
 	_pending_wave = wave_number
 	_waiting_for_peers = false
 	get_tree().paused = true
@@ -132,6 +142,34 @@ func _on_wave_end(wave_number: int) -> void:
 	if PlayerStats.instance != null and PlayerStats.instance.pop_next_boon():
 		return
 	_open_shop(wave_number)
+
+# Co-op keeps its intermission whatever this is set to: the shop is where peers
+# wait for each other, and one hunter skipping it would leave the rest of the
+# lobby holding a NEXT WAVE button nobody is coming to answer.
+func _auto_wave_active() -> bool:
+	if GameManager == null or not GameManager.auto_wave:
+		return false
+
+	return NetSession == null or not NetSession.is_active
+
+# R rerolls the shelf. _unhandled_key_input rather than a Shortcut on the button:
+# the shelf hands keyboard focus to a buy button on open, and a focused Button
+# would swallow the key before the shortcut ever saw it.
+func _unhandled_key_input(event: InputEvent) -> void:
+	if is_replica or not _open:
+		return
+
+	if not event.is_action_pressed("shop_reroll"):
+		return
+
+	get_viewport().set_input_as_handled()
+	# Same gate the button is under — an unaffordable reroll is refused, not
+	# silently charged.
+	if _reroll_button == null or _reroll_button.disabled:
+		return
+
+	UIAnim.punch(_reroll_button)
+	_on_reroll_pressed()
 
 func _on_boons_done() -> void:
 	if _pending_wave <= 0:
@@ -142,8 +180,9 @@ func _open_shop(wave_number: int) -> void:
 	_open = true
 	_rerolls_this_visit = 0
 
-	for card in _cards:
-		card.set_locked(false)
+	# Locks deliberately survive the visit. Holding a card you cannot afford
+	# yet is the reason to lock one at all; wiping the shelf on the way in
+	# made the button do nothing but hold through rerolls.
 
 	if _next_wave_button != null:
 		_next_wave_button.disabled = false
@@ -250,6 +289,11 @@ func _on_reroll_pressed() -> void:
 # Fills every unlocked card. Weapons and relics come from one draw so a shelf
 # can legitimately be all weapons or all relics — a fixed 3-and-2 split made
 # every visit feel identical.
+#
+# `fresh` marks a new visit rather than a reroll: held cards keep their offer
+# either way, but on a new visit they are re-read against the Hunter's current
+# inventory and purse, because a wave of fighting can have turned a first copy
+# into an upgrade.
 func _roll_offers(fresh: bool) -> void:
 	var weapons: Array = []
 	var relics: Array = []
@@ -272,7 +316,9 @@ func _roll_offers(fresh: bool) -> void:
 				relics.erase(card.offer)
 
 	for card in _cards:
-		if card.locked and card.offer != null and not fresh:
+		if card.locked and card.offer != null:
+			if fresh:
+				_refresh_held_card(card)
 			continue
 
 		var pick_weapon := _should_pick_weapon(weapons, relics)
@@ -289,6 +335,20 @@ func _roll_offers(fresh: bool) -> void:
 			card.clear()
 
 	_update_affordability()
+
+# Re-renders a card the Hunter held over from the last visit. Same offer, but
+# the price and the "UPGRADE / STACK" line are read again: what he bought and
+# levelled during the wave changes both.
+func _refresh_held_card(card: ShopCard) -> void:
+	if card.offer == null:
+		return
+
+	if card.is_weapon:
+		card.show_weapon(card.offer, _weapon_offer_price(card.offer),
+			_owned_weapon_level(card.offer))
+	else:
+		card.show_relic(card.offer, ShopEconomy.get_passive_price(card.offer),
+			GameManager.get_passive_item_count(card.offer.id))
 
 # Roughly 60/40 in favour of weapons, but never offers a kind that has run out.
 func _should_pick_weapon(weapons: Array, relics: Array) -> bool:

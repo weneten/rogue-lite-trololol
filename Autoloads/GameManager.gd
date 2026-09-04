@@ -25,6 +25,17 @@ var difficulty: int = Difficulty.Level.NORMAL
 # enemies spawn before they could ask a Player that may not exist yet.
 var player_base_speed: float = 300.0
 
+# Auto-Wave: the intermission is skipped whole — no moon boons, no Ossuary. The
+# next wave comes up on WaveManager's own inter-wave timer, exactly as it does
+# after the shop is dismissed.
+#
+# Levels earned under it are deferred, not thrown away: PlayerStats.pending_boons
+# keeps counting, and the first intermission that actually runs hands over
+# everything that piled up. Switching it off is how you collect.
+#
+# Per-run and never saved: it is a way to play a run, not a setting.
+var auto_wave: bool = false
+
 # PassiveItemData already purchased this run. Kept as the resources rather than
 # bare ids because the shop tray and the Hunter's cosmetic layer both need the
 # icon and effect, not just "do I own this".
@@ -132,9 +143,23 @@ func set_difficulty(level: int) -> void:
 	difficulty = level
 	print("[GameManager] Difficulty set to %s." % Difficulty.display_name(level))
 
+# Returns the new state so the caller can speak it aloud without reading it back.
+func toggle_auto_wave() -> bool:
+	set_auto_wave(not auto_wave)
+	return auto_wave
+
+func set_auto_wave(enabled: bool) -> void:
+	if auto_wave == enabled:
+		return
+
+	auto_wave = enabled
+	EventBus.auto_wave_changed.emit(enabled)
+	print("[GameManager] Auto-Wave %s." % ("on — intermissions skipped" if enabled else "off"))
+
 func start_new_run(seed: int = 0) -> void:
 	currency = 0
 	wave_number = 1
+	set_auto_wave(false)
 	run_seed = seed if seed != 0 else randi()
 	_owned_passive_items.clear()
 	EventBus.currency_changed.emit(currency)

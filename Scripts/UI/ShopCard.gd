@@ -108,7 +108,7 @@ func _build() -> void:
 	_lock_button.theme_type_variation = &"FlatButton"
 	_lock_button.icon = _load(LOCK_PATH)
 	_lock_button.custom_minimum_size = Vector2(28, 28)
-	_lock_button.tooltip_text = "Hold through rerolls"
+	_lock_button.tooltip_text = "Hold through rerolls and into the next wave"
 	_lock_button.pressed.connect(_on_lock_pressed)
 	header.add_child(_lock_button)
 
@@ -295,6 +295,12 @@ func set_max_level() -> void:
 func set_locked(value: bool) -> void:
 	_locked = value
 	_lock_button.modulate = Color(1.0, 0.85, 0.4) if value else Color(1, 1, 1, 0.45)
+	# 28px of button tint was the only thing that changed, which reads as
+	# "the button didn't take". The rarity frame goes gold with it, so a held
+	# card is obvious from where the player is actually looking.
+	self_modulate = Color(1.35, 1.12, 0.6) if value else Color.WHITE
+	_lock_button.tooltip_text = ("Held - click to release" if value
+		else "Hold through rerolls and into the next wave")
 
 
 func _on_lock_pressed() -> void:

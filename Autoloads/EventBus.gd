@@ -48,3 +48,7 @@ signal boss_encounter_start(boss_name, wave_number)
 
 # Raised when a boss fight ends (boss death or run fail). defeated=true if boss was killed.
 signal boss_encounter_end(boss_name, defeated)
+
+# Auto-Wave was switched on or off (T in the arena). HUD's badge listens; ShopUI
+# reads GameManager.auto_wave directly when the wave ends.
+signal auto_wave_changed(enabled)

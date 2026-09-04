@@ -26,6 +26,18 @@ var _active: bool = false
 
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)
+	# The intermission freezes the arena but does not empty it. A bolt caught
+	# mid-flight when the wave timer ran out would sit there through the whole
+	# shop and then thaw into the first frame of the next wave, landing on a
+	# Hunter who has long since walked away from it. The round is over: so is
+	# everything the round put in the air.
+	if EventBus != null:
+		EventBus.wave_end.connect(_on_wave_end)
+
+
+func _on_wave_end(_wave_number: int) -> void:
+	if _active:
+		_despawn()
 
 # Arms and aims the projectile. Called by Weapon.cs immediately after ObjectPool.acquire().
 func launch(origin_position: Vector2, direction: Vector2, pool: ObjectPool, instigator: Node,

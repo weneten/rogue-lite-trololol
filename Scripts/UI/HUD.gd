@@ -25,6 +25,8 @@ class_name HUD
 @export var dash_shade_path: NodePath
 @export var dash_label_path: NodePath
 @export var dash_key_label_path: NodePath
+@export var auto_wave_panel_path: NodePath
+@export var auto_wave_label_path: NodePath
 
 @export_group("Weapon Bar")
 # The counters climb constantly during a fight; refreshing them every frame is
@@ -68,6 +70,8 @@ var _dash_icon: TextureRect
 var _dash_shade: ColorRect
 var _dash_label: Label
 var _dash_key_label: Label
+var _auto_wave_panel: Control
+var _auto_wave_label: Label
 var _player: Player
 
 func _ready() -> void:
@@ -91,6 +95,8 @@ func _ready() -> void:
 	_dash_shade = get_node_or_null(dash_shade_path)
 	_dash_label = get_node_or_null(dash_label_path)
 	_dash_key_label = get_node_or_null(dash_key_label_path)
+	_auto_wave_panel = get_node_or_null(auto_wave_panel_path)
+	_auto_wave_label = get_node_or_null(auto_wave_label_path)
 	_arrow_texture = load("res://Assets/UI/icon_skull.png") as Texture2D
 
 	if _banner != null:
@@ -100,8 +106,38 @@ func _ready() -> void:
 	EventBus.xp_changed.connect(_on_xp_changed)
 	EventBus.currency_changed.connect(_on_currency_changed)
 	EventBus.wave_start.connect(_on_wave_start)
+	EventBus.auto_wave_changed.connect(_on_auto_wave_changed)
+	_on_auto_wave_changed(GameManager.auto_wave if GameManager != null else false)
 
 	_finish_setup.call_deferred()
+
+# T flips Auto-Wave. It lives on the HUD rather than on Player because there is
+# exactly one HUD: with four local hunters in the arena, a handler on Player
+# would fire once per hunter and the toggle would cancel itself out.
+#
+# The HUD is pausable, so this is a decision made in the fight — the shop and
+# the boon screen keep the key to themselves.
+func _unhandled_key_input(event: InputEvent) -> void:
+	if not event.is_action_pressed("toggle_auto_wave"):
+		return
+	if GameManager == null:
+		return
+
+	get_viewport().set_input_as_handled()
+	GameManager.toggle_auto_wave()
+	AudioManager.play_sfx("ui_click")
+
+# The badge sits above the dodge cooldown, bottom-left, and is always readable:
+# it is the only place the key is written down, so it has to say what it does
+# while it is off as well as while it is on.
+func _on_auto_wave_changed(enabled: bool) -> void:
+	if _auto_wave_label != null:
+		_auto_wave_label.text = "[T] AUTO-WAVE  ON" if enabled else "[T] AUTO-WAVE  OFF"
+		_auto_wave_label.modulate = (Color(1.0, 0.82, 0.35) if enabled
+			else Color(1, 1, 1, 0.45))
+
+	if _auto_wave_panel != null:
+		_auto_wave_panel.modulate.a = 1.0 if enabled else 0.7
 
 func _finish_setup() -> void:
 	_ensure_arrow_layer()
