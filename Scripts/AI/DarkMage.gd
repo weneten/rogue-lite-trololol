@@ -21,8 +21,23 @@ class_name DarkMage
 # several of them stack is a decision that has to be made in one place — see
 # DarkMages.combined_slow.
 
-const SHEET_PATH := "res://Assets/sprites/enemies/wraith/wraith.png"
-const SHEET_JSON := "res://Assets/sprites/enemies/wraith/wraith.json"
+# Its own rig at last, and one it shares with The Witchfire Magus — the boss
+# that sends these is the same figure drawn larger (see WitchfireMagus.gd).
+# Built by tools/build_dark_mage.py.
+const SHEET_PATH := "res://Assets/sprites/enemies/dark_mage/dark_mage.png"
+const SHEET_JSON := "res://Assets/sprites/enemies/dark_mage/dark_mage.json"
+
+# Against the boss's 1.9 on the same 160px cells. A warden has to read as the
+# lesser thing at a glance, or the wave-30 fight opens with the player unsure
+# which of the two is the boss.
+const SPRITE_SCALE := 0.75
+
+# The sheet above is generated from artwork that does not live in the repo, so a
+# checkout that has never run the builder has no dark mage art at all. The rig
+# it used to borrow is still on disk and is still a hooded caster; falling back
+# to it beats a warden that is a shadow and a tether with nothing in between.
+const FALLBACK_SHEET_PATH := "res://Assets/sprites/enemies/wraith/wraith.png"
+const FALLBACK_SHEET_JSON := "res://Assets/sprites/enemies/wraith/wraith.json"
 
 const TETHER_COLOR := Color(0.44, 0.16, 0.62, 0.72)
 const TETHER_CORE := Color(0.86, 0.62, 1.0, 0.9)
@@ -215,9 +230,18 @@ func _build_visuals() -> void:
 	if animator == null:
 		return
 
-	# The wraith rig, drowned in violet. It is the only caster silhouette on
-	# hand, and a hooded thing that does not walk is exactly what this is.
-	if animator.configure(SHEET_PATH, SHEET_JSON, "attack", 1.6,
+	# Barely tinted, unlike the violet wash the borrowed wraith rig needed: this
+	# art is already the right colour, and a full key over it would flatten the
+	# witchfire the artist drew into the staff and the off hand. The lift is
+	# only enough to keep it off the floor under CanvasModulate.
+	# "attack" is an alias of the cast row on this sheet, so it resolves.
+	if animator.configure(SHEET_PATH, SHEET_JSON, "attack", SPRITE_SCALE,
+			Color(1.05, 0.98, 1.12, 1.0)):
+		_sprite = animator.get_sprite()
+		return
+
+	# The wraith rig, drowned in violet, at the size it was drawn for.
+	if animator.configure(FALLBACK_SHEET_PATH, FALLBACK_SHEET_JSON, "attack", 1.6,
 			Color(0.72, 0.55, 1.15, 1.0)):
 		_sprite = animator.get_sprite()
 

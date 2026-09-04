@@ -1,0 +1,155 @@
+[gd_resource type="Resource" script_class="BossData" load_steps=14 format=3 uid="uid://bossdata_witchfire"]
+
+[ext_resource type="Script" path="res://Resources/BossData/BossData.gd" id="1_bossdata"]
+[ext_resource type="Script" path="res://Resources/BossData/BossPhaseData.gd" id="2_phase"]
+[ext_resource type="Script" path="res://Resources/BossData/BossAttackPatternData.gd" id="3_atk"]
+[ext_resource type="PackedScene" uid="uid://c8boss6witchf" path="res://Scenes/Bosses/WitchfireMagus.tscn" id="4_scene"]
+
+[sub_resource type="Resource" id="atk_bolt"]
+script = ExtResource("3_atk")
+attack_id = "witchfire_bolt"
+windup_seconds = 0.65
+recovery_seconds = 0.25
+cooldown_seconds = 3.4
+damage = 13.0
+radius = 46.0
+range = 320.0
+speed = 200.0
+count = 2
+duration = 4.0
+heal_fraction = 0.0
+
+[sub_resource type="Resource" id="atk_meteors"]
+script = ExtResource("3_atk")
+attack_id = "meteor_shower"
+windup_seconds = 0.85
+recovery_seconds = 0.4
+cooldown_seconds = 9.0
+damage = 18.0
+radius = 78.0
+range = 0.0
+speed = 0.0
+count = 7
+duration = 0.0
+heal_fraction = 0.0
+
+[sub_resource type="Resource" id="atk_wall"]
+script = ExtResource("3_atk")
+attack_id = "flame_wall"
+windup_seconds = 0.9
+recovery_seconds = 0.3
+cooldown_seconds = 14.0
+damage = 28.0
+radius = 60.0
+range = 100.0
+speed = 210.0
+count = 1
+duration = 2.8
+heal_fraction = 0.0
+
+[sub_resource type="Resource" id="atk_eruption"]
+script = ExtResource("3_atk")
+attack_id = "pyre_eruption"
+windup_seconds = 0.9
+recovery_seconds = 0.5
+cooldown_seconds = 22.0
+damage = 30.0
+radius = 0.0
+range = 0.0
+speed = 0.0
+count = 4
+duration = 1.05
+heal_fraction = 0.0
+
+[sub_resource type="Resource" id="atk_bolt_p2"]
+script = ExtResource("3_atk")
+attack_id = "witchfire_bolt"
+windup_seconds = 0.5
+recovery_seconds = 0.2
+cooldown_seconds = 2.8
+damage = 15.0
+radius = 46.0
+range = 340.0
+speed = 230.0
+count = 4
+duration = 4.5
+heal_fraction = 0.0
+
+[sub_resource type="Resource" id="atk_meteors_p2"]
+script = ExtResource("3_atk")
+attack_id = "meteor_shower"
+windup_seconds = 0.7
+recovery_seconds = 0.35
+cooldown_seconds = 7.0
+damage = 20.0
+radius = 84.0
+range = 0.0
+speed = 0.0
+count = 9
+duration = 0.0
+heal_fraction = 0.0
+
+[sub_resource type="Resource" id="atk_wall_p2"]
+script = ExtResource("3_atk")
+attack_id = "flame_wall"
+windup_seconds = 0.75
+recovery_seconds = 0.25
+cooldown_seconds = 10.0
+damage = 30.0
+radius = 60.0
+range = 85.0
+speed = 245.0
+count = 2
+duration = 3.2
+heal_fraction = 0.0
+
+[sub_resource type="Resource" id="atk_eruption_p2"]
+script = ExtResource("3_atk")
+attack_id = "pyre_eruption"
+windup_seconds = 0.75
+recovery_seconds = 0.5
+cooldown_seconds = 16.0
+damage = 34.0
+radius = 0.0
+range = 0.0
+speed = 0.0
+count = 5
+duration = 0.85
+heal_fraction = 0.0
+
+[sub_resource type="Resource" id="phase_kindling"]
+script = ExtResource("2_phase")
+phase_name = "Kindling"
+enter_hp_fraction = 1.0
+move_speed_multiplier = 1.0
+attack_cooldown_multiplier = 1.0
+damage_multiplier = 1.0
+attacks = [SubResource("atk_bolt"), SubResource("atk_meteors"), SubResource("atk_wall"), SubResource("atk_eruption")]
+
+[sub_resource type="Resource" id="phase_conflagration"]
+script = ExtResource("2_phase")
+phase_name = "Conflagration"
+enter_hp_fraction = 0.5
+move_speed_multiplier = 1.15
+attack_cooldown_multiplier = 0.75
+damage_multiplier = 1.15
+attacks = [SubResource("atk_bolt_p2"), SubResource("atk_meteors_p2"), SubResource("atk_wall_p2"), SubResource("atk_eruption_p2")]
+
+[resource]
+script = ExtResource("1_bossdata")
+boss_name = "The Witchfire Magus"
+boss_scene = ExtResource("4_scene")
+sprite_color = Color(0.45, 0.2, 0.68, 1)
+sprite_sheet_path = "res://Assets/sprites/enemies/dark_mage/dark_mage.png"
+sprite_json_path = "res://Assets/sprites/enemies/dark_mage/dark_mage.json"
+sprite_scale = 1.9
+attack_anim_name = "cast"
+max_health = 1800
+move_speed = 40.0
+contact_damage = 12.0
+contact_damage_cooldown = 1.0
+phases = [SubResource("phase_kindling"), SubResource("phase_conflagration")]
+wave_trigger = 30
+currency_reward = 280
+experience_reward = 140
+ability_ids = PackedStringArray("witchfire_bolt", "meteor_shower", "flame_wall", "pyre_eruption")

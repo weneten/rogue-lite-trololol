@@ -172,7 +172,18 @@ func _spawn(player: Node2D) -> void:
 # wardens with them instead of quietly leaving them behind.
 func _placement(from: Vector2) -> Vector2:
 	var edge := WaveManager.spawn_radius_max if WaveManager != null else FALLBACK_SPAWN_EDGE
-	return ArenaLoop.random_point_around(from, edge, edge)
+	var spot := ArenaLoop.random_point_around(from, edge, edge)
+
+	# The Witchfire Magus fights in a sealed room, and the spawn ring is wider
+	# than it is. A warden planted outside those walls cannot be reached and
+	# cannot be killed, so its slow would run for the whole encounter with
+	# nothing the Hunter could do about it. Inside the room it is a warden like
+	# any other: closer than usual, and killable.
+	var arena := FlameArena.active(get_tree())
+	if arena != null:
+		spot = arena.clamp_point(spot, 70.0)
+
+	return spot
 
 func _resolve_parent() -> Node:
 	var scene: Node = get_tree().current_scene if get_tree() != null else null

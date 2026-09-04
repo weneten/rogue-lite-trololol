@@ -1,0 +1,62 @@
+[gd_scene load_steps=5 format=3 uid="uid://c8boss6witchf"]
+
+[ext_resource type="Script" path="res://Scripts/Bosses/WitchfireMagus.gd" id="1_boss"]
+[ext_resource type="Script" path="res://Scripts/Combat/HealthComponent.gd" id="2_health"]
+[ext_resource type="Script" path="res://Scripts/AI/EnemySpriteAnimator.gd" id="3_anim"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_body"]
+radius = 22.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_contact"]
+radius = 30.0
+
+[node name="WitchfireMagus" type="CharacterBody2D"]
+collision_layer = 4
+collision_mask = 1
+script = ExtResource("1_boss")
+health_component_path = NodePath("HealthComponent")
+sprite_node_path = NodePath("FallbackPolygon")
+sprite_animator_path = NodePath("SpriteAnimator")
+collision_shape_path = NodePath("CollisionShape2D")
+contact_hitbox_path = NodePath("ContactHitbox")
+
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
+texture_filter = 1
+centered = true
+offset = Vector2(0, -46)
+
+[node name="FallbackPolygon" type="Polygon2D" parent="."]
+visible = false
+color = Color(0.24, 0.12, 0.36, 1)
+polygon = PackedVector2Array(0, -56, 15, -40, 20, -8, 26, 26, -26, 26, -20, -8, -15, -40)
+
+[node name="FallbackHood" type="Polygon2D" parent="FallbackPolygon"]
+color = Color(0.11, 0.05, 0.17, 1)
+polygon = PackedVector2Array(0, -60, 14, -42, 8, -30, -8, -30, -14, -42)
+
+[node name="FallbackWitchfire" type="Polygon2D" parent="FallbackPolygon"]
+color = Color(0.72, 0.36, 0.95, 1)
+position = Vector2(20, -34)
+polygon = PackedVector2Array(0, -16, 7, -2, 4, 8, -4, 8, -7, -2)
+
+[node name="SpriteAnimator" type="Node" parent="."]
+script = ExtResource("3_anim")
+sprite_path = NodePath("../Sprite")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -14)
+shape = SubResource("CircleShape2D_body")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2_health")
+max_health = 1800
+
+[node name="ContactHitbox" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+monitoring = true
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ContactHitbox"]
+position = Vector2(0, -14)
+shape = SubResource("CircleShape2D_contact")

@@ -1,0 +1,207 @@
+{
+  "frameWidth": 160,
+  "frameHeight": 160,
+  "columns": 6,
+  "rows": 5,
+  "facing": "right",
+  "pixelArt": true,
+  "origin": {
+    "x": 80.0,
+    "y": 156.0
+  },
+  "animations": {
+    "idle": {
+      "row": 0,
+      "from": 0,
+      "to": 1,
+      "frames": [
+        0,
+        1
+      ],
+      "frameCount": 2,
+      "fps": 3,
+      "loop": true
+    },
+    "run": {
+      "row": 1,
+      "from": 6,
+      "to": 10,
+      "frames": [
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "frameCount": 5,
+      "fps": 9,
+      "loop": true
+    },
+    "cast": {
+      "row": 2,
+      "from": 12,
+      "to": 16,
+      "frames": [
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "frameCount": 5,
+      "fps": 12,
+      "loop": false
+    },
+    "attack": {
+      "row": 2,
+      "from": 12,
+      "to": 16,
+      "frames": [
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "frameCount": 5,
+      "fps": 12,
+      "loop": false
+    },
+    "attack_slash": {
+      "row": 2,
+      "from": 12,
+      "to": 16,
+      "frames": [
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "frameCount": 5,
+      "fps": 12,
+      "loop": false
+    },
+    "attack_whip": {
+      "row": 2,
+      "from": 12,
+      "to": 16,
+      "frames": [
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "frameCount": 5,
+      "fps": 12,
+      "loop": false
+    },
+    "attack_orbs": {
+      "row": 2,
+      "from": 12,
+      "to": 16,
+      "frames": [
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "frameCount": 5,
+      "fps": 12,
+      "loop": false
+    },
+    "attack_nova": {
+      "row": 2,
+      "from": 12,
+      "to": 16,
+      "frames": [
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "frameCount": 5,
+      "fps": 12,
+      "loop": false
+    },
+    "shield_bash": {
+      "row": 2,
+      "from": 12,
+      "to": 16,
+      "frames": [
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "frameCount": 5,
+      "fps": 12,
+      "loop": false
+    },
+    "chain_swing": {
+      "row": 2,
+      "from": 12,
+      "to": 16,
+      "frames": [
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "frameCount": 5,
+      "fps": 12,
+      "loop": false
+    },
+    "attack_cross": {
+      "row": 2,
+      "from": 12,
+      "to": 16,
+      "frames": [
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "frameCount": 5,
+      "fps": 12,
+      "loop": false
+    },
+    "hurt": {
+      "row": 3,
+      "from": 18,
+      "to": 21,
+      "frames": [
+        18,
+        19,
+        20,
+        21
+      ],
+      "frameCount": 4,
+      "fps": 12,
+      "loop": false
+    },
+    "death": {
+      "row": 4,
+      "from": 24,
+      "to": 29,
+      "frames": [
+        24,
+        25,
+        26,
+        27,
+        28,
+        29
+      ],
+      "frameCount": 6,
+      "fps": 8,
+      "loop": false
+    }
+  },
+  "image": "dark_mage.png"
+}
