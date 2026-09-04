@@ -241,7 +241,7 @@ func _tick_aloft(player: Node2D) -> void:
 	global_position = _dive_target
 	_set_sprite_lift(DIVE_HEIGHT)
 	_set_sprite_alpha(1.0)
-	visible = true
+	set_hidden_by_ability(false)
 	if sprite_animator != null:
 		sprite_animator.play_named("dive")
 
@@ -279,7 +279,7 @@ func _land() -> void:
 # Hidden means untargetable (Weapon.is_live_candidate), and the collider and
 # contact hitbox go with it so the arena floor he left is genuinely empty.
 func _set_intangible(on: bool) -> void:
-	visible = not on
+	set_hidden_by_ability(on)
 
 	if collision_shape != null:
 		collision_shape.set_deferred("disabled", on)

@@ -310,7 +310,7 @@ func _burst_nova(centre: Vector2, radius: float, damage: int, rings: int) -> voi
 				BossAoeTelegraph.spawn(self, centre, radius * scale, 0.2, 0, self, false))
 
 func _set_intangible(on: bool) -> void:
-	visible = not on
+	set_hidden_by_ability(on)
 
 	if collision_shape != null:
 		collision_shape.set_deferred("disabled", on)

@@ -52,6 +52,22 @@ const TRAIL_DAMAGE_FRACTION := 0.7
 # from front to back, few enough that it is one shape and not a ladder.
 const TRAIL_STRIPS := 14
 
+# The dimmest burning ground may ever be drawn, as a share of TRAIL_COLOR's own
+# alpha. The fade used to run all the way to zero at the rear edge while the
+# floor there still dealt seven tenths of the sheet's damage: the picture said
+# "going out", the hitbox said "still on fire", and the player found the
+# difference by walking into it. Damage here is flat across the whole trail, so
+# the drawing is not allowed to imply otherwise — the ramp now only says which
+# end of the burn is older, never whether it is still lit.
+const TRAIL_MIN_HEAT := 0.55
+
+# The rear edge as its own line. The ramp says the fire is dying; only an edge
+# says where standing is free again, and that boundary is the one thing in the
+# move with nothing to mark it — the front of the burn is the sheet itself and
+# the sides are the walls.
+const TRAIL_EDGE := Color(0.95, 0.66, 1.0, 0.85)
+const TRAIL_EDGE_WIDTH := 4.0
+
 # Flame tongues along the leading face, one per this many pixels.
 const TONGUE_SPACING := 30.0
 
@@ -202,7 +218,8 @@ func _draw() -> void:
 
 	# The ground already crossed, drawn front to back so it visibly dies down
 	# toward the edge it came from — which is the player's read on how long they
-	# have before it is safe to go back.
+	# have before it is safe to go back. Every strip drawn here is a strip that
+	# still burns: see TRAIL_MIN_HEAT.
 	if front > rear:
 		var step := (front - rear) / float(TRAIL_STRIPS)
 		for i in range(TRAIL_STRIPS):
@@ -210,11 +227,14 @@ func _draw() -> void:
 			# 0 at the back where the fire is going out, 1 just behind the sheet.
 			var heat := (float(i) + 0.5) / float(TRAIL_STRIPS)
 			var flicker := 0.85 + 0.15 * sin(_time * 7.0 + x0 * 0.03)
+			var glow := TRAIL_MIN_HEAT + (1.0 - TRAIL_MIN_HEAT) * heat * heat
 			var tint := Color(TRAIL_COLOR.r, TRAIL_COLOR.g, TRAIL_COLOR.b,
-				TRAIL_COLOR.a * heat * heat * flicker)
+				TRAIL_COLOR.a * glow * flicker)
 			var strip := Rect2(Vector2(x0, -span_half), Vector2(step + 1.0, span_half * 2.0))
 			for piece in _split_around_lane(strip, gap_center(x0 + step * 0.5)):
 				draw_rect(piece, tint)
+
+		_draw_trail_edge(rear)
 
 	if _travelled > total_distance:
 		return
@@ -243,6 +263,18 @@ func _draw() -> void:
 			SHEET_CORE.a * breathe))
 
 	_draw_tongues(front + thickness, gap_center(front))
+
+# The line the burn ends at: behind it the floor is floor again. Drawn at the
+# same depth the lane is tested at, and split around the lane like everything
+# else, so the way through stays a clean opening rather than being fenced off at
+# the back by a bright line across it.
+func _draw_trail_edge(rear: float) -> void:
+	var pulse := 0.78 + 0.22 * sin(_time * 6.0)
+	var band := Rect2(Vector2(rear, -span_half),
+		Vector2(TRAIL_EDGE_WIDTH, span_half * 2.0))
+	var tint := Color(TRAIL_EDGE.r, TRAIL_EDGE.g, TRAIL_EDGE.b, TRAIL_EDGE.a * pulse)
+	for piece in _split_around_lane(band, gap_center(rear + TRAIL_EDGE_WIDTH * 0.5)):
+		draw_rect(piece, tint)
 
 # Fire licking off the leading face, so which way the sheet is going is legible
 # from the shape of it and not only from watching it move.

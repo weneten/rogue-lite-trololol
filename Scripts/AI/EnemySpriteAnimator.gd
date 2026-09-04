@@ -13,6 +13,9 @@ var _current_locomotion: String = "idle"
 var _one_shot_playing: bool = false
 var _dead: bool = false
 var _base_scale: float = 1.0
+# Set by play_row(hold_last). Stops the row snapping back to idle on its last
+# frame, for a caller that is about to hide the sprite there anyway.
+var _hold_last_frame: bool = false
 
 # Every living entity — player included — must sit on the SAME z layer, because
 # z_index outranks Y-sorting: a body one layer up draws over everything below it
@@ -162,6 +165,44 @@ func play_named(anim_name: String) -> void:
 
 	_play_one_shot(anim_name)
 
+# Plays a named row and reports how long it runs for, so a caller can time a
+# manoeuvre against the artwork instead of against a constant that has to be
+# kept in step with it by hand. Returns 0.0 when the sheet has no such row, and
+# then nothing is played — the caller decides what a rig without it does.
+#
+# reverse walks the row from its last frame back to its first. That is what
+# makes one piece of artwork two moves: the Witchfire Magus leaves the arena
+# down its death row, burning away into witchfire, and gathers back out of the
+# flame up the same row when it returns.
+#
+# hold_last leaves the sprite on the final frame rather than dropping back to
+# idle when the row ends. Unlike play_death_async this does not mark the rig
+# dead, so whatever is held is undone by resume_locomotion rather than by a
+# respawn.
+func play_row(anim_name: String, reverse: bool = false, hold_last: bool = false) -> float:
+	if _sprite == null or _sprite.sprite_frames == null or anim_name.is_empty():
+		return 0.0
+
+	if not _sprite.sprite_frames.has_animation(anim_name) or _sprite.sprite_frames.get_frame_count(anim_name) == 0:
+		return 0.0
+
+	_dead = false
+	_one_shot_playing = true
+	_hold_last_frame = hold_last
+	if reverse:
+		_sprite.play_backwards(anim_name)
+	else:
+		_sprite.play(anim_name)
+
+	return get_animation_length(anim_name)
+
+# Drops back to idle/run after a one-shot the caller timed for itself.
+func resume_locomotion() -> void:
+	_one_shot_playing = false
+	_hold_last_frame = false
+	if get_has_frames():
+		_play_locomotion(_current_locomotion, true)
+
 # Plays death and returns when finished (or immediately if no sprite/anim).
 func play_death_async() -> void:
 	_dead = true
@@ -237,6 +278,10 @@ func _play_one_shot(name: String) -> void:
 func _on_animation_finished() -> void:
 	if _dead:
 		_one_shot_playing = false
+		return
+
+	# Held on the last frame on purpose; the caller ends it with resume_locomotion.
+	if _hold_last_frame:
 		return
 
 	if _one_shot_playing:

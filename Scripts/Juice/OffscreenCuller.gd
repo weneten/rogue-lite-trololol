@@ -41,6 +41,13 @@ func _process(delta: float) -> void:
 		if enemy is EnemyProxy:
 			continue
 
+		# A boss that has hidden itself for a manoeuvre owns its own visibility:
+		# showing it again mid-move puts it back on the floor it just left, where
+		# it can be shot at during the one attack the player is meant to only be
+		# able to run from. See Boss.set_hidden_by_ability.
+		if enemy.is_in_group(Boss.ABILITY_HIDDEN_GROUP):
+			continue
+
 		# Skip fully inactive pooled instances (already invisible + not processing).
 		if not enemy.is_physics_processing() and not enemy.visible:
 			continue

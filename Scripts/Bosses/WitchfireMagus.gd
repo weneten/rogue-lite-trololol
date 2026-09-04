@@ -87,6 +87,12 @@ const ERUPTION_INTERVAL := 1.15
 # The beat after the last ring before it walks back in, so the fight does not
 # resume on the same frame the floor stops burning.
 const ERUPTION_TAIL := 0.7
+# The row it leaves and arrives on. The dark mage sheet's death is a collapse
+# into witchfire, which is the picture this move wants in both directions:
+# forwards it burns away out of the room, backwards it gathers back out of the
+# flame somewhere else in it. Timed off the artwork by play_row rather than off
+# a constant here, so re-exporting the sheet moves the manoeuvre with it.
+const VANISH_ANIM := "death"
 
 # ---------------------------------------------------------------------------
 # Meteors
@@ -116,6 +122,13 @@ var _cast_gap: float = 0.0
 
 var _absent: bool = false
 var _absent_remaining: float = 0.0
+# The vanish and the return, in seconds. While either is running the Magus is on
+# screen and already out of the fight — no collider, no contact damage, none of
+# the moves that come out of its hands — and the only thing left to do is the
+# animation. Hittable for that beat, deliberately: a boss you can see standing
+# there and cannot shoot is the thing that reads as broken.
+var _vanish_remaining: float = 0.0
+var _return_remaining: float = 0.0
 var _eruptions_left: int = 0
 var _eruption_timer: float = 0.0
 var _eruption_windup: float = 1.0
@@ -339,13 +352,30 @@ func _execute_eruption(attack: BossAttackPatternData) -> void:
 	# into a free damage window.
 	_absent = true
 	_absent_remaining = _eruptions_left * ERUPTION_INTERVAL + _eruption_windup + ERUPTION_TAIL
-	_set_intangible(true)
+	_begin_vanish()
 	# Nothing has to hold the state machine open: it never left CHASE, and
 	# _physics_process skips the base entirely while _absent. _tick_eruption is
 	# the only clock the manoeuvre runs on.
 
 func _tick_eruption(delta: float) -> void:
 	if not _absent:
+		return
+
+	if _vanish_remaining > 0.0:
+		# Still burning away. The rings do not wait for it — the first one is
+		# marked on the frame the move was cast, so the floor starts working
+		# while the Magus is still leaving it.
+		_vanish_remaining -= delta
+		if _vanish_remaining <= 0.0:
+			_finish_vanish()
+
+	if _return_remaining > 0.0:
+		# Back in the room and gathering itself in. The rings are done; this is
+		# the last beat before the fight is a fight again.
+		_return_remaining -= delta
+		if _return_remaining <= 0.0:
+			_finish_return()
+
 		return
 
 	_absent_remaining -= delta
@@ -357,7 +387,7 @@ func _tick_eruption(delta: float) -> void:
 		_mark_ring()
 
 	if _absent_remaining <= 0.0:
-		_return_to_arena()
+		_begin_return()
 
 func _mark_ring() -> void:
 	if arena == null or not is_instance_valid(arena):
@@ -373,19 +403,54 @@ func _mark_ring() -> void:
 	FlameEruption.spawn(self, arena, band, ERUPTION_BANDS, _eruption_windup,
 		_eruption_damage, self)
 
-func _return_to_arena() -> void:
-	_absent = false
+# Out of the fight on this frame — collider and contact hitbox off, hands empty
+# — but not off the screen yet: it burns down the death row first, so the move
+# opens with the Magus leaving rather than with the Magus blinking out.
+func _begin_vanish() -> void:
+	_return_remaining = 0.0
+	_set_collidable(false)
+	_vanish_remaining = _play_flourish(false, true)
+	if _vanish_remaining <= 0.0:
+		# A rig with no death row still has to go. Straight to hidden, which is
+		# what this move did before it had an animation to do it with.
+		_finish_vanish()
+
+func _finish_vanish() -> void:
+	_vanish_remaining = 0.0
+	set_hidden_by_ability(true)
+
+func _begin_return() -> void:
 	_absent_remaining = 0.0
 	_eruptions_left = 0
-	_set_intangible(false)
 
 	if arena != null and is_instance_valid(arena):
 		# Back in at a corner rather than on top of the Hunter: reappearing in
 		# his face after a move he could only run from is a free hit.
 		global_position = arena.random_point(140.0)
 
+	# Visible again and running the death row backwards, but still no collider:
+	# the arrival gets the same beat of grace the departure did, and the Hunter
+	# gets a moment to see where in the room it came back before it matters.
+	set_hidden_by_ability(false)
+	_return_remaining = _play_flourish(true, false)
+	if _return_remaining <= 0.0:
+		_finish_return()
+
+func _finish_return() -> void:
+	_return_remaining = 0.0
+	_absent = false
+	_set_collidable(true)
+
 	if sprite_animator != null:
-		sprite_animator.play_named("cast")
+		sprite_animator.resume_locomotion()
+
+# Runs the vanish row in one direction or the other and reports its length, or
+# 0.0 when this sheet has no such row and the manoeuvre has to be instant.
+func _play_flourish(reverse: bool, hold_last: bool) -> float:
+	if sprite_animator == null:
+		return 0.0
+
+	return sprite_animator.play_row(VANISH_ANIM, reverse, hold_last)
 
 # ---------------------------------------------------------------------------
 # Meteor shower
@@ -487,11 +552,23 @@ func _execute_flame_wall(attack: BossAttackPatternData) -> void:
 # ---------------------------------------------------------------------------
 # Cleanup
 # ---------------------------------------------------------------------------
+# The base flinches on damage, which is right everywhere except here: a hurt row
+# cutting in would eat the vanish or the return, and the move would be back to
+# the Magus popping out of existence. Hit it while it is burning away and it
+# burns away anyway.
+func _on_health_changed(current_health: int, max_health: int) -> void:
+	if _vanish_remaining > 0.0 or _return_remaining > 0.0:
+		return
+
+	super._on_health_changed(current_health, max_health)
+
 func _on_died(source: Node) -> void:
 	# Dying while out of the room would otherwise leave an invisible corpse and
 	# a wall of fire around an arena with nothing in it.
 	if _absent:
 		_absent = false
+		_vanish_remaining = 0.0
+		_return_remaining = 0.0
 		_set_intangible(false)
 
 	_drop_arena()
@@ -510,15 +587,19 @@ func _drop_arena() -> void:
 	arena = null
 
 # Hidden means untargetable (Weapon.is_live_candidate), and the collider and
-# contact hitbox go with it so the floor it left is genuinely empty.
+# contact hitbox go with it so the floor it left is genuinely empty. Split in
+# two because the vanish and the return are exactly the moments where the second
+# half is already true and the first is not yet.
 func _set_intangible(on: bool) -> void:
-	visible = not on
+	set_hidden_by_ability(on)
+	_set_collidable(not on)
 
+func _set_collidable(on: bool) -> void:
 	if collision_shape != null:
-		collision_shape.set_deferred("disabled", on)
+		collision_shape.set_deferred("disabled", not on)
 
 	if contact_hitbox != null:
-		contact_hitbox.set_deferred("monitoring", not on)
+		contact_hitbox.set_deferred("monitoring", on)
 
 func _direction_to(point: Vector2) -> Vector2:
 	var delta := point - global_position

@@ -14,6 +14,15 @@ enum BossState {
 
 @export var data: BossData
 
+# Bosses that leave the field hide themselves, and hidden is what makes them
+# untargetable (Weapon.is_live_candidate). But the OffscreenCuller toggles
+# Visible on everything in the Enemy group by distance, and a boss standing in
+# the middle of its own arena is well inside the cull radius — so four frames
+# after a manoeuvre hid it, the culler put it straight back on screen, whole and
+# in the wrong place, for the rest of the move. This group is how a boss says
+# the hiding is its own and nothing else may undo it.
+const ABILITY_HIDDEN_GROUP := "AbilityHidden"
+
 @export_group("Wiring")
 @export var health_component_path: NodePath
 @export var sprite_node_path: NodePath
@@ -172,6 +181,17 @@ func get_move_speed() -> float:
 		return 0.0
 
 	return Difficulty.enemy_speed(GameManager.difficulty, data.move_speed, GameManager.player_base_speed)
+
+# The one way a boss should take itself off the screen mid-fight. Sets Visible
+# and claims ownership of it for as long as the manoeuvre lasts — see
+# ABILITY_HIDDEN_GROUP.
+func set_hidden_by_ability(on: bool) -> void:
+	visible = not on
+
+	if on:
+		add_to_group(ABILITY_HIDDEN_GROUP)
+	elif is_in_group(ABILITY_HIDDEN_GROUP):
+		remove_from_group(ABILITY_HIDDEN_GROUP)
 
 # Faces the sprite at a world point (sheets are drawn facing right).
 func face_toward(point: Vector2) -> void:
