@@ -49,8 +49,11 @@ const BURN_INTERVAL := 0.45
 const TRAIL_DAMAGE_FRACTION := 0.7
 
 # How many strips the trail is drawn in. Enough for the burn to visibly die down
-# from front to back, few enough that it is one shape and not a ladder.
-const TRAIL_STRIPS := 14
+# from front to back, few enough that it is one shape and not a ladder. Raised
+# once the trail became artwork rather than a wash: the safe lane crosses the
+# strips at an angle, so each strip is one step of a staircase along its edge,
+# and a stronger fill made those steps something you could count.
+const TRAIL_STRIPS := 22
 
 # The dimmest burning ground may ever be drawn, as a share of TRAIL_COLOR's own
 # alpha. The fade used to run all the way to zero at the rear edge while the

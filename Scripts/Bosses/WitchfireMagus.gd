@@ -513,6 +513,9 @@ func _drop_meteor(target: Vector2, radius: float, damage: int, windup: float) ->
 
 		BossGroundQuake.spawn(self, target, radius, radius * 0.45,
 			7 if radius < 100.0 else 11, 1.8)
+		# The quake is the ground being hit; the plume is what hit it. Both, or
+		# a meteor from a lich reads as a rock.
+		WitchfirePlume.spawn(self, target, radius)
 		apply_damage_in_radius(target, radius, damage))
 
 # ---------------------------------------------------------------------------

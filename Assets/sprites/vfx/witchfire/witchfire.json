@@ -84,7 +84,7 @@
       "loop": true
     }
   },
-  "flameHeight": 52,
+  "flameHeight": 44.2,
   "floorY": 46,
   "tileable": {
     "curtain": "x",
